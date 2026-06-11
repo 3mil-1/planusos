@@ -71,17 +71,41 @@ h1, h2, h3, .brand-mark, .tt-title { font-family: "Arial Black", "Segoe UI Black
 
 .topbar-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
-.profile-select {
+.whoami {
   background: var(--yellow);
-  color: var(--ink);
   border: var(--bw) solid var(--ink);
-  padding: 8px 10px;
+  padding: 8px 12px;
   font-weight: 800;
   font-size: 0.85rem;
   box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  max-width: 140px;
 }
+
+/* ===== Logowanie ===== */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(24, 22, 20, 0.07) 1px, transparent 0) 0 0 / 22px 22px,
+    var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.auth-box {
+  background: var(--paper-2);
+  border: var(--bw) solid var(--ink);
+  box-shadow: var(--shadow);
+  padding: 28px 32px;
+  width: 100%;
+  max-width: 360px;
+}
+.auth-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.auth-tab { flex: 1; opacity: 0.55; }
+.auth-tab.active { opacity: 1; background: var(--teal); }
+.btn-block { width: 100%; margin-top: 6px; }
+#auth-error { color: var(--red); font-weight: 700; min-height: 1em; }
 
 /* ===== Przyciski ===== */
 .btn {

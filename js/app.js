@@ -4,13 +4,15 @@
 // ===================== Stan =====================
 const LS_EVENTS = "planusos.events";
 const LS_SETTINGS = "planusos.settings";
-const LS_PROFILE = "planusos.profile";
+const LS_TOKEN = "planusos.token";
+const LS_USERNAME = "planusos.username";
 
-let profileId = localStorage.getItem(LS_PROFILE) || "osoba1";
-let profiles = [];  // [{id, display_name}]
+let authToken = localStorage.getItem(LS_TOKEN) || "";
+let username = localStorage.getItem(LS_USERNAME) || "";
+let displayName = "";
 
-// dane (plan, pominięcia, egzaminy) trzymamy OSOBNO per profil
-function lsKey(base) { return `${base}.${profileId}`; }
+// dane (plan, pominięcia, egzaminy) trzymamy OSOBNO per konto
+function lsKey(base) { return `${base}.${username || "anon"}`; }
 
 let events = [];          // {start: Date, end: Date, summary, location, type}
 let weekStart = startOfWeek(new Date());
@@ -276,37 +278,80 @@ function loadSettings() {
   } catch { /* domyślne */ }
 }
 
-// ===================== Profile (2 osoby, bez haseł) =====================
-function apiQ(extra = "") {
-  const sep = extra.includes("?") ? "&" : (extra ? "?" : "?");
-  const base = extra || "";
-  return `${base}${sep}profile=${encodeURIComponent(profileId)}`;
+// ===================== Konta (login + hasło + token) =====================
+function authHeaders() {
+  return authToken ? { "Authorization": `Bearer ${authToken}` } : {};
 }
 
-function saveProfile() {
-  localStorage.setItem(LS_PROFILE, profileId);
-  const u = new URL(location.href);
-  u.searchParams.set("profile", profileId);
-  history.replaceState(null, "", u);
+function apiFetch(url, opts = {}) {
+  return fetch(url, {
+    ...opts,
+    cache: "no-store",
+    headers: { ...(opts.headers || {}), ...authHeaders() },
+  });
 }
 
-async function loadProfiles() {
+function setAuth(token, user) {
+  authToken = token;
+  username = user;
+  localStorage.setItem(LS_TOKEN, token);
+  localStorage.setItem(LS_USERNAME, user);
+}
+
+function clearAuth() {
+  authToken = "";
+  username = "";
+  displayName = "";
+  localStorage.removeItem(LS_TOKEN);
+  localStorage.removeItem(LS_USERNAME);
+}
+
+function updateAuthUi(loggedIn) {
+  document.getElementById("auth-overlay").classList.toggle("hidden", loggedIn);
+  document.getElementById("whoami").classList.toggle("hidden", !loggedIn);
+  document.getElementById("btn-logout").classList.toggle("hidden", !loggedIn);
+  if (loggedIn) {
+    document.getElementById("whoami").textContent = displayName || username;
+  }
+}
+
+let authTabRegister = false;
+function setAuthTab(register) {
+  authTabRegister = register;
+  document.getElementById("tab-login").classList.toggle("active", !register);
+  document.getElementById("tab-register").classList.toggle("active", register);
+  document.getElementById("auth-display").classList.toggle("hidden", !register);
+  document.getElementById("btn-auth-go").textContent = register ? "Załóż konto" : "Zaloguj";
+  document.getElementById("auth-password").autocomplete = register ? "new-password" : "current-password";
+  document.getElementById("auth-error").textContent = "";
+}
+
+async function tryAuth(register) {
+  const $ = id => document.getElementById(id);
+  const body = {
+    username: $("auth-username").value.trim(),
+    password: $("auth-password").value,
+  };
+  if (register) body.display_name = $("auth-display").value.trim();
+  $("auth-error").textContent = "";
   try {
-    const r = await fetch("/api/profiles", { cache: "no-store" });
-    if (r.ok) profiles = (await r.json()).profiles;
-  } catch { profiles = [{ id: "osoba1", display_name: "Osoba 1" }, { id: "osoba2", display_name: "Osoba 2" }]; }
-  const sel = document.getElementById("profile-select");
-  if (!sel) return;
-  sel.innerHTML = profiles.map(p =>
-    `<option value="${p.id}">${escapeHtml(p.display_name || p.id)}</option>`
-  ).join("");
-  sel.value = profileId;
+    const r = await fetch(register ? "/api/register" : "/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const res = await r.json();
+    if (!r.ok) { $("auth-error").textContent = res.error || "Nie wyszło"; return; }
+    setAuth(res.token, res.username);
+    $("auth-password").value = "";
+    await afterLogin();
+  } catch {
+    $("auth-error").textContent = "Brak połączenia z serwerem";
+  }
 }
 
-async function switchProfile(newId) {
-  profileId = newId;
-  saveProfile();
-  // czysty start – dane nowego profilu wczytujemy z JEGO kluczy i z serwera
+async function afterLogin() {
+  // czysty start na dane TEGO konta
   events = [];
   skips = new Set();
   exams = [];
@@ -316,30 +361,38 @@ async function switchProfile(newId) {
   loadExams();
   renderAll();
   await initServer();
+  updateAuthUi(true);
   if (serverMode && usosUrl) await syncPlan(true);
   else renderAll();
   checkChanges();
   refreshWebcalUi();
-  toast(`Profil: ${profiles.find(p => p.id === profileId)?.display_name || profileId}`);
+}
+
+function logout() {
+  clearAuth();
+  events = [];
+  skips = new Set();
+  exams = [];
+  usosUrl = "";
+  renderAll();
+  updateAuthUi(false);
 }
 
 // ===================== Serwer: konfiguracja i synchronizacja =====================
 async function initServer() {
   try {
-    const r = await fetch(apiQ("/api/config"), { cache: "no-store" });
+    const r = await apiFetch("/api/config");
+    if (r.status === 401) { logout(); serverMode = true; return; }
     if (!r.ok) throw 0;
     const cfg = await r.json();
     serverMode = true;
     usosUrl = cfg.usos_url || "";
+    displayName = cfg.display_name || username;
+    updateAuthUi(true);
     if (typeof cfg.alarm_min === "number") settings.alarmMin = cfg.alarm_min;
     if (typeof cfg.include_lectures === "boolean") settings.lecturesCount = cfg.include_lectures;
     if (typeof cfg.skip_limit === "number") settings.skipLimit = cfg.skip_limit;
-    if (cfg.display_name) {
-      const p = profiles.find(x => x.id === profileId);
-      if (p) p.display_name = cfg.display_name;
-    }
-    // serwer jest źródłem prawdy dla profilu – ZASTĘPUJEMY, nie scalamy
-    // (scalanie powodowało przeciekanie egzaminów/pominięć między profilami)
+    // serwer jest źródłem prawdy dla konta – ZASTĘPUJEMY, nie scalamy
     if (Array.isArray(cfg.skips)) {
       skips = new Set(cfg.skips);
       localStorage.setItem(lsKey(LS_SKIPS), JSON.stringify([...skips]));
@@ -368,7 +421,8 @@ async function syncPlan(force) {
   if (!usosUrl && !force) return false;
   syncBar("Synchronizuję plan z USOS…");
   try {
-    const r = await fetch(apiQ("/api/plan" + (force ? "?refresh=1" : "")), { cache: "no-store" });
+    const r = await apiFetch("/api/plan" + (force ? "?refresh=1" : ""));
+    if (r.status === 401) { logout(); return false; }
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
       throw new Error(err.error || ("HTTP " + r.status));
@@ -392,7 +446,7 @@ async function syncPlan(force) {
 async function pushConfig(extra = {}) {
   if (!serverMode) return null;
   try {
-    const r = await fetch(apiQ("/api/config"), {
+    const r = await apiFetch("/api/config", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -758,7 +812,7 @@ const LS_CHANGES_SEEN = "planusos.changesSeen";
 async function checkChanges() {
   if (!serverMode) return;
   try {
-    const r = await fetch(apiQ("/api/changes"), { cache: "no-store" });
+    const r = await apiFetch("/api/changes");
     if (!r.ok) return;
     const { batches } = await r.json();
     if (!batches.length) return;
@@ -950,7 +1004,7 @@ function wakeUrl() {
     ? `${serverInfo.lan_ip}:${serverInfo.port}`
     : location.host;
   const proto = ["localhost", "127.0.0.1"].includes(location.hostname) ? "http" : location.protocol.replace(":", "");
-  return `${proto}://${host}/api/wake-tomorrow?profile=${encodeURIComponent(profileId)}`;
+  return `${proto}://${host}/api/wake-tomorrow?token=${encodeURIComponent(authToken)}`;
 }
 
 function refreshWebcalUi() {
@@ -958,8 +1012,8 @@ function refreshWebcalUi() {
   const plan = document.getElementById("link-webcal-plan");
   const hint = document.getElementById("webcal-hint");
   const base = webcalBase();
-  wake.href = `${base}/pobudki.ics?profile=${encodeURIComponent(profileId)}`;
-  plan.href = `${base}/plan.ics?profile=${encodeURIComponent(profileId)}`;
+  wake.href = `${base}/pobudki.ics?token=${encodeURIComponent(authToken)}`;
+  plan.href = `${base}/plan.ics?token=${encodeURIComponent(authToken)}`;
   document.getElementById("wake-url").textContent = wakeUrl();
   if (!serverMode) {
     hint.textContent = "Uruchom aplikację przez server.py, żeby subskrypcja działała.";
@@ -1008,7 +1062,9 @@ function renderExamList() {
 function openSettings() {
   const $ = id => document.getElementById(id);
   $("set-usos-url").value = usosUrl;
-  $("set-display-name").value = (profiles.find(p => p.id === profileId)?.display_name) || "";
+  $("set-display-name").value = displayName || username;
+  const acc = $("account-info");
+  if (acc) acc.innerHTML = `Zalogowano jako <b>${escapeHtml(username)}</b>. Każde konto ma osobny plan, budzik, egzaminy i ustawienia.`;
   $("set-reminders").checked = settings.remindersOn;
   $("set-reminder-min").value = settings.reminderMin;
   $("set-alarm").checked = settings.alarmOn;
@@ -1028,7 +1084,7 @@ function openSettings() {
 async function saveSettingsFromDialog() {
   const $ = id => document.getElementById(id);
   usosUrl = $("set-usos-url").value.trim();
-  const displayName = $("set-display-name").value.trim();
+  const newName = $("set-display-name").value.trim();
   settings.remindersOn = $("set-reminders").checked;
   settings.reminderMin = Math.max(1, +$("set-reminder-min").value || 15);
   settings.alarmOn = $("set-alarm").checked;
@@ -1040,11 +1096,10 @@ async function saveSettingsFromDialog() {
   document.getElementById("dlg-settings").close();
 
   if (serverMode) {
-    const res = await pushConfig({ display_name: displayName });
-    if (displayName) {
-      const p = profiles.find(x => x.id === profileId);
-      if (p) p.display_name = displayName;
-      document.getElementById("profile-select").querySelector(`option[value="${profileId}"]`).textContent = displayName;
+    const res = await pushConfig({ display_name: newName });
+    if (newName) {
+      displayName = newName;
+      updateAuthUi(true);
     }
     if (res && res.sync_error) {
       toast("Zapisano, ale USOS nie odpowiada: " + res.sync_error);
@@ -1061,7 +1116,13 @@ async function saveSettingsFromDialog() {
 function bindUi() {
   const $ = id => document.getElementById(id);
 
-  $("profile-select").onchange = e => switchProfile(e.target.value);
+  $("btn-logout").onclick = logout;
+  $("tab-login").onclick = () => setAuthTab(false);
+  $("tab-register").onclick = () => setAuthTab(true);
+  $("btn-auth-go").onclick = () => tryAuth(authTabRegister);
+  $("auth-password").addEventListener("keydown", e => {
+    if (e.key === "Enter") tryAuth(authTabRegister);
+  });
 
   $("btn-prev-week").onclick = () => { weekStart = addDays(weekStart, -7); renderWeek(); };
   $("btn-next-week").onclick = () => { weekStart = addDays(weekStart, 7); renderWeek(); };
@@ -1166,30 +1227,31 @@ function bindUi() {
 }
 
 async function init() {
-  const urlP = new URLSearchParams(location.search).get("profile");
-  if (urlP) { profileId = urlP; saveProfile(); }
-
-  // migracja: stare wspólne klucze -> klucze profilu (jednorazowo)
+  // sprzątanie po starym systemie profili (bez haseł)
   for (const base of [LS_EVENTS, LS_SKIPS, LS_EXAMS]) {
-    const old = localStorage.getItem(base);
-    if (old !== null) {
-      if (localStorage.getItem(lsKey(base)) === null) localStorage.setItem(lsKey(base), old);
-      localStorage.removeItem(base);
-    }
+    localStorage.removeItem(base);
+    localStorage.removeItem(`${base}.osoba1`);
+    localStorage.removeItem(`${base}.osoba2`);
   }
+  localStorage.removeItem("planusos.profile");
 
   loadSettings();
-  loadEvents();
-  loadSkips();
-  loadExams();
   bindUi();
-  renderAll();
   updateStudyUI();
 
-  await loadProfiles();
-  await initServer();
-  if (serverMode && usosUrl) await syncPlan(true);
-  checkChanges();
+  if (!authToken) {
+    updateAuthUi(false);
+    renderAll();
+  } else {
+    loadEvents();
+    loadSkips();
+    loadExams();
+    renderAll();
+    await initServer();
+    if (!authToken) return;  // token wygasł -> initServer wylogował
+    if (serverMode && usosUrl) await syncPlan(true);
+    checkChanges();
+  }
 
   setInterval(tick, 1000);
   setInterval(studyTick, 1000);

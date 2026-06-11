@@ -12,6 +12,14 @@ python server.py
 - na komputerze: **http://localhost:8000**
 - z telefonu (to samo Wi-Fi): adres wypisze się w konsoli, np. `http://192.168.0.83:8000`
 
+## Konta
+
+Przy pierwszym wejściu zakładasz konto (login + hasło). Każde konto ma **całkowicie osobne**:
+plan, link USOS, egzaminy, pominięcia, budzik i ustawienia. Dane leżą w `data/users/<login>/`.
+
+Linki do budzika i kalendarza (Skróty iOS, subskrypcje webcal) zawierają Twój prywatny token –
+nie udostępniaj ich nikomu. Po prostu skopiuj je z ustawień po zalogowaniu.
+
 ## Połączenie z USOS (raz, potem automat)
 
 1. Zaloguj się do USOSweb → **Mój USOSweb → Plan zajęć**
@@ -39,12 +47,12 @@ czy powiadomienia dla subskrybowanego kalendarza są włączone.
 1. Wrzuć ten folder jako repozytorium na GitHub
 2. Załóż darmowe konto na [render.com](https://render.com) → **New → Web Service** → wskaż repo
    (Render sam wykryje `render.yaml` i `Dockerfile`)
-3. W ustawieniach serwisu dodaj zmienną środowiskową **USOS_URL** = Twój link iCal z USOSweb
-4. Po wdrożeniu dostajesz adres typu `https://planusos.onrender.com` – używaj go na telefonie
+3. Po wdrożeniu dostajesz adres typu `https://planusos.onrender.com` – używaj go na telefonie
    zamiast adresu z domowej sieci (subskrypcje, budzik Skrótów, wszystko działa z LTE)
 
-Uwaga: darmowa instancja Render usypia po bezczynności – pierwsze wejście może chwilę trwać,
-a plik konfiguracyjny może się wyczyścić przy ponownym wdrożeniu (dlatego USOS_URL trzymamy w env).
+Uwaga: darmowa instancja Render usypia po bezczynności – pierwsze wejście może chwilę trwać.
+Dysk darmowego planu jest ulotny: po ponownym wdrożeniu konta trzeba założyć od nowa
+(albo dokup trwały dysk i zamontuj go pod `data/`).
 
 ## Funkcje
 
@@ -75,7 +83,8 @@ manifest.webmanifest  – PWA
 sw.js                 – service worker (offline)
 icons/                – ikony
 tools/make_icons.py   – generator ikon (Pillow)
-data/                 – konfiguracja i cache planu (tworzy się samo)
+data/users.json       – konta (hash haseł PBKDF2 + tokeny)
+data/users/<login>/   – dane konta: config.json, plan.ics, changes.json
 ```
 
 ## Wymagania

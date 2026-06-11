@@ -20,7 +20,8 @@
       <span class="brand-mark">PLAN</span><span class="brand-mark mark-2">USOS</span>
     </div>
     <div class="topbar-actions">
-      <select id="profile-select" class="profile-select" title="Kto korzysta z aplikacji"></select>
+      <span id="whoami" class="whoami hidden"></span>
+      <button id="btn-logout" class="btn hidden" title="Wyloguj">Wyloguj</button>
       <button id="btn-sync" class="btn" title="Pobierz świeży plan z USOS">Synchronizuj</button>
       <button id="btn-png" class="btn">Pobierz PNG</button>
       <button id="btn-settings" class="btn btn-accent">Ustawienia</button>
@@ -112,13 +113,8 @@
   <dialog id="dlg-settings" class="dialog">
     <h2>Ustawienia</h2>
 
-    <h3>Twoje konto (bez hasła)</h3>
-    <p class="muted small">
-      Każda osoba ma <b>osobny profil</b> – własny plan, budzik i ustawienia.
-      Wybierz profil u góry strony. Na iPhonie każdy ma swój link budzika
-      (z parametrem <code>?profile=osoba1</code> lub <code>osoba2</code>).
-      Bez haseł – to luźne konto dla Was dwojga.
-    </p>
+    <h3>Twoje konto</h3>
+    <p class="muted small" id="account-info">—</p>
     <label class="row">
       <span>Twoje imię (wyświetlane):</span>
       <input type="text" id="set-display-name" class="input" placeholder="np. Emil" />
@@ -289,6 +285,25 @@
       <button class="btn" id="btn-settings-close">Zamknij</button>
     </div>
   </dialog>
+
+  <!-- Ekran logowania -->
+  <div id="auth-overlay" class="auth-overlay hidden">
+    <div class="auth-box">
+      <div class="brand" style="justify-content:center; margin-bottom:14px">
+        <span class="brand-mark">PLAN</span><span class="brand-mark mark-2">USOS</span>
+      </div>
+      <div class="auth-tabs">
+        <button class="btn auth-tab active" id="tab-login" type="button">Logowanie</button>
+        <button class="btn auth-tab" id="tab-register" type="button">Nowe konto</button>
+      </div>
+      <input type="text" id="auth-username" class="input" placeholder="login (np. emil)" autocomplete="username" />
+      <input type="password" id="auth-password" class="input" placeholder="hasło" autocomplete="current-password" />
+      <input type="text" id="auth-display" class="input hidden" placeholder="imię wyświetlane (np. Emil)" />
+      <button class="btn btn-accent btn-block" id="btn-auth-go" type="button">Zaloguj</button>
+      <p class="muted small" id="auth-error"></p>
+      <p class="muted small">Każde konto ma osobny plan, budzik, egzaminy i ustawienia.</p>
+    </div>
+  </div>
 
   <!-- Overlay alarmu -->
   <div id="alarm-overlay" class="alarm-overlay hidden">

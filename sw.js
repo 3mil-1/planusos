@@ -1,5 +1,5 @@
 /* Service worker – PWA offline */
-const CACHE = "planusos-v11";
+const CACHE = "planusos-v12";
 const ASSETS = [
   ".",
   "index.html",

@@ -10,15 +10,20 @@ Co robi poza serwowaniem plików:
 
 Uruchomienie:  python server.py   →  http://localhost:8000
 """
+import hashlib
 import json
 import os
 import re
+import secrets
 import socket
 import urllib.request
 from datetime import datetime, timedelta, timezone
-from zoneinfo import ZoneInfo
-
-TZ = ZoneInfo("Europe/Warsaw")
+try:
+    from zoneinfo import ZoneInfo
+    TZ = ZoneInfo("Europe/Warsaw")
+except Exception:
+    # Windows bez pakietu tzdata – użyj czasu lokalnego (i tak jest polski)
+    TZ = None
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -26,16 +31,14 @@ from urllib.parse import urlparse, parse_qs
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
 DATA.mkdir(exist_ok=True)
-PROFILES_DIR = DATA / "profiles"
-LEGACY_CONFIG = DATA / "config.json"
-LEGACY_PLAN = DATA / "plan.ics"
+USERS_FILE = DATA / "users.json"
+USERS_DIR = DATA / "users"
+LEGACY_PROFILES = DATA / "profiles"
 PORT = int(os.environ.get("PORT", "8000"))  # hosting (Render itp.) ustawia PORT przez env
-
-DEFAULT_PROFILES = ("osoba1", "osoba2")
 
 DEFAULT_CONFIG = {
     "display_name": "",
-    "usos_url": os.environ.get("USOS_URL", ""),
+    "usos_url": "",
     "alarm_min": 90,
     "alarm_on": True,
     "include_lectures": True,
@@ -46,86 +49,117 @@ DEFAULT_CONFIG = {
 
 # USOS AGH nazywa wykłady "W - Przedmiot" (ale "WF - ..." to nie wykład!)
 LECTURE_RE = re.compile(r"wykład|wyklad|^(w|wyk)\s*-\s", re.IGNORECASE)
-PROFILE_RE = re.compile(r"^[a-z0-9_-]{1,24}$")
+USERNAME_RE = re.compile(r"^[a-z0-9_-]{3,24}$")
 
 
-def sanitize_profile(pid: str) -> str:
-    pid = (pid or "osoba1").strip().lower()
-    return pid if PROFILE_RE.match(pid) else "osoba1"
+# ---------- konta ----------
+
+def load_users() -> dict:
+    try:
+        return json.loads(USERS_FILE.read_text("utf-8"))
+    except Exception:
+        return {}
 
 
-def profile_dir(pid: str) -> Path:
-    d = PROFILES_DIR / sanitize_profile(pid)
+def save_users(users: dict) -> None:
+    USERS_FILE.write_text(json.dumps(users, ensure_ascii=False, indent=2), "utf-8")
+
+
+def hash_pw(password: str, salt_hex: str) -> str:
+    return hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), bytes.fromhex(salt_hex), 200_000).hex()
+
+
+def user_by_token(token: str):
+    """Zwraca nazwę konta dla tokenu sesji albo None."""
+    if not token:
+        return None
+    for name, u in load_users().items():
+        if u.get("token") and secrets.compare_digest(u["token"], token):
+            return name
+    return None
+
+
+def register_user(username: str, password: str, display_name: str):
+    """Zakłada konto. Zwraca (token, błąd)."""
+    username = (username or "").strip().lower()
+    if not USERNAME_RE.match(username):
+        return None, "Login: 3-24 znaki, tylko małe litery, cyfry, - i _"
+    if len(password or "") < 4:
+        return None, "Hasło musi mieć co najmniej 4 znaki"
+    users = load_users()
+    if username in users:
+        return None, "Taki login już istnieje"
+    salt = secrets.token_hex(16)
+    token = secrets.token_hex(24)
+    users[username] = {
+        "salt": salt,
+        "pw_hash": hash_pw(password, salt),
+        "token": token,
+        "display_name": (display_name or "").strip() or username,
+    }
+    save_users(users)
+    _import_legacy_profile(username)
+    cfg = load_config(username)
+    cfg["display_name"] = users[username]["display_name"]
+    save_config(username, cfg)
+    return token, None
+
+
+def login_user(username: str, password: str):
+    """Zwraca (token, błąd)."""
+    username = (username or "").strip().lower()
+    users = load_users()
+    u = users.get(username)
+    if not u or not secrets.compare_digest(u["pw_hash"], hash_pw(password or "", u["salt"])):
+        return None, "Zły login lub hasło"
+    return u["token"], None
+
+
+def _import_legacy_profile(username: str) -> None:
+    """Jeśli istnieje stary profil o tej nazwie (osoba1/osoba2), przejmij jego dane."""
+    old = LEGACY_PROFILES / username
+    if not old.is_dir():
+        return
+    for fn in ("config.json", "plan.ics", "changes.json"):
+        src = old / fn
+        dst = user_dir(username) / fn
+        if src.exists() and not dst.exists():
+            dst.write_text(src.read_text("utf-8"), "utf-8")
+
+
+# ---------- dane konta ----------
+
+def user_dir(username: str) -> Path:
+    if not USERNAME_RE.match(username):
+        raise ValueError("zła nazwa konta")
+    d = USERS_DIR / username
     d.mkdir(parents=True, exist_ok=True)
     return d
 
 
-def config_path(pid: str) -> Path:
-    return profile_dir(pid) / "config.json"
+def config_path(username: str) -> Path:
+    return user_dir(username) / "config.json"
 
 
-def plan_path(pid: str) -> Path:
-    return profile_dir(pid) / "plan.ics"
+def plan_path(username: str) -> Path:
+    return user_dir(username) / "plan.ics"
 
 
-def changes_path(pid: str) -> Path:
-    return profile_dir(pid) / "changes.json"
+def changes_path(username: str) -> Path:
+    return user_dir(username) / "changes.json"
 
 
-def _migrate_legacy() -> None:
-    """Stary pojedynczy config → profil osoba1."""
-    if not LEGACY_CONFIG.exists():
-        return
-    dst = profile_dir("osoba1")
-    if not config_path("osoba1").exists():
-        config_path("osoba1").write_text(LEGACY_CONFIG.read_text("utf-8"), "utf-8")
-    if LEGACY_PLAN.exists() and not plan_path("osoba1").exists():
-        plan_path("osoba1").write_text(LEGACY_PLAN.read_text("utf-8"), "utf-8")
-
-
-def ensure_profiles() -> None:
-    PROFILES_DIR.mkdir(exist_ok=True)
-    _migrate_legacy()
-    for pid in DEFAULT_PROFILES:
-        profile_dir(pid)
-        if not config_path(pid).exists():
-            cfg = dict(DEFAULT_CONFIG)
-            cfg["display_name"] = "Osoba 1" if pid == "osoba1" else "Osoba 2"
-            save_config(pid, cfg)
-
-
-def load_config(pid: str = "osoba1") -> dict:
-    ensure_profiles()
-    pid = sanitize_profile(pid)
+def load_config(username: str) -> dict:
     try:
-        return {**DEFAULT_CONFIG, **json.loads(config_path(pid).read_text("utf-8"))}
+        return {**DEFAULT_CONFIG, **json.loads(config_path(username).read_text("utf-8"))}
     except Exception:
         return dict(DEFAULT_CONFIG)
 
 
-def save_config(pid: str, cfg: dict) -> None:
-    profile_dir(pid)
-    config_path(sanitize_profile(pid)).write_text(
+def save_config(username: str, cfg: dict) -> None:
+    config_path(username).write_text(
         json.dumps(cfg, ensure_ascii=False, indent=2), "utf-8")
-
-
-def list_profiles() -> list[dict]:
-    ensure_profiles()
-    out = []
-    for d in sorted(PROFILES_DIR.iterdir()):
-        if not d.is_dir():
-            continue
-        pid = d.name
-        if not PROFILE_RE.match(pid):
-            continue
-        cfg = load_config(pid)
-        out.append({
-            "id": pid,
-            "display_name": cfg.get("display_name") or pid,
-            "has_plan": plan_path(pid).exists(),
-        })
-    return out or [{"id": "osoba1", "display_name": "Osoba 1", "has_plan": False},
-                   {"id": "osoba2", "display_name": "Osoba 2", "has_plan": False}]
 
 
 def lan_ip() -> str:
@@ -289,7 +323,6 @@ def wake_time_tomorrow(pid: str = "osoba1") -> str:
     Zwraca np. 2026-06-13T10:45:00 (nie samo 10:45), bo Skróty iOS
     bez daty potrafią ustawić 22:45 zamiast 10:45 rano.
     """
-    pid = sanitize_profile(pid)
     cfg = load_config(pid)
     if cfg.get("usos_url"):
         try:
@@ -307,7 +340,6 @@ def wake_time_tomorrow(pid: str = "osoba1") -> str:
 
 
 def build_wake_calendar(pid: str = "osoba1") -> str:
-    pid = sanitize_profile(pid)
     cfg = load_config(pid)
     alarm_min = int(cfg.get("alarm_min", 90))
     events = _filtered_events(cfg, pid)
@@ -373,88 +405,133 @@ class Handler(SimpleHTTPRequestHandler):
         self._send(code, json.dumps(obj, ensure_ascii=False).encode("utf-8"),
                    "application/json; charset=utf-8")
 
-    def _profile(self, parsed) -> str:
-        qs = parse_qs(parsed.query)
-        return sanitize_profile(qs.get("profile", ["osoba1"])[0])
+    def _auth_user(self, parsed):
+        """Konto z nagłówka Authorization: Bearer <token> albo ?token= (dla iOS/kalendarza)."""
+        auth = self.headers.get("Authorization", "")
+        token = auth[7:].strip() if auth.startswith("Bearer ") else ""
+        if not token:
+            qs = parse_qs(parsed.query)
+            token = qs.get("token", [""])[0]
+        return user_by_token(token)
+
+    def _read_body(self):
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+            return json.loads(self.rfile.read(length).decode("utf-8"))
+        except Exception:
+            return None
 
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
-        pid = self._profile(parsed)
         qs = parse_qs(parsed.query)
 
-        if path == "/api/profiles":
-            return self._json(200, {"profiles": list_profiles()})
-
-        if path == "/api/config":
-            cfg = load_config(pid)
-            return self._json(200, cfg | {"profile": pid})
-
         if path == "/api/info":
-            return self._json(200, {"lan_ip": lan_ip(), "port": PORT, "profile": pid})
+            return self._json(200, {"lan_ip": lan_ip(), "port": PORT})
 
-        if path == "/api/plan":
-            cfg = load_config(pid)
-            refresh = qs.get("refresh", ["0"])[0] == "1"
-            cache = plan_path(pid)
-            try:
-                if cfg["usos_url"] and (refresh or not cache.exists()):
-                    text = fetch_usos_plan(cfg["usos_url"], pid)
-                elif cache.exists():
-                    text = cache.read_text("utf-8")
-                else:
-                    return self._json(404, {"error": "Brak skonfigurowanego linku USOS"})
-                return self._send(200, text.encode("utf-8"), "text/calendar; charset=utf-8")
-            except Exception as ex:
+        if path.startswith("/api/") or path.endswith(".ics"):
+            user = self._auth_user(parsed)
+            if not user:
+                return self._json(401, {"error": "Zaloguj się"})
+
+            if path == "/api/me":
+                cfg = load_config(user)
+                users = load_users()
+                return self._json(200, {
+                    "username": user,
+                    "display_name": users.get(user, {}).get("display_name") or user,
+                })
+
+            if path == "/api/config":
+                return self._json(200, load_config(user) | {"username": user})
+
+            if path == "/api/plan":
+                cfg = load_config(user)
+                refresh = qs.get("refresh", ["0"])[0] == "1"
+                cache = plan_path(user)
+                try:
+                    if cfg["usos_url"] and (refresh or not cache.exists()):
+                        text = fetch_usos_plan(cfg["usos_url"], user)
+                    elif cache.exists():
+                        text = cache.read_text("utf-8")
+                    else:
+                        return self._json(404, {"error": "Brak skonfigurowanego linku USOS"})
+                    return self._send(200, text.encode("utf-8"), "text/calendar; charset=utf-8")
+                except Exception as ex:
+                    if cache.exists():
+                        return self._send(200, cache.read_text("utf-8").encode("utf-8"),
+                                          "text/calendar; charset=utf-8")
+                    return self._json(502, {"error": f"Nie udało się pobrać planu: {ex}"})
+
+            if path == "/api/changes":
+                return self._json(200, {"batches": load_changes(user)})
+
+            if path == "/api/wake-tomorrow":
+                return self._send(200, wake_time_tomorrow(user).encode("utf-8"),
+                                  "text/plain; charset=utf-8")
+
+            if path == "/pobudki.ics":
+                return self._send(200, build_wake_calendar(user).encode("utf-8"),
+                                  "text/calendar; charset=utf-8")
+
+            if path == "/plan.ics":
+                cache = plan_path(user)
                 if cache.exists():
                     return self._send(200, cache.read_text("utf-8").encode("utf-8"),
                                       "text/calendar; charset=utf-8")
-                return self._json(502, {"error": f"Nie udało się pobrać planu: {ex}"})
+                return self._json(404, {"error": "Brak planu"})
 
-        if path == "/api/changes":
-            return self._json(200, {"batches": load_changes(pid), "profile": pid})
-
-        if path == "/api/wake-tomorrow":
-            return self._send(200, wake_time_tomorrow(pid).encode("utf-8"),
-                              "text/plain; charset=utf-8")
-
-        if path == "/pobudki.ics":
-            return self._send(200, build_wake_calendar(pid).encode("utf-8"),
-                              "text/calendar; charset=utf-8")
-
-        if path == "/plan.ics":
-            cache = plan_path(pid)
-            if cache.exists():
-                return self._send(200, cache.read_text("utf-8").encode("utf-8"),
-                                  "text/calendar; charset=utf-8")
-            return self._json(404, {"error": "Brak planu"})
+            return self._json(404, {"error": "Nie ma takiego endpointu"})
 
         return super().do_GET()
 
     def do_POST(self):
         parsed = urlparse(self.path)
-        if parsed.path == "/api/config":
-            pid = self._profile(parsed)
-            try:
-                length = int(self.headers.get("Content-Length", 0))
-                incoming = json.loads(self.rfile.read(length).decode("utf-8"))
-            except Exception:
+        path = parsed.path
+
+        if path == "/api/register":
+            body = self._read_body() or {}
+            token, err = register_user(body.get("username"), body.get("password"),
+                                       body.get("display_name"))
+            if err:
+                return self._json(400, {"error": err})
+            return self._json(200, {"token": token, "username": body.get("username", "").strip().lower()})
+
+        if path == "/api/login":
+            body = self._read_body() or {}
+            token, err = login_user(body.get("username"), body.get("password"))
+            if err:
+                return self._json(401, {"error": err})
+            return self._json(200, {"token": token, "username": body.get("username", "").strip().lower()})
+
+        if path == "/api/config":
+            user = self._auth_user(parsed)
+            if not user:
+                return self._json(401, {"error": "Zaloguj się"})
+            incoming = self._read_body()
+            if incoming is None:
                 return self._json(400, {"error": "Złe dane"})
-            cfg = load_config(pid)
+            cfg = load_config(user)
             for key in ("display_name", "usos_url", "alarm_min", "alarm_on", "include_lectures",
                         "skip_limit", "skips", "exams"):
                 if key in incoming:
                     cfg[key] = incoming[key]
-            save_config(pid, cfg)
-            result = {"ok": True, "profile": pid}
+            save_config(user, cfg)
+            if incoming.get("display_name"):
+                users = load_users()
+                if user in users:
+                    users[user]["display_name"] = incoming["display_name"].strip()
+                    save_users(users)
+            result = {"ok": True}
             if incoming.get("usos_url"):
                 try:
-                    fetch_usos_plan(cfg["usos_url"], pid)
+                    fetch_usos_plan(cfg["usos_url"], user)
                     result["synced"] = True
                 except Exception as ex:
                     result["synced"] = False
                     result["sync_error"] = str(ex)
             return self._json(200, cfg | result)
+
         return self._json(404, {"error": "Nie ma takiego endpointu"})
 
 
