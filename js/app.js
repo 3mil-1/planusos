@@ -890,7 +890,8 @@ function wakeUrl() {
   const host = serverInfo && ["localhost", "127.0.0.1"].includes(location.hostname)
     ? `${serverInfo.lan_ip}:${serverInfo.port}`
     : location.host;
-  return `http://${host}/api/wake-tomorrow`;
+  const proto = ["localhost", "127.0.0.1"].includes(location.hostname) ? "http" : location.protocol.replace(":", "");
+  return `${proto}://${host}/api/wake-tomorrow`;
 }
 
 function refreshWebcalUi() {
@@ -906,7 +907,7 @@ function refreshWebcalUi() {
   } else if (["localhost", "127.0.0.1"].includes(location.hostname)) {
     hint.textContent = `Na telefonie otwórz: http://${serverInfo.lan_ip}:${serverInfo.port} (to samo Wi-Fi) i stuknij „Subskrybuj pobudki”.`;
   } else {
-    hint.textContent = "Stuknij przycisk – telefon doda kalendarz z pobudkami.";
+    hint.textContent = "Stuknij przycisk – telefon doda kalendarz z pobudkami. Na Renderze działa z LTE – komputer nie musi być włączony.";
   }
 }
 
