@@ -16,6 +16,9 @@ import re
 import socket
 import urllib.request
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+
+TZ = ZoneInfo("Europe/Warsaw")
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -203,22 +206,30 @@ def _filtered_events(cfg: dict) -> list[dict]:
     return events + _exam_events(cfg)
 
 
+def _now_pl() -> datetime:
+    return datetime.now(TZ)
+
+
 def wake_time_tomorrow() -> str:
-    """Godzina pobudki na jutro (HH:MM) albo BRAK – dla automatyzacji Skrótów iOS."""
+    """Pobudka na jutro – pełna data+czas (Warszawa) albo BRAK.
+
+    Zwraca np. 2026-06-13T10:45:00 (nie samo 10:45), bo Skróty iOS
+    bez daty potrafią ustawić 22:45 zamiast 10:45 rano.
+    """
     cfg = load_config()
-    # spróbuj odświeżyć plan, żeby automatyzacja wieczorna miała świeże dane
     if cfg.get("usos_url"):
         try:
             fetch_usos_plan(cfg["usos_url"])
         except Exception:
-            pass  # zostanie cache
+            pass
     events = _filtered_events(cfg)
-    tomorrow = (datetime.now() + timedelta(days=1)).date()
+    now = _now_pl()
+    tomorrow = (now + timedelta(days=1)).date()
     starts = [e["start"] for e in events if e["start"].date() == tomorrow]
     if not starts:
         return "BRAK"
     wake = min(starts) - timedelta(minutes=int(cfg.get("alarm_min", 90)))
-    return wake.strftime("%H:%M")
+    return wake.strftime("%Y-%m-%dT%H:%M:00")
 
 
 def build_wake_calendar() -> str:

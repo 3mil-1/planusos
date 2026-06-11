@@ -179,9 +179,11 @@
         <button class="btn btn-mini" id="btn-copy-wake-url" type="button">Kopiuj</button>
       </li>
       <li>Dodaj akcję <b>Jeżeli</b> → „Zawartość URL” → <b>nie zawiera</b> → wpisz: <b>BRAK</b></li>
-      <li>Między „Jeżeli” a „Koniec jeżeli” dodaj akcję <b>Dodaj alarm</b>: w polu godziny
-        wybierz zmienną <b>Zawartość URL</b>, a w polu <b>Etykieta</b> wpisz
-        <code>PlanUSOS pobudka</code> (ta sama etykieta, po której kasujemy w punkcie 3)</li>
+      <li>W gałęzi „Jeżeli” dodaj <b>Konwertuj tekst na datę</b> → wejście: <b>Zawartość URL</b>
+        (serwer zwraca np. <code>2026-06-13T10:45:00</code> – bez tego Skróty ustawiają
+        <b>22:45 zamiast 10:45</b> rano!)</li>
+      <li>Potem <b>Dodaj alarm</b>: godzina = zmienna <b>Data</b> (z konwersji, NIE surowy tekst URL),
+        etykieta: <code>PlanUSOS pobudka</code></li>
     </ol>
     <p class="muted small">
       Od teraz co wieczór o 21:00 telefon kasuje stary budzik PlanUSOS i ustawia jeden nowy na
