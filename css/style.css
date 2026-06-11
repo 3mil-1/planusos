@@ -69,7 +69,19 @@ h1, h2, h3, .brand-mark, .tt-title { font-family: "Arial Black", "Segoe UI Black
   box-shadow: var(--shadow-sm);
 }
 
-.topbar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.topbar-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+.profile-select {
+  background: var(--yellow);
+  color: var(--ink);
+  border: var(--bw) solid var(--ink);
+  padding: 8px 10px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  max-width: 140px;
+}
 
 /* ===== Przyciski ===== */
 .btn {

@@ -4,6 +4,10 @@
 // ===================== Stan =====================
 const LS_EVENTS = "planusos.events";
 const LS_SETTINGS = "planusos.settings";
+const LS_PROFILE = "planusos.profile";
+
+let profileId = localStorage.getItem(LS_PROFILE) || "osoba1";
+let profiles = [];  // [{id, display_name}]
 
 let events = [];          // {start: Date, end: Date, summary, location, type}
 let weekStart = startOfWeek(new Date());
@@ -269,10 +273,54 @@ function loadSettings() {
   } catch { /* domyślne */ }
 }
 
+// ===================== Profile (2 osoby, bez haseł) =====================
+function apiQ(extra = "") {
+  const sep = extra.includes("?") ? "&" : (extra ? "?" : "?");
+  const base = extra || "";
+  return `${base}${sep}profile=${encodeURIComponent(profileId)}`;
+}
+
+function saveProfile() {
+  localStorage.setItem(LS_PROFILE, profileId);
+  const u = new URL(location.href);
+  u.searchParams.set("profile", profileId);
+  history.replaceState(null, "", u);
+}
+
+async function loadProfiles() {
+  try {
+    const r = await fetch("/api/profiles", { cache: "no-store" });
+    if (r.ok) profiles = (await r.json()).profiles;
+  } catch { profiles = [{ id: "osoba1", display_name: "Osoba 1" }, { id: "osoba2", display_name: "Osoba 2" }]; }
+  const sel = document.getElementById("profile-select");
+  if (!sel) return;
+  sel.innerHTML = profiles.map(p =>
+    `<option value="${p.id}">${escapeHtml(p.display_name || p.id)}</option>`
+  ).join("");
+  sel.value = profileId;
+}
+
+async function switchProfile(newId) {
+  profileId = newId;
+  saveProfile();
+  events = [];
+  skips = new Set();
+  exams = [];
+  localStorage.removeItem(LS_EVENTS);
+  loadSkips();
+  loadExams();
+  await initServer();
+  if (serverMode && usosUrl) await syncPlan(true);
+  else renderAll();
+  checkChanges();
+  refreshWebcalUi();
+  toast(`Profil: ${profiles.find(p => p.id === profileId)?.display_name || profileId}`);
+}
+
 // ===================== Serwer: konfiguracja i synchronizacja =====================
 async function initServer() {
   try {
-    const r = await fetch("/api/config", { cache: "no-store" });
+    const r = await fetch(apiQ("/api/config"), { cache: "no-store" });
     if (!r.ok) throw 0;
     const cfg = await r.json();
     serverMode = true;
@@ -280,6 +328,10 @@ async function initServer() {
     if (typeof cfg.alarm_min === "number") settings.alarmMin = cfg.alarm_min;
     if (typeof cfg.include_lectures === "boolean") settings.lecturesCount = cfg.include_lectures;
     if (typeof cfg.skip_limit === "number") settings.skipLimit = cfg.skip_limit;
+    if (cfg.display_name) {
+      const p = profiles.find(x => x.id === profileId);
+      if (p) p.display_name = cfg.display_name;
+    }
     if (Array.isArray(cfg.skips)) {
       for (const k of cfg.skips) skips.add(k); // scal pominięcia z innych urządzeń
       saveSkips();
@@ -310,7 +362,7 @@ async function syncPlan(force) {
   if (!usosUrl && !force) return false;
   syncBar("Synchronizuję plan z USOS…");
   try {
-    const r = await fetch("/api/plan" + (force ? "?refresh=1" : ""), { cache: "no-store" });
+    const r = await fetch(apiQ("/api/plan" + (force ? "?refresh=1" : "")), { cache: "no-store" });
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
       throw new Error(err.error || ("HTTP " + r.status));
@@ -331,10 +383,10 @@ async function syncPlan(force) {
   }
 }
 
-async function pushConfig() {
+async function pushConfig(extra = {}) {
   if (!serverMode) return null;
   try {
-    const r = await fetch("/api/config", {
+    const r = await fetch(apiQ("/api/config"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -345,6 +397,7 @@ async function pushConfig() {
         skip_limit: settings.skipLimit,
         skips: [...skips],
         exams,
+        ...extra,
       }),
     });
     return await r.json();
@@ -699,7 +752,7 @@ const LS_CHANGES_SEEN = "planusos.changesSeen";
 async function checkChanges() {
   if (!serverMode) return;
   try {
-    const r = await fetch("/api/changes", { cache: "no-store" });
+    const r = await fetch(apiQ("/api/changes"), { cache: "no-store" });
     if (!r.ok) return;
     const { batches } = await r.json();
     if (!batches.length) return;
@@ -891,7 +944,7 @@ function wakeUrl() {
     ? `${serverInfo.lan_ip}:${serverInfo.port}`
     : location.host;
   const proto = ["localhost", "127.0.0.1"].includes(location.hostname) ? "http" : location.protocol.replace(":", "");
-  return `${proto}://${host}/api/wake-tomorrow`;
+  return `${proto}://${host}/api/wake-tomorrow?profile=${encodeURIComponent(profileId)}`;
 }
 
 function refreshWebcalUi() {
@@ -899,8 +952,8 @@ function refreshWebcalUi() {
   const plan = document.getElementById("link-webcal-plan");
   const hint = document.getElementById("webcal-hint");
   const base = webcalBase();
-  wake.href = `${base}/pobudki.ics`;
-  plan.href = `${base}/plan.ics`;
+  wake.href = `${base}/pobudki.ics?profile=${encodeURIComponent(profileId)}`;
+  plan.href = `${base}/plan.ics?profile=${encodeURIComponent(profileId)}`;
   document.getElementById("wake-url").textContent = wakeUrl();
   if (!serverMode) {
     hint.textContent = "Uruchom aplikację przez server.py, żeby subskrypcja działała.";
@@ -949,6 +1002,7 @@ function renderExamList() {
 function openSettings() {
   const $ = id => document.getElementById(id);
   $("set-usos-url").value = usosUrl;
+  $("set-display-name").value = (profiles.find(p => p.id === profileId)?.display_name) || "";
   $("set-reminders").checked = settings.remindersOn;
   $("set-reminder-min").value = settings.reminderMin;
   $("set-alarm").checked = settings.alarmOn;
@@ -968,6 +1022,7 @@ function openSettings() {
 async function saveSettingsFromDialog() {
   const $ = id => document.getElementById(id);
   usosUrl = $("set-usos-url").value.trim();
+  const displayName = $("set-display-name").value.trim();
   settings.remindersOn = $("set-reminders").checked;
   settings.reminderMin = Math.max(1, +$("set-reminder-min").value || 15);
   settings.alarmOn = $("set-alarm").checked;
@@ -979,7 +1034,12 @@ async function saveSettingsFromDialog() {
   document.getElementById("dlg-settings").close();
 
   if (serverMode) {
-    const res = await pushConfig();
+    const res = await pushConfig({ display_name: displayName });
+    if (displayName) {
+      const p = profiles.find(x => x.id === profileId);
+      if (p) p.display_name = displayName;
+      document.getElementById("profile-select").querySelector(`option[value="${profileId}"]`).textContent = displayName;
+    }
     if (res && res.sync_error) {
       toast("Zapisano, ale USOS nie odpowiada: " + res.sync_error);
     } else {
@@ -994,6 +1054,8 @@ async function saveSettingsFromDialog() {
 
 function bindUi() {
   const $ = id => document.getElementById(id);
+
+  $("profile-select").onchange = e => switchProfile(e.target.value);
 
   $("btn-prev-week").onclick = () => { weekStart = addDays(weekStart, -7); renderWeek(); };
   $("btn-next-week").onclick = () => { weekStart = addDays(weekStart, 7); renderWeek(); };
@@ -1098,6 +1160,9 @@ function bindUi() {
 }
 
 async function init() {
+  const urlP = new URLSearchParams(location.search).get("profile");
+  if (urlP) { profileId = urlP; saveProfile(); }
+
   loadSettings();
   loadEvents();
   loadSkips();
@@ -1106,6 +1171,7 @@ async function init() {
   renderAll();
   updateStudyUI();
 
+  await loadProfiles();
   await initServer();
   if (serverMode && usosUrl) await syncPlan(true);
   checkChanges();

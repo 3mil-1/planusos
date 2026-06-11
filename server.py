@@ -26,12 +26,15 @@ from urllib.parse import urlparse, parse_qs
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
 DATA.mkdir(exist_ok=True)
-CONFIG_FILE = DATA / "config.json"
-PLAN_CACHE = DATA / "plan.ics"
-CHANGES_FILE = DATA / "changes.json"
+PROFILES_DIR = DATA / "profiles"
+LEGACY_CONFIG = DATA / "config.json"
+LEGACY_PLAN = DATA / "plan.ics"
 PORT = int(os.environ.get("PORT", "8000"))  # hosting (Render itp.) ustawia PORT przez env
 
+DEFAULT_PROFILES = ("osoba1", "osoba2")
+
 DEFAULT_CONFIG = {
+    "display_name": "",
     "usos_url": os.environ.get("USOS_URL", ""),
     "alarm_min": 90,
     "alarm_on": True,
@@ -43,17 +46,86 @@ DEFAULT_CONFIG = {
 
 # USOS AGH nazywa wykłady "W - Przedmiot" (ale "WF - ..." to nie wykład!)
 LECTURE_RE = re.compile(r"wykład|wyklad|^(w|wyk)\s*-\s", re.IGNORECASE)
+PROFILE_RE = re.compile(r"^[a-z0-9_-]{1,24}$")
 
 
-def load_config() -> dict:
+def sanitize_profile(pid: str) -> str:
+    pid = (pid or "osoba1").strip().lower()
+    return pid if PROFILE_RE.match(pid) else "osoba1"
+
+
+def profile_dir(pid: str) -> Path:
+    d = PROFILES_DIR / sanitize_profile(pid)
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def config_path(pid: str) -> Path:
+    return profile_dir(pid) / "config.json"
+
+
+def plan_path(pid: str) -> Path:
+    return profile_dir(pid) / "plan.ics"
+
+
+def changes_path(pid: str) -> Path:
+    return profile_dir(pid) / "changes.json"
+
+
+def _migrate_legacy() -> None:
+    """Stary pojedynczy config → profil osoba1."""
+    if not LEGACY_CONFIG.exists():
+        return
+    dst = profile_dir("osoba1")
+    if not config_path("osoba1").exists():
+        config_path("osoba1").write_text(LEGACY_CONFIG.read_text("utf-8"), "utf-8")
+    if LEGACY_PLAN.exists() and not plan_path("osoba1").exists():
+        plan_path("osoba1").write_text(LEGACY_PLAN.read_text("utf-8"), "utf-8")
+
+
+def ensure_profiles() -> None:
+    PROFILES_DIR.mkdir(exist_ok=True)
+    _migrate_legacy()
+    for pid in DEFAULT_PROFILES:
+        profile_dir(pid)
+        if not config_path(pid).exists():
+            cfg = dict(DEFAULT_CONFIG)
+            cfg["display_name"] = "Osoba 1" if pid == "osoba1" else "Osoba 2"
+            save_config(pid, cfg)
+
+
+def load_config(pid: str = "osoba1") -> dict:
+    ensure_profiles()
+    pid = sanitize_profile(pid)
     try:
-        return {**DEFAULT_CONFIG, **json.loads(CONFIG_FILE.read_text("utf-8"))}
+        return {**DEFAULT_CONFIG, **json.loads(config_path(pid).read_text("utf-8"))}
     except Exception:
         return dict(DEFAULT_CONFIG)
 
 
-def save_config(cfg: dict) -> None:
-    CONFIG_FILE.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), "utf-8")
+def save_config(pid: str, cfg: dict) -> None:
+    profile_dir(pid)
+    config_path(sanitize_profile(pid)).write_text(
+        json.dumps(cfg, ensure_ascii=False, indent=2), "utf-8")
+
+
+def list_profiles() -> list[dict]:
+    ensure_profiles()
+    out = []
+    for d in sorted(PROFILES_DIR.iterdir()):
+        if not d.is_dir():
+            continue
+        pid = d.name
+        if not PROFILE_RE.match(pid):
+            continue
+        cfg = load_config(pid)
+        out.append({
+            "id": pid,
+            "display_name": cfg.get("display_name") or pid,
+            "has_plan": plan_path(pid).exists(),
+        })
+    return out or [{"id": "osoba1", "display_name": "Osoba 1", "has_plan": False},
+                   {"id": "osoba2", "display_name": "Osoba 2", "has_plan": False}]
 
 
 def lan_ip() -> str:
@@ -67,7 +139,7 @@ def lan_ip() -> str:
         return "localhost"
 
 
-def fetch_usos_plan(url: str) -> str:
+def fetch_usos_plan(url: str, pid: str = "osoba1") -> str:
     if url.startswith("webcal://"):
         url = "https://" + url[len("webcal://"):]
     req = urllib.request.Request(url, headers={"User-Agent": "PlanUSOS/1.0"})
@@ -75,10 +147,11 @@ def fetch_usos_plan(url: str) -> str:
         text = r.read().decode("utf-8", errors="replace")
     if "BEGIN:VCALENDAR" not in text:
         raise ValueError("Pod tym adresem nie ma kalendarza iCal")
-    old_text = PLAN_CACHE.read_text("utf-8") if PLAN_CACHE.exists() else ""
+    cache = plan_path(pid)
+    old_text = cache.read_text("utf-8") if cache.exists() else ""
     if old_text and old_text != text:
-        record_changes(old_text, text)
-    PLAN_CACHE.write_text(text, "utf-8")
+        record_changes(old_text, text, pid)
+    cache.write_text(text, "utf-8")
     return text
 
 
@@ -130,7 +203,7 @@ def _ev_key(e: dict) -> str:
     return f"{e['summary']}|{e['start'].strftime('%Y%m%dT%H%M%S')}"
 
 
-def record_changes(old_text: str, new_text: str) -> None:
+def record_changes(old_text: str, new_text: str, pid: str = "osoba1") -> None:
     """Porównuje stary i nowy plan, zapisuje sensowne różnice (bez szumu z przesuwania okna USOS)."""
     try:
         old = parse_events(old_text)
@@ -161,18 +234,18 @@ def record_changes(old_text: str, new_text: str) -> None:
         if not items:
             return
         try:
-            batches = json.loads(CHANGES_FILE.read_text("utf-8"))
+            batches = json.loads(changes_path(pid).read_text("utf-8"))
         except Exception:
             batches = []
         batches.append({"ts": now.isoformat(timespec="seconds"), "items": items})
-        CHANGES_FILE.write_text(json.dumps(batches[-10:], ensure_ascii=False, indent=2), "utf-8")
+        changes_path(pid).write_text(json.dumps(batches[-10:], ensure_ascii=False, indent=2), "utf-8")
     except Exception:
         pass  # diff nie może wywrócić synchronizacji
 
 
-def load_changes() -> list:
+def load_changes(pid: str = "osoba1") -> list:
     try:
-        return json.loads(CHANGES_FILE.read_text("utf-8"))
+        return json.loads(changes_path(pid).read_text("utf-8"))
     except Exception:
         return []
 
@@ -190,11 +263,11 @@ def _exam_events(cfg: dict) -> list[dict]:
     return out
 
 
-def _filtered_events(cfg: dict) -> list[dict]:
+def _filtered_events(cfg: dict, pid: str = "osoba1") -> list[dict]:
     """Zajęcia liczone do pobudki: bez wykładów (jeśli wyłączone) i bez pominiętych.
     Egzaminy/kolokwia zawsze się liczą."""
     try:
-        events = parse_events(PLAN_CACHE.read_text("utf-8"))
+        events = parse_events(plan_path(pid).read_text("utf-8"))
     except Exception:
         events = []
     if not cfg.get("include_lectures", True):
@@ -210,19 +283,20 @@ def _now_pl() -> datetime:
     return datetime.now(TZ)
 
 
-def wake_time_tomorrow() -> str:
+def wake_time_tomorrow(pid: str = "osoba1") -> str:
     """Pobudka na jutro – pełna data+czas (Warszawa) albo BRAK.
 
     Zwraca np. 2026-06-13T10:45:00 (nie samo 10:45), bo Skróty iOS
     bez daty potrafią ustawić 22:45 zamiast 10:45 rano.
     """
-    cfg = load_config()
+    pid = sanitize_profile(pid)
+    cfg = load_config(pid)
     if cfg.get("usos_url"):
         try:
-            fetch_usos_plan(cfg["usos_url"])
+            fetch_usos_plan(cfg["usos_url"], pid)
         except Exception:
             pass
-    events = _filtered_events(cfg)
+    events = _filtered_events(cfg, pid)
     now = _now_pl()
     tomorrow = (now + timedelta(days=1)).date()
     starts = [e["start"] for e in events if e["start"].date() == tomorrow]
@@ -232,10 +306,12 @@ def wake_time_tomorrow() -> str:
     return wake.strftime("%Y-%m-%dT%H:%M:00")
 
 
-def build_wake_calendar() -> str:
-    cfg = load_config()
+def build_wake_calendar(pid: str = "osoba1") -> str:
+    pid = sanitize_profile(pid)
+    cfg = load_config(pid)
     alarm_min = int(cfg.get("alarm_min", 90))
-    events = _filtered_events(cfg)
+    events = _filtered_events(cfg, pid)
+    label = cfg.get("display_name") or pid
 
     now = datetime.now()
     first_per_day: dict[str, datetime] = {}
@@ -251,7 +327,7 @@ def build_wake_calendar() -> str:
         "VERSION:2.0",
         "PRODID:-//PlanUSOS//Pobudki//PL",
         "CALSCALE:GREGORIAN",
-        "X-WR-CALNAME:⏰ Pobudki (PlanUSOS)",
+        f"X-WR-CALNAME:Pobudki PlanUSOS ({label})",
         "REFRESH-INTERVAL;VALUE=DURATION:PT6H",
         "X-PUBLISHED-TTL:PT6H",
     ]
@@ -297,72 +373,83 @@ class Handler(SimpleHTTPRequestHandler):
         self._send(code, json.dumps(obj, ensure_ascii=False).encode("utf-8"),
                    "application/json; charset=utf-8")
 
+    def _profile(self, parsed) -> str:
+        qs = parse_qs(parsed.query)
+        return sanitize_profile(qs.get("profile", ["osoba1"])[0])
+
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
+        pid = self._profile(parsed)
+        qs = parse_qs(parsed.query)
+
+        if path == "/api/profiles":
+            return self._json(200, {"profiles": list_profiles()})
 
         if path == "/api/config":
-            return self._json(200, load_config())
+            cfg = load_config(pid)
+            return self._json(200, cfg | {"profile": pid})
 
         if path == "/api/info":
-            return self._json(200, {"lan_ip": lan_ip(), "port": PORT})
+            return self._json(200, {"lan_ip": lan_ip(), "port": PORT, "profile": pid})
 
         if path == "/api/plan":
-            cfg = load_config()
-            qs = parse_qs(parsed.query)
+            cfg = load_config(pid)
             refresh = qs.get("refresh", ["0"])[0] == "1"
+            cache = plan_path(pid)
             try:
-                if cfg["usos_url"] and (refresh or not PLAN_CACHE.exists()):
-                    text = fetch_usos_plan(cfg["usos_url"])
-                elif PLAN_CACHE.exists():
-                    text = PLAN_CACHE.read_text("utf-8")
+                if cfg["usos_url"] and (refresh or not cache.exists()):
+                    text = fetch_usos_plan(cfg["usos_url"], pid)
+                elif cache.exists():
+                    text = cache.read_text("utf-8")
                 else:
                     return self._json(404, {"error": "Brak skonfigurowanego linku USOS"})
                 return self._send(200, text.encode("utf-8"), "text/calendar; charset=utf-8")
             except Exception as ex:
-                # gdy USOS nie odpowiada, oddaj cache jeśli jest
-                if PLAN_CACHE.exists():
-                    return self._send(200, PLAN_CACHE.read_text("utf-8").encode("utf-8"),
+                if cache.exists():
+                    return self._send(200, cache.read_text("utf-8").encode("utf-8"),
                                       "text/calendar; charset=utf-8")
                 return self._json(502, {"error": f"Nie udało się pobrać planu: {ex}"})
 
         if path == "/api/changes":
-            return self._json(200, {"batches": load_changes()})
+            return self._json(200, {"batches": load_changes(pid), "profile": pid})
 
         if path == "/api/wake-tomorrow":
-            return self._send(200, wake_time_tomorrow().encode("utf-8"),
+            return self._send(200, wake_time_tomorrow(pid).encode("utf-8"),
                               "text/plain; charset=utf-8")
 
         if path == "/pobudki.ics":
-            return self._send(200, build_wake_calendar().encode("utf-8"),
+            return self._send(200, build_wake_calendar(pid).encode("utf-8"),
                               "text/calendar; charset=utf-8")
 
         if path == "/plan.ics":
-            if PLAN_CACHE.exists():
-                return self._send(200, PLAN_CACHE.read_text("utf-8").encode("utf-8"),
+            cache = plan_path(pid)
+            if cache.exists():
+                return self._send(200, cache.read_text("utf-8").encode("utf-8"),
                                   "text/calendar; charset=utf-8")
             return self._json(404, {"error": "Brak planu"})
 
         return super().do_GET()
 
     def do_POST(self):
-        if urlparse(self.path).path == "/api/config":
+        parsed = urlparse(self.path)
+        if parsed.path == "/api/config":
+            pid = self._profile(parsed)
             try:
                 length = int(self.headers.get("Content-Length", 0))
                 incoming = json.loads(self.rfile.read(length).decode("utf-8"))
             except Exception:
                 return self._json(400, {"error": "Złe dane"})
-            cfg = load_config()
-            for key in ("usos_url", "alarm_min", "alarm_on", "include_lectures",
+            cfg = load_config(pid)
+            for key in ("display_name", "usos_url", "alarm_min", "alarm_on", "include_lectures",
                         "skip_limit", "skips", "exams"):
                 if key in incoming:
                     cfg[key] = incoming[key]
-            save_config(cfg)
-            # od razu spróbuj pobrać plan z nowego linku
-            result = {"ok": True}
+            save_config(pid, cfg)
+            result = {"ok": True, "profile": pid}
             if incoming.get("usos_url"):
                 try:
-                    fetch_usos_plan(cfg["usos_url"])
+                    fetch_usos_plan(cfg["usos_url"], pid)
                     result["synced"] = True
                 except Exception as ex:
                     result["synced"] = False

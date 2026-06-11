@@ -20,6 +20,7 @@
       <span class="brand-mark">PLAN</span><span class="brand-mark mark-2">USOS</span>
     </div>
     <div class="topbar-actions">
+      <select id="profile-select" class="profile-select" title="Kto korzysta z aplikacji"></select>
       <button id="btn-sync" class="btn" title="Pobierz świeży plan z USOS">Synchronizuj</button>
       <button id="btn-png" class="btn">Pobierz PNG</button>
       <button id="btn-settings" class="btn btn-accent">Ustawienia</button>
@@ -110,6 +111,18 @@
   <!-- Modal: ustawienia / połączenie -->
   <dialog id="dlg-settings" class="dialog">
     <h2>Ustawienia</h2>
+
+    <h3>Twoje konto (bez hasła)</h3>
+    <p class="muted small">
+      Każda osoba ma <b>osobny profil</b> – własny plan, budzik i ustawienia.
+      Wybierz profil u góry strony. Na iPhonie każdy ma swój link budzika
+      (z parametrem <code>?profile=osoba1</code> lub <code>osoba2</code>).
+      Bez haseł – to luźne konto dla Was dwojga.
+    </p>
+    <label class="row">
+      <span>Twoje imię (wyświetlane):</span>
+      <input type="text" id="set-display-name" class="input" placeholder="np. Emil" />
+    </label>
 
     <h3>Połączenie z USOS</h3>
     <p class="muted small">
