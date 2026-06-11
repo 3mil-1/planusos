@@ -9,6 +9,9 @@ const LS_PROFILE = "planusos.profile";
 let profileId = localStorage.getItem(LS_PROFILE) || "osoba1";
 let profiles = [];  // [{id, display_name}]
 
+// dane (plan, pominięcia, egzaminy) trzymamy OSOBNO per profil
+function lsKey(base) { return `${base}.${profileId}`; }
+
 let events = [];          // {start: Date, end: Date, summary, location, type}
 let weekStart = startOfWeek(new Date());
 let settings = {
@@ -170,9 +173,9 @@ function skipsUsedFor(summary) {
   for (const k of skips) if (k.startsWith(summary + "|")) n++;
   return n;
 }
-function saveSkips() { localStorage.setItem(LS_SKIPS, JSON.stringify([...skips])); }
+function saveSkips() { localStorage.setItem(lsKey(LS_SKIPS), JSON.stringify([...skips])); }
 function loadSkips() {
-  try { skips = new Set(JSON.parse(localStorage.getItem(LS_SKIPS) || "[]")); }
+  try { skips = new Set(JSON.parse(localStorage.getItem(lsKey(LS_SKIPS)) || "[]")); }
   catch { skips = new Set(); }
 }
 
@@ -213,11 +216,11 @@ const LS_EXAMS = "planusos.exams";
 let exams = []; // {id, summary, start "YYYY-MM-DDTHH:MM", durationMin}
 
 function saveExams() {
-  localStorage.setItem(LS_EXAMS, JSON.stringify(exams));
+  localStorage.setItem(lsKey(LS_EXAMS), JSON.stringify(exams));
   pushConfig();
 }
 function loadExams() {
-  try { exams = JSON.parse(localStorage.getItem(LS_EXAMS) || "[]"); }
+  try { exams = JSON.parse(localStorage.getItem(lsKey(LS_EXAMS)) || "[]"); }
   catch { exams = []; }
 }
 function examEvents() {
@@ -254,14 +257,14 @@ function activeEvents() {
 
 // ===================== Pamięć lokalna =====================
 function saveEvents() {
-  localStorage.setItem(LS_EVENTS, JSON.stringify(events.map(e => ({
+  localStorage.setItem(lsKey(LS_EVENTS), JSON.stringify(events.map(e => ({
     ...e, start: e.start.toISOString(), end: e.end.toISOString(),
   }))));
 }
 function loadEvents() {
   try {
-    const raw = localStorage.getItem(LS_EVENTS);
-    if (!raw) return;
+    const raw = localStorage.getItem(lsKey(LS_EVENTS));
+    if (!raw) { events = []; return; }
     events = JSON.parse(raw).map(e => ({ ...e, start: new Date(e.start), end: new Date(e.end) }));
   } catch { events = []; }
 }
@@ -303,12 +306,15 @@ async function loadProfiles() {
 async function switchProfile(newId) {
   profileId = newId;
   saveProfile();
+  // czysty start – dane nowego profilu wczytujemy z JEGO kluczy i z serwera
   events = [];
   skips = new Set();
   exams = [];
-  localStorage.removeItem(LS_EVENTS);
+  usosUrl = "";
+  loadEvents();
   loadSkips();
   loadExams();
+  renderAll();
   await initServer();
   if (serverMode && usosUrl) await syncPlan(true);
   else renderAll();
@@ -332,15 +338,15 @@ async function initServer() {
       const p = profiles.find(x => x.id === profileId);
       if (p) p.display_name = cfg.display_name;
     }
+    // serwer jest źródłem prawdy dla profilu – ZASTĘPUJEMY, nie scalamy
+    // (scalanie powodowało przeciekanie egzaminów/pominięć między profilami)
     if (Array.isArray(cfg.skips)) {
-      for (const k of cfg.skips) skips.add(k); // scal pominięcia z innych urządzeń
-      saveSkips();
+      skips = new Set(cfg.skips);
+      localStorage.setItem(lsKey(LS_SKIPS), JSON.stringify([...skips]));
     }
-    if (Array.isArray(cfg.exams) && cfg.exams.length) {
-      // scal terminy z serwera (po id)
-      const ids = new Set(exams.map(x => x.id));
-      for (const ex of cfg.exams) if (!ids.has(ex.id)) exams.push(ex);
-      localStorage.setItem(LS_EXAMS, JSON.stringify(exams));
+    if (Array.isArray(cfg.exams)) {
+      exams = cfg.exams;
+      localStorage.setItem(lsKey(LS_EXAMS), JSON.stringify(exams));
     }
     const ri = await fetch("/api/info", { cache: "no-store" });
     if (ri.ok) serverInfo = await ri.json();
@@ -756,7 +762,7 @@ async function checkChanges() {
     if (!r.ok) return;
     const { batches } = await r.json();
     if (!batches.length) return;
-    const seen = localStorage.getItem(LS_CHANGES_SEEN) || "";
+    const seen = localStorage.getItem(lsKey(LS_CHANGES_SEEN)) || "";
     const fresh = batches.filter(b => b.ts > seen);
     if (!fresh.length) return;
     const items = fresh.flatMap(b => b.items);
@@ -770,7 +776,7 @@ async function checkChanges() {
       ` <button class="btn btn-mini" id="btn-changes-ok">OK, widzę</button>`;
     banner.classList.remove("hidden");
     document.getElementById("btn-changes-ok").onclick = () => {
-      localStorage.setItem(LS_CHANGES_SEEN, batches[batches.length - 1].ts);
+      localStorage.setItem(lsKey(LS_CHANGES_SEEN), batches[batches.length - 1].ts);
       banner.classList.add("hidden");
     };
     notify("Plan się zmienił!", items.map(i => `[${i.type}] ${i.summary}`).slice(0, 3).join(", "));
@@ -1121,7 +1127,7 @@ function bindUi() {
 
   $("btn-clear").onclick = () => {
     events = [];
-    localStorage.removeItem(LS_EVENTS);
+    localStorage.removeItem(lsKey(LS_EVENTS));
     $("dlg-settings").close();
     renderAll();
     toast("Usunięto plan.");
@@ -1162,6 +1168,15 @@ function bindUi() {
 async function init() {
   const urlP = new URLSearchParams(location.search).get("profile");
   if (urlP) { profileId = urlP; saveProfile(); }
+
+  // migracja: stare wspólne klucze -> klucze profilu (jednorazowo)
+  for (const base of [LS_EVENTS, LS_SKIPS, LS_EXAMS]) {
+    const old = localStorage.getItem(base);
+    if (old !== null) {
+      if (localStorage.getItem(lsKey(base)) === null) localStorage.setItem(lsKey(base), old);
+      localStorage.removeItem(base);
+    }
+  }
 
   loadSettings();
   loadEvents();
