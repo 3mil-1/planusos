@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>PlanUSOS</title>
+  <meta name="description" content="Plan zajęć z USOS, który sam się synchronizuje. Budzik, widgety, PNG." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#f2ede3" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="PlanUSOS" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">PLAN</span><span class="brand-mark mark-2">USOS</span>
+    </div>
+    <div class="topbar-actions">
+      <button id="btn-sync" class="btn" title="Pobierz świeży plan z USOS">Synchronizuj</button>
+      <button id="btn-png" class="btn">Pobierz PNG</button>
+      <button id="btn-settings" class="btn btn-accent">Ustawienia</button>
+    </div>
+  </header>
+
+  <div id="sync-bar" class="sync-bar hidden"></div>
+  <div id="changes-banner" class="changes-banner hidden"></div>
+
+  <main>
+    <!-- Widgety -->
+    <section id="widgets" class="widgets">
+      <div class="widget widget-next">
+        <h3>Następne zajęcia</h3>
+        <div class="widget-body" id="next-class-body"><p class="muted">Połącz z USOS w ustawieniach.</p></div>
+      </div>
+      <div class="widget widget-today">
+        <h3>Dzisiaj</h3>
+        <div class="widget-body" id="today-body"><p class="muted">Brak zajęć.</p></div>
+      </div>
+      <div class="widget widget-alarm">
+        <h3>Pobudka</h3>
+        <div class="widget-body" id="alarm-body"><p class="muted">—</p></div>
+      </div>
+      <div class="widget widget-sleep">
+        <h3>Kiedy iść spać?</h3>
+        <div class="widget-body" id="sleep-body"><p class="muted">—</p></div>
+      </div>
+      <div class="widget widget-stats">
+        <h3>Ten tydzień</h3>
+        <div class="widget-body" id="stats-body"><p class="muted">—</p></div>
+      </div>
+      <div class="widget widget-exams">
+        <h3>Kolokwia</h3>
+        <div class="widget-body" id="exams-body"><p class="muted">—</p></div>
+      </div>
+      <div class="widget widget-study">
+        <h3>Nauka</h3>
+        <div class="widget-body study-body">
+          <div class="study-top">
+            <span id="study-display" class="study-time">25:00</span>
+            <span id="study-mode" class="study-mode study-work">SKUPIENIE</span>
+          </div>
+          <input id="study-subject" class="input input-sm" list="subject-list" placeholder="Czego się uczysz?" />
+          <datalist id="subject-list"></datalist>
+          <div class="study-controls">
+            <button class="btn btn-mini" id="btn-study-start">Start</button>
+            <button class="btn btn-mini" id="btn-study-reset">Reset</button>
+          </div>
+          <p id="study-stats" class="muted small study-stats"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Nawigacja tygodnia -->
+    <section class="week-nav">
+      <button id="btn-prev-week" class="btn btn-icon" title="Poprzedni tydzień">←</button>
+      <button id="btn-this-week" class="btn">Dziś</button>
+      <span id="week-label" class="week-label">—</span>
+      <button id="btn-next-week" class="btn btn-icon" title="Następny tydzień">→</button>
+    </section>
+
+    <!-- Plan -->
+    <section id="timetable-card" class="timetable-card">
+      <div class="timetable-header">
+        <span class="tt-title">PLAN ZAJĘĆ</span>
+        <span class="tt-week" id="tt-week-label"></span>
+      </div>
+      <div id="timetable" class="timetable"></div>
+      <div class="timetable-bottom">
+        <div id="tt-legend" class="legend"></div>
+        <span class="tt-credit">planusos</span>
+      </div>
+    </section>
+
+    <section id="empty-state" class="empty-state hidden">
+      <div class="empty-card">
+        <h2>Brak planu</h2>
+        <p>Połącz aplikację ze swoim planem w USOSweb – wystarczy raz wkleić link, potem wszystko dzieje się samo.</p>
+        <div class="empty-actions">
+          <button class="btn btn-accent" id="btn-connect">Połącz z USOS</button>
+          <button class="btn" id="btn-demo">Plan demo</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: ustawienia / połączenie -->
+  <dialog id="dlg-settings" class="dialog">
+    <h2>Ustawienia</h2>
+
+    <h3>Połączenie z USOS</h3>
+    <p class="muted small">
+      W USOSweb wejdź w <b>Mój USOSweb → Plan zajęć</b> i skopiuj link
+      <b>„eksport iCal”</b> (ikona kalendarza). Wklejasz raz – plan będzie się
+      sam aktualizował przy każdym uruchomieniu.
+    </p>
+    <input type="url" id="set-usos-url" class="input" placeholder="https://usosweb.../kalendarz.ics" />
+    <p class="muted small" id="sync-status"></p>
+    <details class="fallback">
+      <summary>Nie masz linku? Wczytaj plik .ics ręcznie</summary>
+      <label class="file-drop" id="file-drop">
+        <input type="file" id="file-input" accept=".ics,text/calendar" hidden />
+        <span>Kliknij lub upuść plik .ics</span>
+      </label>
+    </details>
+
+    <h3>Budzik na iPhonie – automatycznie</h3>
+    <p class="muted small">
+      Otwórz tę stronę na telefonie i stuknij przycisk poniżej. Telefon raz zapyta
+      o subskrypcję kalendarza – od tej pory pobudki <b>same</b> wskakują przed
+      pierwszymi zajęciami każdego dnia i same się aktualizują, gdy plan się zmieni.
+    </p>
+    <div class="webcal-row">
+      <a id="link-webcal-wake" class="btn btn-accent" href="#">Subskrybuj pobudki</a>
+      <a id="link-webcal-plan" class="btn" href="#">Subskrybuj cały plan</a>
+      <button class="btn" id="btn-copy-webcal">Kopiuj link dla telefonu</button>
+    </div>
+    <input type="text" id="webcal-link-out" class="input hidden" readonly />
+    <p class="muted small" id="webcal-hint"></p>
+    <p class="muted small">
+      Jak to działa: po subskrypcji pobudki <b>zostają w kalendarzu telefonu</b> i dzwonią
+      nawet bez kontaktu z komputerem. Komputer z włączoną aplikacją jest potrzebny tylko
+      do <b>aktualizacji</b> (telefon dociąga zmiany planu, gdy oba są w tej samej sieci).
+    </p>
+    <label class="row">
+      <span>Ile minut przed pierwszymi zajęciami wstajesz:</span>
+      <input type="number" id="set-alarm-min" min="10" max="600" value="90" />
+    </label>
+    <label class="row">
+      <input type="checkbox" id="set-alarm" />
+      <span>Budzik także tutaj, w aplikacji (na PC)</span>
+    </label>
+
+    <h3>Budzik, który NAPRAWDĘ dzwoni (Zegar iPhone'a)</h3>
+    <p class="muted small">
+      Kalendarz tylko brzęczy powiadomieniem. Żeby dzwonił <b>prawdziwy alarm w Zegarze</b>
+      (głośny, działa w trybie cichym), ustaw raz automatyzację w aplikacji <b>Skróty</b>.
+      Automatyzacja <b>najpierw kasuje wczorajszy budzik PlanUSOS, potem tworzy nowy</b> –
+      dzięki temu masz zawsze tylko jeden alarm, a nie stertę.
+      <br /><b>Uwaga na nazwy akcji:</b> w nowym iOS akcje to <b>Dodaj alarm</b>,
+      <b>Znajdź alarmy</b> i <b>Usuń alarmy</b> – wszystkie znajdziesz, wpisując
+      w wyszukiwarce akcji słowo <b>alarm</b>.
+    </p>
+    <p class="muted small">
+      <b>Najpierw raz włącz:</b> Ustawienia iPhone'a → Skróty → Zaawansowane →
+      <b>„Pozwól na usuwanie bez potwierdzenia”</b> (inaczej automatyzacja zatrzyma się co rano na pytaniu).
+    </p>
+    <ol class="muted small steps">
+      <li>Otwórz <b>Skróty → Automatyzacja → +</b></li>
+      <li>Wybierz <b>O określonej porze</b> → np. <b>21:00</b>, Codziennie → <b>Uruchom natychmiast</b> (bez pytania)</li>
+      <li>Dodaj akcję <b>Znajdź alarmy</b> (wpisz w wyszukiwarce „alarmy”) → ustaw filtr
+        <b>Etykieta</b> → <b>zawiera</b> → <code>PlanUSOS</code></li>
+      <li>Dodaj akcję <b>Usuń alarmy</b> → jako wejście zostaw wynik z punktu 3 (Alarmy)</li>
+      <li>Dodaj akcję <b>Pobierz zawartość URL</b> i wklej adres:<br />
+        <code id="wake-url">—</code>
+        <button class="btn btn-mini" id="btn-copy-wake-url" type="button">Kopiuj</button>
+      </li>
+      <li>Dodaj akcję <b>Jeżeli</b> → „Zawartość URL” → <b>nie zawiera</b> → wpisz: <b>BRAK</b></li>
+      <li>Między „Jeżeli” a „Koniec jeżeli” dodaj akcję <b>Dodaj alarm</b>: w polu godziny
+        wybierz zmienną <b>Zawartość URL</b>, a w polu <b>Etykieta</b> wpisz
+        <code>PlanUSOS pobudka</code> (ta sama etykieta, po której kasujemy w punkcie 3)</li>
+    </ol>
+    <p class="muted small">
+      Od teraz co wieczór o 21:00 telefon kasuje stary budzik PlanUSOS i ustawia jeden nowy na
+      jutrzejszą pobudkę (z pominięciem wykładów i odrabianych/pominiętych zajęć). Gdy następnego
+      dnia nie masz zajęć – po skasowaniu starego po prostu nie tworzy nowego. Twoje własne,
+      ręcznie ustawione alarmy są nietknięte (kasujemy tylko te z etykietą „PlanUSOS”).
+      Telefon i komputer muszą być wtedy w tej samej sieci Wi-Fi.
+    </p>
+
+    <h3>Wykłady</h3>
+    <label class="row">
+      <input type="checkbox" id="set-lectures" />
+      <span>Wykłady są nieobowiązkowe – nie licz ich do budzika, odliczania i przypomnień</span>
+    </label>
+    <p class="muted small">
+      Wykłady dalej będą widoczne w planie, ale w paski – jako osobna kategoria.
+      Wg Regulaminu studiów AGH (§ 11 ust. 3) obecność na zajęciach jest obowiązkowa
+      <b>z wyłączeniem wykładów</b>.
+    </p>
+
+    <h3>Pomijanie zajęć</h3>
+    <p class="muted small">
+      Kliknij zajęcia w planie, żeby je pominąć – budzik, odliczanie i przypomnienia
+      przestaną je widzieć. Drugie kliknięcie cofa.
+    </p>
+    <label class="row">
+      <span>Limit pominięć jednego przedmiotu w semestrze:</span>
+      <input type="number" id="set-skip-limit" min="0" max="15" value="2" />
+    </label>
+    <p class="muted small">
+      AGH nie ma centralnego limitu nieobecności – ustala go prowadzący (§ 10 ust. 14
+      Regulaminu studiów). Domyślne 2 to bezpieczna, typowa wartość. Pamiętaj też:
+      nieobecność na zajęciach obowiązkowych usprawiedliwiasz w ciągu 7 dni (§ 11 ust. 4),
+      a miesiąc niechodzenia bez usprawiedliwienia grozi skreśleniem z listy studentów.
+    </p>
+
+    <h3>WF – odrabianie, nie pomijanie</h3>
+    <p class="muted small">
+      WF-u nie da się pominąć – kliknięcie WF-u w planie oznacza go jako
+      <b>„do odrobienia”</b> (budzik go wtedy nie liczy). Zasady SWFiS AGH:
+    </p>
+    <ul class="muted small steps">
+      <li>na WF1/WF2 musisz zaliczyć <b>min. 10 zajęć w semestrze</b> – stąd limit odrabiania</li>
+      <li>dołączenie do innej grupy <b>uzgadniasz z prowadzącym przed zajęciami</b></li>
+      <li>bierzesz <b>legitymację</b> + wydrukowane <b>potwierdzenie odrobienia zajęć</b></li>
+      <li>możesz odrobić <b>max 1 WF dziennie</b>; pod koniec semestru są tłumy – nie odkładaj</li>
+    </ul>
+    <div class="webcal-row">
+      <a class="btn" href="https://swfis.agh.edu.pl/studenci/plany-zajec" target="_blank" rel="noopener">Harmonogram grup WF (hala/basen)</a>
+      <a class="btn" href="https://swfis.agh.edu.pl/studenci/odrabianie-zajec" target="_blank" rel="noopener">Zasady + druk potwierdzenia</a>
+    </div>
+    <label class="row">
+      <span>Limit WF-ów do odrobienia w semestrze:</span>
+      <input type="number" id="set-wf-limit" min="0" max="10" value="5" />
+    </label>
+
+    <h3>Kolokwia i egzaminy</h3>
+    <p class="muted small">
+      Dodany termin pojawia się w planie (na czerwono), widget odlicza czas,
+      a budzik traktuje go jak obowiązkowe zajęcia – na egzamin się nie zaśpi,
+      nawet jak wypada w dzień bez zajęć.
+    </p>
+    <div class="exam-form">
+      <input type="text" id="exam-name" class="input" placeholder="np. Kolokwium – Teoria obwodów" />
+      <div class="exam-form-row">
+        <input type="datetime-local" id="exam-when" class="input" />
+        <input type="number" id="exam-dur" class="input" value="90" min="15" max="360" title="Czas trwania (min)" />
+        <button class="btn btn-accent" id="btn-exam-add" type="button">Dodaj</button>
+      </div>
+    </div>
+    <div id="exam-list"></div>
+
+    <h3>Przypomnienia o zajęciach</h3>
+    <label class="row">
+      <input type="checkbox" id="set-reminders" />
+      <span>Powiadamiaj przed zajęciami</span>
+    </label>
+    <label class="row">
+      <span>Ile minut wcześniej:</span>
+      <input type="number" id="set-reminder-min" min="1" max="180" value="15" />
+    </label>
+    <button class="btn" id="btn-notif-perm">Zezwól na powiadomienia</button>
+    <p class="muted small" id="notif-status"></p>
+
+    <h3>Dane</h3>
+    <button class="btn btn-danger" id="btn-clear">Usuń plan z aplikacji</button>
+
+    <div class="dialog-actions">
+      <button class="btn btn-accent" id="btn-settings-save">Zapisz i synchronizuj</button>
+      <button class="btn" id="btn-settings-close">Zamknij</button>
+    </div>
+  </dialog>
+
+  <!-- Overlay alarmu -->
+  <div id="alarm-overlay" class="alarm-overlay hidden">
+    <div class="alarm-box">
+      <h2>POBUDKA!</h2>
+      <p id="alarm-overlay-text"></p>
+      <button class="btn btn-accent btn-big" id="btn-alarm-stop">Wstaję!</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

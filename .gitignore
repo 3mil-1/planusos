@@ -1,0 +1,10 @@
+# Twoje dane – NIE wrzucaj na GitHub (link USOS z kluczem, plan, pominięcia)
+data/
+
+# Python
+__pycache__/
+*.pyc
+
+# System
+.DS_Store
+Thumbs.db

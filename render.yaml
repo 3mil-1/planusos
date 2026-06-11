@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: planusos
+    runtime: docker
+    plan: free
+    envVars:
+      # opcjonalnie: link iCal z USOSweb, zeby konfiguracja przezyla restart darmowej instancji
+      - key: USOS_URL
+        sync: false
