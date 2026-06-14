@@ -2,12 +2,16 @@
 # ZADANIE 5A – Testowanie hipotez na danych historycznych (temperatury)
 # =============================================================================
 #
-# Źródło danych:
-#   Plik: dane/temperatury_warszawa.csv
-#   Opracowanie: dane klimatyczne IMGW (Instytut Meteorologii i Gospodarki
-#   Wodnej) – miesięczne średnie temperatury powietrza dla Warszawy.
-#   Oryginalne dane: https://danepubliczne.imgw.pl/
-#   (w projekcie: wybrane lata 2019–2023, format CSV ze średnikiem)
+# ŹRÓDŁO DANYCH (pobrane z internetu):
+#   Instytucja: IMGW-PIB (Instytut Meteorologii i Gospodarki Wodnej)
+#   URL:        https://danepubliczne.imgw.pl/
+#   Zasób:      dane miesięczne stacji synoptycznych (archiwum ZIP/CSV)
+#   Stacja:     WARSZAWA-OKĘCIE (kod 352200375)
+#   Parametr:   STM – średnia miesięczna temperatura powietrza [°C]
+#   Lata:       2019–2023
+#
+# Jak pobrać dane samodzielnie:
+#   source("pobierz_dane.R")   # skrypt pobiera dane z IMGW i zapisuje CSV
 #
 # Hipoteza badawcza:
 #   H0: średnia roczna temperatura w Warszawie = 10°C
@@ -21,14 +25,16 @@ sciezka_danych <- "dane/temperatury_warszawa.csv"
 temperatury <- read.csv(sciezka_danych, sep = ";", header = TRUE)
 
 cat("=== ZADANIE 5A: Test hipotezy – temperatury Warszawy ===\n\n")
+cat("Zrodlo: IMGW, stacja", unique(temperatury$stacja), "\n")
+cat("Liczba obserwacji:", nrow(temperatury), "\n\n")
 
 # --- Obliczenie średnich rocznych ---
-lata <- unique(temperatury$rok)
+lata <- sort(unique(temperatury$rok))
 srednie_roczne <- sapply(lata, function(r) {
   mean(temperatury$srednia_temp_c[temperatury$rok == r])
 })
 
-cat("Srednie roczne temperatury:\n")
+cat("Srednie roczne temperatury (dane IMGW):\n")
 for (i in seq_along(lata)) {
   cat(sprintf("  %d: %.2f °C\n", lata[i], srednie_roczne[i]))
 }
@@ -37,17 +43,17 @@ cat("\n")
 # --- Hipoteza i test t-Studenta (jedna próba) ---
 mu0 <- 10  # wartość hipotetyczna [°C]
 
-cat("Hipoteza zerowa:     H0: mu = 10 °C\n")
+cat("Hipoteza zerowa:       H0: mu = 10 °C\n")
 cat("Hipoteza alternatywna: H1: mu != 10 °C\n")
-cat(sprintf("Poziom istotnosci: alpha = 0.05\n\n"))
+cat("Poziom istotnosci:     alpha = 0.05\n\n")
 
 test <- t.test(srednie_roczne, mu = mu0, alternative = "two.sided")
 
 cat("--- Wyniki testu t-Studenta ---\n")
-cat(sprintf("Statystyka t:  %.4f\n", test$statistic))
+cat(sprintf("Statystyka t:          %.4f\n", test$statistic))
 cat(sprintf("Liczba stopni swobody: %d\n", test$parameter))
-cat(sprintf("p-value:       %.4f\n", test$p.value))
-cat(sprintf("Srednia probki: %.4f °C\n", test$estimate))
+cat(sprintf("p-value:               %.4f\n", test$p.value))
+cat(sprintf("Srednia probki:        %.4f °C\n", test$estimate))
 cat(sprintf("Przedzial ufnosci 95%%: [%.2f ; %.2f]\n\n",
             test$conf.int[1], test$conf.int[2]))
 
@@ -58,7 +64,7 @@ if (test$p.value < alpha) {
   cat("Srednia roczna temperatura istotnie rozni sie od 10°C.\n")
 } else {
   cat(sprintf("Wniosek: NIE ODRZUCAMY H0 (p = %.4f >= %.2f).\n", test$p.value, alpha))
-  cat("Brak dowodow na roznicę sredniej od 10°C.\n")
+  cat("Brak dowodow na roznice sredniej od 10°C.\n")
 }
 
 # --- Wykres ---
@@ -66,7 +72,7 @@ barplot(srednie_roczne,
         names.arg = lata,
         col = "coral",
         ylab = "Srednia roczna temp. [°C]",
-        main = "Srednie roczne temperatury - Warszawa")
+        main = "Srednie roczne temperatury - Warszawa-Okęcie (IMGW)")
 abline(h = mu0, col = "red", lty = 2, lwd = 2)
 abline(h = mean(srednie_roczne), col = "steelblue", lwd = 2)
 legend("topright",

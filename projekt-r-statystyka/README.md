@@ -17,6 +17,8 @@ projekt-r-statystyka/
 ├── zadanie_5/
 │   ├── test_temperatury.R          # Ocena 5 – zadanie A (dane historyczne)
 │   └── test_bezrobocie.R           # Ocena 5 – zadanie B (dane historyczne)
+├── pobierz_dane.R                  # Pobiera RZECZYWISTE dane z IMGW i GUS API
+├── ZRODLA_DANYCH.md                # Opis źródeł i linków
 ├── uruchom_wszystko.R              # Uruchamia wszystkie skrypty
 └── raport.Rmd                      # Szablon raportu (R Markdown)
 ```
@@ -25,13 +27,22 @@ projekt-r-statystyka/
 
 - R (>= 4.0)
 - RStudio (zalecane)
-- Pakiety: `knitr`, `rmarkdown` (tylko do raportu)
+- Pakiety: `knitr`, `rmarkdown` (raport), `jsonlite` (pobieranie danych)
 
 ```r
-install.packages(c("knitr", "rmarkdown"))
+install.packages(c("knitr", "rmarkdown", "jsonlite"))
 ```
 
 ## Jak uruchomić
+
+### Krok 0 – pobranie rzeczywistych danych z internetu (zadanie 5)
+
+```r
+setwd("sciezka/do/projekt-r-statystyka")
+source("pobierz_dane.R")   # pobiera dane z IMGW i GUS API → zapisuje CSV
+```
+
+Dane są już dołączone w `dane/`, ale na zajęciach warto uruchomić ten skrypt samodzielnie i zrobić screen.
 
 ### Opcja 1 – wszystkie zadania naraz
 
@@ -83,17 +94,21 @@ rmarkdown::render("raport.Rmd")
 
 ### Temperatury (zadania 4B, 5A)
 
-- **Źródło:** IMGW – Instytut Meteorologii i Gospodarki Wodnej
-- **URL:** https://danepubliczne.imgw.pl/
-- **Opis:** Miesięczne średnie temperatury powietrza, stacja Warszawa, lata 2019–2023
+- **Źródło:** IMGW-PIB – https://danepubliczne.imgw.pl/
+- **Stacja:** WARSZAWA-OKĘCIE (dane synoptyczne, archiwum ZIP/CSV)
+- **Parametr:** średnia miesięczna temperatura powietrza [°C]
+- **Lata:** 2019–2023
 - **Format:** CSV, separator `;` (średnik)
 
 ### Bezrobocie (zadanie 5B)
 
-- **Źródło:** GUS – Główny Urząd Statystyczny
-- **URL:** https://bdl.stat.gov.pl/
-- **Opis:** Stopa bezrobocia rejestrowanego w Polsce, dane kwartalne, lata 2018–2023
+- **Źródło:** GUS BDL API – https://bdl.stat.gov.pl/api/v1/
+- **Zmienna:** stopa bezrobocia rejestrowanego (dane miesięczne, temat P3559)
+- **Jednostka:** POLSKA
+- **Lata:** 2018–2023
 - **Format:** CSV, separator `,` (przecinek)
+
+Szczegóły: `ZRODLA_DANYCH.md`
 
 ## Kluczowe komendy R
 
@@ -131,5 +146,5 @@ t.test(grupa1, grupa2, alternative = "two.sided")
 ## Uwagi
 
 - Przed uruchomieniem ustaw katalog roboczy na folder `projekt-r-statystyka`.
-- Dane w plikach CSV są reprezentatywne; na zajęciach możesz pobrać aktualne dane z podanych źródeł.
+- Dane w `dane/` pochodzą z oficjalnych źródeł (IMGW, GUS) – pobrane skryptem `pobierz_dane.R`.
 - Parametr `sep` w `read.csv()` musi odpowiadać separatorowi w pliku (`,` lub `;`).

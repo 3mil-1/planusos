@@ -74,7 +74,7 @@ cat("Przedzial ufnosci 95%:", round(test$conf.int, 4))
 
 # Zadanie 4B – Estymacja wartości oczekiwanej z CSV
 
-**Źródło danych:** Miesięczne średnie temperatury w Warszawie (IMGW), plik `dane/temperatury_warszawa.csv`, separator `;`.
+**Źródło danych:** IMGW – miesięczne temperatury stacji WARSZAWA-OKĘCIE (https://danepubliczne.imgw.pl/), plik `dane/temperatury_warszawa.csv`, separator `;`. Pobrane skryptem `pobierz_dane.R`.
 
 ```{r zadanie4b}
 temperatury <- read.csv("dane/temperatury_warszawa.csv", sep = ";", header = TRUE)
@@ -96,7 +96,7 @@ plot(temperatury$srednia_temp_c, type = "b", col = "tomato", pch = 19,
 abline(h = srednia, col = "steelblue", lty = 2)
 ```
 
-> **Opis danych:** Dane pochodzą z IMGW (https://danepubliczne.imgw.pl/) – miesięczne średnie temperatury powietrza dla stacji Warszawa, lata 2019–2023.
+> **Opis danych:** IMGW (https://danepubliczne.imgw.pl/) – archiwum danych synoptycznych, stacja Warszawa-Okęcie, lata 2019–2023. Pobrane: `source("pobierz_dane.R")`.
 
 ---
 
@@ -124,7 +124,7 @@ print(test)
 
 # Zadanie 5B – Test hipotezy (bezrobocie)
 
-**Źródło danych:** GUS – stopa bezrobocia rejestrowanego w Polsce (kwartalnie), plik `dane/bezrobocie_polska.csv`, separator `,`.
+**Źródło danych:** GUS BDL API – stopa bezrobocia rejestrowanego w Polsce (miesięcznie), plik `dane/bezrobocie_polska.csv`, separator `,`. Pobrane skryptem `pobierz_dane.R`.
 
 **Hipoteza:**
 
@@ -150,7 +150,7 @@ boxplot(list("2018-2019" = przed, "2021-2023" = po),
 
 **Wniosek:** `r if(test$p.value < 0.05) "Odrzucamy H0 – istotna różnica między okresami." else "Nie odrzucamy H0 – brak istotnej różnicy."`
 
-> **Opis danych:** GUS, Bank Danych Lokalnych (https://bdl.stat.gov.pl/) – stopa bezrobocia rejestrowanego, dane kwartalne 2018–2023.
+> **Opis danych:** GUS BDL API (https://bdl.stat.gov.pl/api/v1/) – zmienna „stopa bezrobocia rejestrowanego", dane miesięczne, Polska, lata 2018–2023.
 
 ---
 
