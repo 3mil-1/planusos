@@ -2,6 +2,8 @@
 
 Kompletny materiał do nauki i rozwiązania wszystkich zadań z arkusza **RPIS (Rachunek Prawdopodobieństwa i Statystyka)**.
 
+> **Wzory matematyczne:** GitHub renderuje je automatycznie — wzór w tekście to `$...$`, wzór w osobnej linii to `$$...$$`. Ułamki zapisujemy jako `\frac{licznik}{mianownik}`.
+
 ## Spis treści
 
 | Rozdział | Temat | Plik |
@@ -30,26 +32,26 @@ Kompletny materiał do nauki i rozwiązania wszystkich zadań z arkusza **RPIS (
 ## Szybka ściąga — najważniejsze wzory
 
 ### Kombinatoryka
-- Permutacje: \(n!\)
-- Okrągły stół (bez rozróżniania miejsc): \((n-1)!\)
-- Kombinacje: \(\binom{n}{k}\)
-- Rozmieszczenia: \(\binom{n+k-1}{k-1}\) (dla \(x_1+\ldots+x_k=n\), \(x_i\geq 0\))
+- Permutacje: $n!$
+- Okrągły stół (bez rozróżniania miejsc): $(n-1)!$
+- Kombinacje: $\binom{n}{k}$
+- Rozmieszczenia: $\binom{n+k-1}{k-1}$ (dla $x_1+\ldots+x_k=n$, $x_i\geq 0$)
 
 ### Prawdopodobieństwo
-- \(P(A\cup B) = P(A)+P(B)-P(A\cap B)\)
-- Bayes: \(P(A|B)=\dfrac{P(B|A)P(A)}{P(B)}\)
-- Niezależność: \(P(A\cap B)=P(A)P(B)\)
+- $P(A\cup B) = P(A)+P(B)-P(A\cap B)$
+- Bayes: $P(A|B)=\dfrac{P(B|A)P(A)}{P(B)}$
+- Niezależność: $P(A\cap B)=P(A)P(B)$
 
-### Schemat Bernoulliego (\(n\) prób, prawd. sukcesu \(p\))
-- Dokładnie \(k\) sukcesów: \(\binom{n}{k}p^k(1-p)^{n-k}\)
-- Co najmniej jeden: \(1-(1-p)^n\)
+### Schemat Bernoulliego ($n$ prób, prawd. sukcesu $p$)
+- Dokładnie $k$ sukcesów: $\binom{n}{k}p^k(1-p)^{n-k}$
+- Co najmniej jeden: $1-(1-p)^n$
 
 ### Zmienne losowe
-- \(E(X)=\sum x_i p_i\) lub \(\int x f(x)\,dx\)
-- \(\mathrm{Var}(X)=E(X^2)-[E(X)]^2\)
-- \(\mathrm{Var}(X+Y)=\mathrm{Var}(X)+\mathrm{Var}(Y)\) gdy nieskorelowane
+- $E(X)=\sum x_i p_i$ lub $\int x f(x)\,dx$
+- $\mathrm{Var}(X)=E(X^2)-[E(X)]^2$
+- $\mathrm{Var}(X+Y)=\mathrm{Var}(X)+\mathrm{Var}(Y)$ gdy nieskorelowane
 
 ### Statystyka
-- Przedział ufności: \(\bar{x}\pm t_{1-\alpha/2,\,n-1}\dfrac{s}{\sqrt{n-1}}\)
-- Test t: \(t=\sqrt{n-1}\dfrac{\bar{x}-\mu_0}{s}\)
-- Test z: \(U=\sqrt{n}\dfrac{\bar{x}-\mu_0}{\sigma}\)
+- Przedział ufności: $\bar{x}\pm t_{1-\alpha/2,\,n-1}\dfrac{s}{\sqrt{n-1}}$
+- Test t: $t=\sqrt{n-1}\dfrac{\bar{x}-\mu_0}{s}$
+- Test z: $U=\sqrt{n}\dfrac{\bar{x}-\mu_0}{\sigma}$
