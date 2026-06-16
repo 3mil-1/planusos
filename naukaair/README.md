@@ -20,6 +20,27 @@ Otwórz [http://localhost:3000](http://localhost:3000) — zaloguj się samym lo
 - **Statystyki** — Zustand + localStorage per użytkownik
 - **Ranking globalny** — sync przez API (`data/global-stats.json`)
 
-## Stack
+## Deploy na Render (WAŻNE)
 
-Next.js 16, TypeScript, Tailwind CSS, Zustand, lucide-react
+**Nie używaj „Static Site”** — aplikacja wymaga serwera Node (API + routing Next.js).
+
+### Opcja A — Docker (zalecane)
+
+1. W Render: **New → Web Service**
+2. Połącz repo, ustaw **Root Directory**: `naukaair`
+3. Runtime: **Docker** (użyje `naukaair/Dockerfile`)
+4. Plan Free OK — pierwsze wejście po uśpieniu trwa ~30 s
+
+### Opcja B — Node ręcznie
+
+| Pole | Wartość |
+|------|---------|
+| Root Directory | `naukaair` |
+| Build Command | `npm install && npm run build` |
+| Start Command | `npm start` |
+| Typ | **Web Service** (nie Static Site!) |
+
+### Typowy błąd
+
+Klik w link → „Not Found”, odświeżenie działa = źle skonfiguowany **Static Site** zamiast **Web Service**.
+
