@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useEffect } from "react";
-import Link from "next/link";
 import { BookOpen, GraduationCap, TrendingDown, Users } from "lucide-react";
+import { NavAnchor } from "@/components/ui/NavAnchor";
 import { questionsDb } from "@/data/questions";
 import { useQuizStore } from "@/store/useQuizStore";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -103,27 +103,27 @@ export default function DashboardPage() {
       )}
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Link
+        <NavAnchor
           href="/learn"
-          className="group rounded-2xl border border-slate-800 bg-gradient-to-br from-sky-500/10 to-indigo-500/10 p-8 transition-all hover:border-sky-500/40 hover:shadow-lg hover:shadow-sky-500/10 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+          className="group block rounded-2xl border border-slate-800 bg-gradient-to-br from-sky-500/10 to-indigo-500/10 p-8 transition-all hover:border-sky-500/40 hover:shadow-lg hover:shadow-sky-500/10 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
         >
           <BookOpen className="mb-4 h-10 w-10 text-sky-400 transition-transform group-hover:scale-110" />
           <h3 className="text-xl font-semibold text-white">Tryb Nauki</h3>
           <p className="mt-2 text-sm text-slate-400">
             Fiszki z natychmiastową oceną i wyjaśnieniem. Wybierz zakres 1–99.
           </p>
-        </Link>
+        </NavAnchor>
 
-        <Link
+        <NavAnchor
           href="/exam"
-          className="group rounded-2xl border border-slate-800 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 p-8 transition-all hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-500/10 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+          className="group block rounded-2xl border border-slate-800 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 p-8 transition-all hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-500/10 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
         >
           <GraduationCap className="mb-4 h-10 w-10 text-violet-400 transition-transform group-hover:scale-110" />
           <h3 className="text-xl font-semibold text-white">Symulacja Egzaminu</h3>
           <p className="mt-2 text-sm text-slate-400">
             40 losowych pytań, 60 minut, wynik dopiero na końcu.
           </p>
-        </Link>
+        </NavAnchor>
       </div>
 
       {globalUsers.length > 0 && (

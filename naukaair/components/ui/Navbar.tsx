@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, GraduationCap, Home, LogOut, User } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { cn } from "@/lib/utils";
+import { NavAnchor, navLinkClass } from "@/components/ui/NavAnchor";
 
 const links = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -21,25 +20,16 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="text-lg font-semibold tracking-tight text-white">
+        <NavAnchor href="/" className="text-lg font-semibold tracking-tight text-white">
           nauka<span className="text-sky-400">air</span>
-        </Link>
+        </NavAnchor>
 
         <nav className="flex items-center gap-1">
           {links.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all",
-                pathname === href
-                  ? "bg-slate-800 text-white ring-1 ring-slate-700"
-                  : "text-slate-400 hover:bg-slate-800/60 hover:text-white",
-              )}
-            >
+            <NavAnchor key={href} href={href} className={navLinkClass(pathname === href)}>
               <Icon className="h-4 w-4" />
               <span className="hidden sm:inline">{label}</span>
-            </Link>
+            </NavAnchor>
           ))}
         </nav>
 
@@ -50,7 +40,10 @@ export function Navbar() {
           </div>
           <button
             type="button"
-            onClick={() => logout()}
+            onClick={() => {
+              logout();
+              window.location.href = "/login";
+            }}
             className="flex items-center gap-2 rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-300 transition-all hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-300 focus:outline-none focus:ring-2 focus:ring-red-500/40"
           >
             <LogOut className="h-4 w-4" />

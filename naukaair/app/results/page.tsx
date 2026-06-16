@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { AlertTriangle, Home, RotateCcw } from "lucide-react";
+import { NavAnchor } from "@/components/ui/NavAnchor";
 import type { ExamResultPayload } from "@/app/exam/page";
 import { Card } from "@/components/ui/Card";
 import { ScoreRing } from "@/components/quiz/ScoreRing";
@@ -23,13 +23,13 @@ export default function ResultsPage() {
     return (
       <Card className="text-center">
         <p className="text-slate-400">Brak wyników egzaminu. Rozpocznij nowy test.</p>
-        <Link
+        <NavAnchor
           href="/exam"
           className="mt-4 inline-flex items-center gap-2 rounded-xl bg-violet-500 px-5 py-2.5 text-sm text-white hover:bg-violet-400"
         >
           <RotateCcw className="h-4 w-4" />
           Nowy egzamin
-        </Link>
+        </NavAnchor>
       </Card>
     );
   }
@@ -89,26 +89,26 @@ export default function ResultsPage() {
       )}
 
       <div className="flex flex-wrap gap-3">
-        <Link
+        <NavAnchor
           href="/"
           className="inline-flex items-center gap-2 rounded-xl border border-slate-700 px-5 py-2.5 text-sm text-slate-300 transition-all hover:bg-slate-800"
         >
           <Home className="h-4 w-4" />
           Dashboard
-        </Link>
-        <Link
+        </NavAnchor>
+        <NavAnchor
           href="/exam"
           className="inline-flex items-center gap-2 rounded-xl bg-violet-500 px-5 py-2.5 text-sm text-white transition-all hover:bg-violet-400"
         >
           <RotateCcw className="h-4 w-4" />
           Powtórz egzamin
-        </Link>
-        <Link
+        </NavAnchor>
+        <NavAnchor
           href="/learn"
           className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-5 py-2.5 text-sm text-white transition-all hover:bg-sky-400"
         >
           Tryb nauki
-        </Link>
+        </NavAnchor>
       </div>
     </div>
   );
