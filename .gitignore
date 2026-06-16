@@ -1,5 +1,7 @@
 # Twoje dane – NIE wrzucaj na GitHub (link USOS z kluczem, plan, pominięcia)
 data/
+!naukaair/data/
+!naukaair/data/**
 
 # Python
 __pycache__/
