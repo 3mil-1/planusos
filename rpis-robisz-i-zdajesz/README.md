@@ -4,6 +4,18 @@ Kompletny materiał do nauki i rozwiązania wszystkich zadań z arkusza **RPIS (
 
 > **Wzory matematyczne:** GitHub renderuje je automatycznie — wzór w tekście to `$...$`, wzór w osobnej linii to `$$...$$`. Ułamki zapisujemy jako `\frac{licznik}{mianownik}`.
 
+## Przeglądarka (ładne wzory)
+
+**Czat w Cursorze nie renderuje wzorów** — tam uczymy się na czacie bez LaTeX.
+
+Żeby zobaczyć ładne ułamki i symbole, otwórz w przeglądarce:
+
+```bash
+python server.py
+```
+
+Potem wejdź na: **http://localhost:8000/rpis-robisz-i-zdajesz/**
+
 ## Spis treści
 
 | Rozdział | Temat | Plik |
