@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useEffect } from "react";
-import { BookOpen, GraduationCap, TrendingDown, Users } from "lucide-react";
+import { AlertTriangle, BookOpen, GraduationCap, TrendingDown, Users } from "lucide-react";
 import { NavAnchor } from "@/components/ui/NavAnchor";
 import { questionsDb } from "@/data/questions";
 import { useQuizStore } from "@/store/useQuizStore";
@@ -17,7 +17,7 @@ export default function DashboardPage() {
     questionStats,
     history,
   } = useQuizStore();
-  const { username, globalUsers, fetchGlobalStats } = useAuthStore();
+  const { username, globalUsers, fetchGlobalStats, storagePersistent } = useAuthStore();
 
   useEffect(() => {
     void fetchGlobalStats();
@@ -62,6 +62,18 @@ export default function DashboardPage() {
           <span className="text-white">{questionsDb.length}</span> pytań (99 punktów 2025).
         </p>
       </div>
+
+      {!storagePersistent && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+          <p>
+            Statystyki na serwerze nie są trwałe — brak{" "}
+            <code className="rounded bg-slate-800 px-1">DATABASE_URL</code> na Renderze.
+            Po restarcie/uspieniu serwisu ranking i postęp znikają. Dodaj darmową bazę Neon
+            Postgres i ustaw zmienną środowiskową, potem zrób redeploy.
+          </p>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>

@@ -17,8 +17,23 @@ Otwórz [http://localhost:3000](http://localhost:3000) — zaloguj się samym lo
 - **99 pytań** — po jednym na każdy punkt bazy 2025 (`data/questions.ts`)
 - **Tryb nauki** — natychmiastowa ocena + wyjaśnienie
 - **Symulacja egzaminu** — 40 pytań, 60 minut
-- **Statystyki** — Zustand + localStorage per użytkownik
-- **Ranking globalny** — sync przez API (`data/global-stats.json`)
+- **Statystyki** — Zustand + localStorage per użytkownik + sync na serwer
+- **Ranking globalny** — Postgres (Neon) lub plik lokalny jako fallback
+
+## Trwałe statystyki na Renderze (WAŻNE)
+
+Render Free ma **ulotny dysk** — plik `data/global-stats.json` znika po restarcie, deployu lub uśpieniu serwisu. To ten sam problem co w planusos.
+
+**Rozwiązanie:** darmowa baza Postgres (np. [Neon](https://neon.tech)):
+
+1. Załóż projekt na neon.tech → skopiuj connection string (`postgresql://...`)
+2. W Render → Web Service → **Environment** → dodaj:
+   - `DATABASE_URL` = connection string z Neon
+3. **Redeploy** (Manual Deploy → Clear build cache)
+
+Po ustawieniu `DATABASE_URL` aplikacja automatycznie tworzy tabelę `naukaair_user_stats` i zapisuje statystyki w Postgres. Na dashboardzie zniknie żółte ostrzeżenie.
+
+Bez `DATABASE_URL` statystyki działają tylko w localStorage przeglądarki — po wejściu z innej przeglądarki/urządzenia lub po wyczyszczeniu cache znikną.
 
 ## Deploy na Render (WAŻNE)
 
@@ -39,6 +54,7 @@ Otwórz [http://localhost:3000](http://localhost:3000) — zaloguj się samym lo
 | Build Command | `npm install && npm run build` |
 | Start Command | `npm start` |
 | Typ | **Web Service** (nie Static Site!) |
+| `DATABASE_URL` | connection string Neon Postgres (wymagane dla trwałych statystyk) |
 
 ### Typowy błąd
 
