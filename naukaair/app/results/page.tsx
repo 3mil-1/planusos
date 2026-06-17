@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { AlertTriangle, Home, RotateCcw } from "lucide-react";
+import { NavAnchor } from "@/components/ui/NavAnchor";
 import type { ExamResultPayload } from "@/app/exam/page";
 import { Card } from "@/components/ui/Card";
 import { ScoreRing } from "@/components/quiz/ScoreRing";
-import { SyntheticBadge } from "@/components/quiz/SyntheticBadge";
+import { SourceBadge } from "@/components/quiz/SourceBadge";
+import { getQuestionById } from "@/data/questions";
 import { formatPercent } from "@/lib/utils";
 
 export default function ResultsPage() {
@@ -23,13 +24,13 @@ export default function ResultsPage() {
     return (
       <Card className="text-center">
         <p className="text-slate-400">Brak wyników egzaminu. Rozpocznij nowy test.</p>
-        <Link
+        <NavAnchor
           href="/exam"
           className="mt-4 inline-flex items-center gap-2 rounded-xl bg-violet-500 px-5 py-2.5 text-sm text-white hover:bg-violet-400"
         >
           <RotateCcw className="h-4 w-4" />
           Nowy egzamin
-        </Link>
+        </NavAnchor>
       </Card>
     );
   }
@@ -64,7 +65,11 @@ export default function ResultsPage() {
             <Card key={item.questionId} className="border-red-500/20">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span className="text-sm text-sky-400">{item.topic}</span>
-                <SyntheticBadge visible={item.isSynthetic} />
+                {(() => {
+                  const q = getQuestionById(item.questionId);
+                  if (!q) return null;
+                  return <SourceBadge source={q.source} isSynthetic={q.isSynthetic} />;
+                })()}
               </div>
               <p className="font-medium text-white">{item.question}</p>
               <div className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
@@ -89,26 +94,26 @@ export default function ResultsPage() {
       )}
 
       <div className="flex flex-wrap gap-3">
-        <Link
+        <NavAnchor
           href="/"
           className="inline-flex items-center gap-2 rounded-xl border border-slate-700 px-5 py-2.5 text-sm text-slate-300 transition-all hover:bg-slate-800"
         >
           <Home className="h-4 w-4" />
           Dashboard
-        </Link>
-        <Link
+        </NavAnchor>
+        <NavAnchor
           href="/exam"
           className="inline-flex items-center gap-2 rounded-xl bg-violet-500 px-5 py-2.5 text-sm text-white transition-all hover:bg-violet-400"
         >
           <RotateCcw className="h-4 w-4" />
           Powtórz egzamin
-        </Link>
-        <Link
+        </NavAnchor>
+        <NavAnchor
           href="/learn"
           className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-5 py-2.5 text-sm text-white transition-all hover:bg-sky-400"
         >
           Tryb nauki
-        </Link>
+        </NavAnchor>
       </div>
     </div>
   );

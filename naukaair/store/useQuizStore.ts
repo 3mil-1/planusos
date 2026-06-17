@@ -1,8 +1,9 @@
 "use client";
 
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import { useAuthStore } from "./useAuthStore";
+import { persist } from "zustand/middleware";
+import type { StoredUserStats } from "@/lib/globalStats";
+import { mergeUserStats, emptyUserStats } from "@/lib/statsMerge";
 
 export type SessionType = "nauka" | "egzamin";
 
@@ -18,12 +19,6 @@ export interface QuestionStat {
   correct: number;
 }
 
-export interface ExamAnswerRecord {
-  questionId: string;
-  selectedIndex: number;
-  correctIndex: number;
-}
-
 export interface ExamSessionState {
   questionIds: string[];
   answers: Record<string, number>;
@@ -31,20 +26,23 @@ export interface ExamSessionState {
   finished: boolean;
 }
 
-interface QuizState {
-  totalAnswered: number;
-  correctAnswers: number;
-  wrongAnswers: number;
-  history: SessionRecord[];
-  questionStats: Record<string, QuestionStat>;
-  activeExam: ExamSessionState | null;
+type UserQuizData = Omit<StoredUserStats, "lastActive">;
 
+interface QuizPersisted {
+  byUser: Record<string, UserQuizData>;
+}
+
+interface QuizState extends UserQuizData {
+  byUser: Record<string, UserQuizData>;
+  activeExam: ExamSessionState | null;
+  activeUsername: string | null;
+  isStatsReady: boolean;
+  isQuizHydrated: boolean;
+
+  setQuizHydrated: () => void;
+  loadAndMergeFromServer: (username: string) => Promise<void>;
   recordAnswer: (questionId: string, isCorrect: boolean) => void;
-  saveSession: (
-    score: number,
-    totalQuestions: number,
-    type: SessionType,
-  ) => void;
+  saveSession: (score: number, totalQuestions: number, type: SessionType) => void;
   resetStats: () => void;
   startExam: (questionIds: string[]) => void;
   recordExamAnswer: (questionId: string, selectedIndex: number) => void;
@@ -52,35 +50,106 @@ interface QuizState {
   clearExam: () => void;
 }
 
-const defaultState = {
+const emptyQuiz: UserQuizData = {
   totalAnswered: 0,
   correctAnswers: 0,
   wrongAnswers: 0,
-  history: [] as SessionRecord[],
-  questionStats: {} as Record<string, QuestionStat>,
-  activeExam: null as ExamSessionState | null,
+  history: [],
+  questionStats: {},
 };
 
-function getStorageKey(): string {
-  const username = useAuthStore.getState().username;
-  return username ? `naukaair-quiz-${username}` : "naukaair-quiz-guest";
+function applyUserData(
+  set: (partial: Partial<QuizState>) => void,
+  get: () => QuizState,
+  username: string,
+  data: UserQuizData,
+) {
+  set({
+    ...data,
+    activeUsername: username,
+    byUser: { ...get().byUser, [username]: data },
+  });
+}
+
+async function pushToServer(username: string, data: UserQuizData): Promise<void> {
+  try {
+    const response = await fetch("/api/stats/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username,
+        stats: { ...data, lastActive: new Date().toISOString() },
+      }),
+    });
+    if (response.ok) {
+      const { useAuthStore } = await import("./useAuthStore");
+      void useAuthStore.getState().fetchGlobalStats();
+    }
+  } catch {
+    /* offline */
+  }
 }
 
 export const useQuizStore = create<QuizState>()(
   persist(
     (set, get) => ({
-      ...defaultState,
+      ...emptyQuiz,
+      byUser: {},
+      activeExam: null,
+      activeUsername: null,
+      isStatsReady: false,
+      isQuizHydrated: false,
+
+      setQuizHydrated: () => set({ isQuizHydrated: true }),
+
+      loadAndMergeFromServer: async (username) => {
+        const local: StoredUserStats = {
+          ...(get().byUser[username] ?? emptyQuiz),
+          lastActive: new Date().toISOString(),
+        };
+
+        set({ isStatsReady: false, activeUsername: username, ...local });
+
+        try {
+          const response = await fetch(
+            `/api/stats/user/${encodeURIComponent(username)}`,
+            { cache: "no-store" },
+          );
+          if (response.ok) {
+            const payload = (await response.json()) as { stats: StoredUserStats };
+            const merged = mergeUserStats(local, payload.stats);
+            const quizData: UserQuizData = {
+              totalAnswered: merged.totalAnswered,
+              correctAnswers: merged.correctAnswers,
+              wrongAnswers: merged.wrongAnswers,
+              history: merged.history,
+              questionStats: merged.questionStats,
+            };
+            applyUserData(set, get, username, quizData);
+            set({ isStatsReady: true });
+            await pushToServer(username, quizData);
+            const { useAuthStore } = await import("./useAuthStore");
+            void useAuthStore.getState().fetchGlobalStats();
+            return;
+          }
+        } catch {
+          /* offline */
+        }
+
+        set({ isStatsReady: true });
+      },
 
       recordAnswer: (questionId, isCorrect) => {
+        const username = get().activeUsername;
+        if (!username) return;
+
         set((state) => {
-          const prev = state.questionStats[questionId] ?? {
-            attempts: 0,
-            correct: 0,
-          };
-          return {
+          const prev = state.questionStats[questionId] ?? { attempts: 0, correct: 0 };
+          const next: UserQuizData = {
             totalAnswered: state.totalAnswered + 1,
             correctAnswers: state.correctAnswers + (isCorrect ? 1 : 0),
             wrongAnswers: state.wrongAnswers + (isCorrect ? 0 : 1),
+            history: state.history,
             questionStats: {
               ...state.questionStats,
               [questionId]: {
@@ -89,29 +158,46 @@ export const useQuizStore = create<QuizState>()(
               },
             },
           };
+          return {
+            ...next,
+            byUser: { ...state.byUser, [username]: next },
+          };
         });
 
-        void useAuthStore.getState().syncStatsToServer();
+        const data = get().byUser[username];
+        if (data) void pushToServer(username, data);
       },
 
       saveSession: (score, totalQuestions, type) => {
-        set((state) => ({
-          history: [
-            {
-              date: new Date().toISOString(),
-              score,
-              totalQuestions,
-              type,
-            },
-            ...state.history,
-          ].slice(0, 50),
-        }));
-        void useAuthStore.getState().syncStatsToServer();
+        const username = get().activeUsername;
+        if (!username) return;
+
+        set((state) => {
+          const next: UserQuizData = {
+            totalAnswered: state.totalAnswered,
+            correctAnswers: state.correctAnswers,
+            wrongAnswers: state.wrongAnswers,
+            questionStats: state.questionStats,
+            history: [
+              { date: new Date().toISOString(), score, totalQuestions, type },
+              ...state.history,
+            ].slice(0, 50),
+          };
+          return {
+            history: next.history,
+            byUser: { ...state.byUser, [username]: next },
+          };
+        });
+
+        const data = get().byUser[username];
+        if (data) void pushToServer(username, data);
       },
 
       resetStats: () => {
-        set({ ...defaultState });
-        void useAuthStore.getState().syncStatsToServer();
+        const username = get().activeUsername;
+        if (!username) return;
+        applyUserData(set, get, username, emptyQuiz);
+        void pushToServer(username, emptyQuiz);
       },
 
       startExam: (questionIds) => {
@@ -131,10 +217,7 @@ export const useQuizStore = create<QuizState>()(
           return {
             activeExam: {
               ...state.activeExam,
-              answers: {
-                ...state.activeExam.answers,
-                [questionId]: selectedIndex,
-              },
+              answers: { ...state.activeExam.answers, [questionId]: selectedIndex },
             },
           };
         });
@@ -143,28 +226,34 @@ export const useQuizStore = create<QuizState>()(
       finishExam: () => {
         const exam = get().activeExam;
         if (!exam) return null;
-        set({
-          activeExam: { ...exam, finished: true },
-        });
+        set({ activeExam: { ...exam, finished: true } });
         return { ...exam, finished: true };
       },
 
       clearExam: () => set({ activeExam: null }),
     }),
     {
-      name: "naukaair-quiz",
-      storage: createJSONStorage(() => ({
-        getItem: (name) => localStorage.getItem(getStorageKey()) ?? localStorage.getItem(name),
-        setItem: (_name, value) => localStorage.setItem(getStorageKey(), value),
-        removeItem: (_name) => localStorage.removeItem(getStorageKey()),
-      })),
-      partialize: (state) => ({
-        totalAnswered: state.totalAnswered,
-        correctAnswers: state.correctAnswers,
-        wrongAnswers: state.wrongAnswers,
-        history: state.history,
-        questionStats: state.questionStats,
-      }),
+      name: "naukaair-quiz-v2",
+      partialize: (state) => ({ byUser: state.byUser }),
+      merge: (persisted, current) => {
+        const saved = persisted as QuizPersisted | undefined;
+        const byUser = saved?.byUser ?? {};
+        const username = current.activeUsername;
+        const userData = username ? (byUser[username] ?? emptyQuiz) : emptyQuiz;
+        return {
+          ...current,
+          byUser,
+          ...userData,
+        };
+      },
+      onRehydrateStorage: () => (state) => {
+        state?.setQuizHydrated();
+        import("@/lib/initStats").then(({ maybeLoadStatsFromServer }) => {
+          maybeLoadStatsFromServer();
+        });
+      },
     },
   ),
 );
+
+export { emptyUserStats };

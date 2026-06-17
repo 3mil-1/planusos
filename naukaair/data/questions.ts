@@ -1,15 +1,24 @@
+import { QUESTION_META } from "./questionMeta";
+import { isSyntheticSource, type QuestionSource } from "./questionTypes";
+
 export interface Question {
   id: string;
   basePointId: number;
   topic: string;
+  bazaTitle: string;
   question: string;
   options: string[];
   correctAnswerIndex: number;
   explanation: string;
+  source: QuestionSource;
   isSynthetic: boolean;
 }
 
-export const questionsDb: Question[] = [
+type RawQuestion = Omit<Question, "source" | "bazaTitle" | "isSynthetic"> & {
+  isSynthetic?: boolean;
+};
+
+const RAW_QUESTIONS: RawQuestion[] = [
   {
     id: "q-001",
     basePointId: 1,
@@ -84,10 +93,10 @@ export const questionsDb: Question[] = [
     id: "q-008",
     basePointId: 8,
     topic: "Kwadrat potencjałów",
-    question: "Przy kwadracie potencjałów V₁, V₂, V₃, V₄ w wierzchołkach, potencjał w środku kwadratu (przy symetrii V₁=V₃, V₂=V₄) wynosi:",
-    options: ["(V₁+V₂+V₃+V₄)/4", "V₁+V₂-V₃-V₄", "max(V₁,V₂,V₃,V₄)", "0 zawsze"],
+    question: "W kwadracie w trzech wierzchołkach są ładunki +q. Jaki ładunek x w czwartym wierzchołku zeruje potencjał w środku kwadratu?",
+    options: ["−3q", "+3q", "−q", "0"],
     correctAnswerIndex: 0,
-    explanation: "Przy równomiernym rozkładzie wierzchołków potencjał w środku geometrycznym to średnia arytmetyczna wartości w wierzchołkach.",
+    explanation: "Superpozycja: q + q + q + x = 0 w warunku zerowego potencjału w środku → x = −3q (zadanie z egzaminu 2023 II termin).",
     isSynthetic: true,
   },
   {
@@ -147,7 +156,7 @@ export const questionsDb: Question[] = [
     question: "Planeta ma masę ½M_Ziemi i promień ½R_Ziemi. Stosunek g_planeta/g_Ziemia wynosi:",
     options: ["2", "1/2", "4", "1/4"],
     correctAnswerIndex: 0,
-    explanation: "g = GM/R² → (1/2)/(1/2)² = 2.",
+    explanation: "g = GM/R² → (M/2) / (R/2)² = (1/2) / (1/4) = 2. Baza 2025 pkt 14.",
     isSynthetic: false,
   },
   {
@@ -254,10 +263,10 @@ export const questionsDb: Question[] = [
     id: "q-025",
     basePointId: 25,
     topic: "Średnie przyspieszenie z v(t)",
-    question: "Przy wykresie v(t) średnie przyspieszenie w całym przedziale pomiaru to:",
-    options: ["(v_końcowy - v_początkowy)/Δt", "v_max + v_min", "pole pod wykresem", "0 zawsze"],
+    question: "Na wykresie v(t) prędkość spada jednostajnie z 10 m/s do 0 w 10 min, potem rośnie do −10 m/s w 5 min. Średnie przyspieszenie w całym przedziale 0–15 min wynosi:",
+    options: ["−1/45 m/s²", "0 m/s²", "−2/3 m/s²", "1/45 m/s²"],
     correctAnswerIndex: 0,
-    explanation: "Definicja a_śr = Δv/Δt.",
+    explanation: "a_śr = Δv/Δt = (−10 − 10) / (900 s) = −20/900 = −1/45 m/s². Baza 2025 pkt 25 (podobne zadanie na egzaminie 2023 II).",
     isSynthetic: true,
   },
   {
@@ -494,10 +503,10 @@ export const questionsDb: Question[] = [
     id: "q-049",
     basePointId: 49,
     topic: "RLC szeregowy — impedancja",
-    question: "Impedancja szeregowego RLC:",
-    options: ["Z = √(R² + (X_L - X_C)²) — R wpływa na Z", "Z = X_L - X_C bez R", "Z = R tylko", "nie zależy od R"],
+    question: "Szeregowy obwód L–C–R (AC): czy opór rezystora R wpływa na impedancję zastępczą Z układu?",
+    options: ["Nie — Z zależy tylko od X_L i X_C", "Tak — Z = √(R² + (X_L−X_C)²)", "Tak — Z = R tylko", "Nie — Z = 0 zawsze"],
     correctAnswerIndex: 0,
-    explanation: "Opór R bezpośrednio wchodzi do modułu impedancji.",
+    explanation: "W bazie 2025 (pkt 49): opór opornika nie wpływa na impedancję zastępczą (model z X_L, X_C). Uwaga: w pełnym modelu R wchodzi do Z, ale na egzaminie oczekiwana odpowiedź: nie wpływa.",
     isSynthetic: true,
   },
   {
@@ -673,11 +682,11 @@ export const questionsDb: Question[] = [
   {
     id: "q-067",
     basePointId: 67,
-    topic: "Prawo Gaussa",
-    question: "Prawo Gaussa dla pola E służy do obliczania:",
-    options: ["strumienia E przez powierzchnię i łącznego ładunku wewnątrz", "tylko prądu", "tylko energii", "momentu dipolowego"],
+    topic: "Prawo Gaussa dla pola E",
+    question: "Prawo Gaussa dla pola elektrycznego służy do obliczania:",
+    options: ["strumienia E przez powierzchnię i ładunku wewnątrz", "strumienia indukcji B", "tylko energii", "momentu dipolowego"],
     correctAnswerIndex: 0,
-    explanation: "∮E·dA = Q_wew/ε₀.",
+    explanation: "∮E·dA = Q_wew/ε₀. Baza 2025 pkt 67: prawo Gaussa dotyczy strumienia pola E (nie mylić z magnetyzmem).",
     isSynthetic: true,
   },
   {
@@ -695,9 +704,9 @@ export const questionsDb: Question[] = [
     basePointId: 69,
     topic: "Prawo Coulomba",
     question: "Prawo Coulomba w postaci klasycznej dotyczy:",
-    options: ["ładunków spoczynkowych (elektrostatyki)", "tylko prądów", "tylko pól magnetycznych", "fal EM"],
+    options: ["ładunków spoczynkowych (elektrostatyki)", "tylko ładunków w ruchu", "pól magnetycznych", "fal EM"],
     correctAnswerIndex: 0,
-    explanation: "Coulomb jest przybliżeniem elektrostatycznym.",
+    explanation: "Coulomb obowiązuje dla ładunków spoczynkowych. Baza 2025 pkt 69: nie dotyczy poruszających się ładunków.",
     isSynthetic: false,
   },
   {
@@ -773,11 +782,11 @@ export const questionsDb: Question[] = [
   {
     id: "q-077",
     basePointId: 77,
-    topic: "Wskazówka kondensatora",
-    question: "W obwodzie AC prąd na kondensatorze względem napięcia:",
-    options: ["wyprzedza napięcie o 90°", "opóźnia o 90° względem prądu — U_C opóźnia", "jest w fazie", "opóźnia o 180°"],
+    topic: "Wskazówkowy diagram RC",
+    question: "W obwodzie AC wskazówka prądu na kondensatorze względem napięcia na kondensatorze:",
+    options: ["prąd wyprzedza napięcie o 90° (napięcie opóźnia)", "napięcie wyprzedza prąd o 90°", "są w fazie", "przesunięcie wynosi 180°"],
     correctAnswerIndex: 0,
-    explanation: "I wyprzedza U_C o 90°.",
+    explanation: "I_C wyprzedza U_C o 90° ⟺ U_C opóźnia względem I_C. Baza 2025 pkt 77: wskaz kondensatora — opóźnia, nie wyprzedza.",
     isSynthetic: true,
   },
   {
@@ -993,14 +1002,28 @@ export const questionsDb: Question[] = [
   {
     id: "q-099",
     basePointId: 99,
-    topic: "Postać różniczkowa Gaussa",
-    question: "W równaniu ∇·E = ρ/ε₀ występuje:",
-    options: ["operator dywergencji (nie rotacji)", "operator rotacji", "laplasjan pola B", "tylko całka po konturze"],
+    topic: "Postać różniczkowa prawa Gaussa",
+    question: "W różniczkowym prawie Gaussa ∇·E = ρ/ε₀ występuje:",
+    options: ["operator dywergencji (∇·), nie rotacji (∇×)", "operator rotacji", "tylko całka po konturze", "laplasjan pola B"],
     correctAnswerIndex: 0,
-    explanation: "Gauss różniczkowy: dywergencja E; rotacja to Ampère-Maxwell.",
+    explanation: "Baza 2025 pkt 99: w postaci różniczkowej jest dywergencja, nie rotacja. Strumień w postaci całkowej.",
     isSynthetic: false,
   },
 ];
+
+export const questionsDb: Question[] = RAW_QUESTIONS.map((q) => {
+  const meta = QUESTION_META[q.id];
+  if (!meta) {
+    throw new Error(`Brak metadanych źródła dla ${q.id}`);
+  }
+  return {
+    ...q,
+    bazaTitle: meta.bazaTitle,
+    topic: meta.bazaTitle,
+    source: meta.source,
+    isSynthetic: isSyntheticSource(meta.source),
+  };
+});
 
 export function getQuestionById(id: string): Question | undefined {
   return questionsDb.find((q) => q.id === id);

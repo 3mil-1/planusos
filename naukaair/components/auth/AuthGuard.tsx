@@ -38,7 +38,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }
 
   if (!username && !PUBLIC_PATHS.includes(pathname)) {
-    return null;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-900 text-slate-300">
+        <div className="animate-pulse text-sm tracking-wide">Przekierowanie…</div>
+      </div>
+    );
   }
 
   return <>{children}</>;

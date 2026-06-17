@@ -4,10 +4,11 @@ import { useCallback, useMemo, useState } from "react";
 import { ChevronRight, RotateCcw } from "lucide-react";
 import { getQuestionsByRange, type Question } from "@/data/questions";
 import { LEARN_RANGES } from "@/lib/utils";
+import { shuffleQuestionOptions } from "@/lib/shuffleOptions";
 import { useQuizStore } from "@/store/useQuizStore";
 import { Card } from "@/components/ui/Card";
 import { QuestionCard } from "@/components/quiz/QuestionCard";
-import { SyntheticBadge } from "@/components/quiz/SyntheticBadge";
+import { SourceBadge } from "@/components/quiz/SourceBadge";
 import { ProgressBar } from "@/components/quiz/ProgressBar";
 
 export default function LearnPage() {
@@ -19,7 +20,10 @@ export default function LearnPage() {
   const [showResult, setShowResult] = useState(false);
   const [sessionCorrect, setSessionCorrect] = useState(0);
 
-  const current = questions[index];
+  const current = useMemo(
+    () => (questions[index] ? shuffleQuestionOptions(questions[index]) : undefined),
+    [questions, index],
+  );
 
   const startRange = (r: (typeof LEARN_RANGES)[number]) => {
     const qs = getQuestionsByRange(r.start, r.end);
@@ -111,8 +115,8 @@ export default function LearnPage() {
       <ProgressBar current={index + 1} total={questions.length} label={progressLabel} />
 
       <Card>
-        <div className="mb-4">
-          <SyntheticBadge visible={current.isSynthetic} />
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <SourceBadge source={current.source} isSynthetic={current.isSynthetic} />
         </div>
 
         <QuestionCard

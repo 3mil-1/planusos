@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { readGlobalStats } from "@/lib/globalStats";
+import { getAllUserSummaries, isPersistentStorage } from "@/lib/statsStore";
 
 export async function GET() {
-  const stats = await readGlobalStats();
+  const users = await getAllUserSummaries();
 
-  const users = Object.entries(stats.users)
+  const list = Object.entries(users)
     .map(([username, data]) => ({
       username,
       totalAnswered: data.totalAnswered,
@@ -17,5 +17,8 @@ export async function GET() {
     }))
     .sort((a, b) => b.accuracy - a.accuracy || b.totalAnswered - a.totalAnswered);
 
-  return NextResponse.json({ users });
+  return NextResponse.json({
+    users: list,
+    persistent: isPersistentStorage(),
+  });
 }
