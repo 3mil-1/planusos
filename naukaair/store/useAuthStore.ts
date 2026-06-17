@@ -16,6 +16,7 @@ interface AuthState {
   username: string | null;
   isHydrated: boolean;
   globalUsers: GlobalUserSummary[];
+  globalStatsLoading: boolean;
   storagePersistent: boolean;
   login: (username: string) => Promise<boolean>;
   logout: () => void;
@@ -33,6 +34,7 @@ export const useAuthStore = create<AuthState>()(
       username: null,
       isHydrated: false,
       globalUsers: [],
+      globalStatsLoading: false,
       storagePersistent: false,
 
       setHydrated: () => set({ isHydrated: true }),
@@ -60,7 +62,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        set({ username: null });
+        set({ username: null, globalUsers: [], globalStatsLoading: false });
         useQuizStore.setState({
           activeUsername: null,
           isStatsReady: false,
@@ -73,25 +75,41 @@ export const useAuthStore = create<AuthState>()(
       },
 
       fetchGlobalStats: async () => {
-        try {
-          const response = await fetch("/api/stats/global", { cache: "no-store" });
-          if (!response.ok) return;
-          const data = (await response.json()) as {
-            users: GlobalUserSummary[];
-            persistent?: boolean;
-          };
-          set({
-            globalUsers: data.users,
-            storagePersistent: Boolean(data.persistent),
-          });
-        } catch {
-          /* offline */
+        set({ globalStatsLoading: true });
+
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+          try {
+            const response = await fetch("/api/stats/global", { cache: "no-store" });
+            if (!response.ok) {
+              await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+              continue;
+            }
+
+            const data = (await response.json()) as {
+              users: GlobalUserSummary[];
+              persistent?: boolean;
+            };
+            set({
+              globalUsers: data.users,
+              storagePersistent: Boolean(data.persistent),
+              globalStatsLoading: false,
+            });
+            return;
+          } catch {
+            await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+          }
         }
+
+        set({ globalStatsLoading: false });
       },
     }),
     {
       name: "naukaair-auth",
-      partialize: (state) => ({ username: state.username }),
+      partialize: (state) => ({
+        username: state.username,
+        globalUsers: state.globalUsers,
+        storagePersistent: state.storagePersistent,
+      }),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated();
         import("@/lib/initStats").then(({ maybeLoadStatsFromServer }) => {

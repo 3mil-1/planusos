@@ -17,10 +17,19 @@ export default function DashboardPage() {
     questionStats,
     history,
   } = useQuizStore();
-  const { username, globalUsers, fetchGlobalStats, storagePersistent } = useAuthStore();
+  const { username, globalUsers, fetchGlobalStats, storagePersistent, globalStatsLoading } =
+    useAuthStore();
 
   useEffect(() => {
     void fetchGlobalStats();
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void fetchGlobalStats();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, [fetchGlobalStats]);
 
   const accuracy = formatPercent(correctAnswers, totalAnswered);
@@ -138,12 +147,15 @@ export default function DashboardPage() {
         </NavAnchor>
       </div>
 
-      {globalUsers.length > 0 && (
-        <Card>
+      <Card>
           <div className="mb-4 flex items-center gap-2">
             <Users className="h-5 w-5 text-sky-400" />
             <h2 className="text-lg font-semibold text-white">Ranking globalny</h2>
+            {globalStatsLoading && (
+              <span className="text-xs text-slate-500">Odświeżanie…</span>
+            )}
           </div>
+          {globalUsers.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -176,8 +188,14 @@ export default function DashboardPage() {
               </tbody>
             </table>
           </div>
+          ) : (
+            <p className="text-sm text-slate-500">
+              {globalStatsLoading
+                ? "Pobieranie rankingu z serwera…"
+                : "Brak danych rankingu — serwer może się budzić (Render Free). Odśwież za chwilę."}
+            </p>
+          )}
         </Card>
-      )}
 
       {recentSessions.length > 0 && (
         <Card>

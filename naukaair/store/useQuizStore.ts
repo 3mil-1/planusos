@@ -72,14 +72,22 @@ function applyUserData(
 }
 
 async function pushToServer(username: string, data: UserQuizData): Promise<void> {
-  await fetch("/api/stats/sync", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username,
-      stats: { ...data, lastActive: new Date().toISOString() },
-    }),
-  });
+  try {
+    const response = await fetch("/api/stats/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username,
+        stats: { ...data, lastActive: new Date().toISOString() },
+      }),
+    });
+    if (response.ok) {
+      const { useAuthStore } = await import("./useAuthStore");
+      void useAuthStore.getState().fetchGlobalStats();
+    }
+  } catch {
+    /* offline */
+  }
 }
 
 export const useQuizStore = create<QuizState>()(
@@ -120,6 +128,8 @@ export const useQuizStore = create<QuizState>()(
             applyUserData(set, get, username, quizData);
             set({ isStatsReady: true });
             await pushToServer(username, quizData);
+            const { useAuthStore } = await import("./useAuthStore");
+            void useAuthStore.getState().fetchGlobalStats();
             return;
           }
         } catch {
