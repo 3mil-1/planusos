@@ -69,7 +69,7 @@ export default function DashboardPage() {
         <p className="mt-2 text-slate-400">
           Witaj, <span className="text-sky-400">{username}</span>. Baza:{" "}
           <span className="text-white">{questionsDb.length}</span> pytań (99 pkt 2025 +{" "}
-          {questionsDb.length - 99} extra z egzaminów).
+          {questionsDb.length - 99} extra, w tym ze skanami PDF).
         </p>
       </div>
 

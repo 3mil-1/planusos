@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import type { Question } from "@/data/questions";
+import { QuestionFigures } from "@/components/quiz/QuestionFigures";
 import { isExtraPointId } from "@/data/extraQuestions";
 
 const LABELS = ["A", "B", "C", "D"];
@@ -26,15 +27,20 @@ export function QuestionCard({
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <span className="rounded-md bg-slate-800 px-2.5 py-1 text-xs font-mono text-slate-400">
-            {isExtraPointId(question.basePointId)
-              ? `Extra ${question.basePointId - 99}`
-              : `#${question.basePointId}`}
+            {question.basePointId >= 130
+              ? `Img ${question.basePointId - 129}`
+              : isExtraPointId(question.basePointId)
+                ? `Extra ${question.basePointId - 99}`
+                : `#${question.basePointId}`}
           </span>
           <span className="text-sm text-sky-400">{question.topic}</span>
         </div>
         <h2 className="text-lg font-medium leading-relaxed text-white md:text-xl">
           {question.question}
         </h2>
+        {question.figures && question.figures.length > 0 && (
+          <QuestionFigures figures={question.figures} />
+        )}
       </div>
 
       <div className="grid gap-3">

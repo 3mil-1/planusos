@@ -1,8 +1,14 @@
 import { EXTRA_RAW_QUESTIONS, EXTRA_QUESTION_META } from "./extraQuestions";
+import {
+  EXTRA_IMAGE_RAW,
+  EXTRA_IMAGE_META,
+  imageRawToFigures,
+} from "./extraImageQuestions";
+import { getQuestionFigures, type QuestionFigure } from "./questionImages";
 import { QUESTION_META } from "./questionMeta";
 import { isSyntheticSource, type QuestionSource } from "./questionTypes";
 
-const ALL_QUESTION_META = { ...QUESTION_META, ...EXTRA_QUESTION_META };
+const ALL_QUESTION_META = { ...QUESTION_META, ...EXTRA_QUESTION_META, ...EXTRA_IMAGE_META };
 
 export interface Question {
   id: string;
@@ -15,10 +21,12 @@ export interface Question {
   explanation: string;
   source: QuestionSource;
   isSynthetic: boolean;
+  figures?: QuestionFigure[];
 }
 
 type RawQuestion = Omit<Question, "source" | "bazaTitle" | "isSynthetic"> & {
   isSynthetic?: boolean;
+  figures?: QuestionFigure[];
 };
 
 const RAW_QUESTIONS: RawQuestion[] = [
@@ -1014,6 +1022,10 @@ const RAW_QUESTIONS: RawQuestion[] = [
     isSynthetic: false,
   },
   ...EXTRA_RAW_QUESTIONS,
+  ...EXTRA_IMAGE_RAW.map(({ figureSrc, figureAlt, ...q }) => ({
+    ...q,
+    figures: imageRawToFigures({ ...q, figureSrc, figureAlt }),
+  })),
 ];
 
 export const questionsDb: Question[] = RAW_QUESTIONS.map((q) => {
@@ -1027,6 +1039,7 @@ export const questionsDb: Question[] = RAW_QUESTIONS.map((q) => {
     topic: meta.bazaTitle,
     source: meta.source,
     isSynthetic: isSyntheticSource(meta.source),
+    figures: q.figures ?? getQuestionFigures(q.id),
   };
 });
 

@@ -30,5 +30,6 @@ export function shuffleQuestionOptions(question: Question): DisplayQuestion {
     ...question,
     options: order.map((i) => question.options[i]),
     correctAnswerIndex: order.indexOf(question.correctAnswerIndex),
+    figures: question.figures,
   };
 }
