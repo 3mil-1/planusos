@@ -15,8 +15,9 @@ Otwórz [http://localhost:3000](http://localhost:3000) — zaloguj się samym lo
 ## Funkcje
 
 - **99 pytań** — po jednym na każdy punkt bazy 2025 (`data/questions.ts`)
-- **54 z egzaminów** — oznaczone źródłem PDF (obecnie: `fizyka_egzamin_2023_ii_termin.pdf`)
-- **45 syntetycznych** — uzupełniają braki; oparte o tytuły z bazy AGH 2025
+- **46 z egzaminów / bazy** — przypisane do konkretnego PDF (`data/sources/`)
+- **53 syntetycznych** — uzupełnienie wg oficjalnej `baza_fizyka_2025.pdf`
+- Źródła PDF: 2020, 2023 I/II termin, 2021 (skany), baza 2025
 - Metadane źródeł: `data/questionMeta.ts`, typy: `data/questionTypes.ts`
 - **Symulacja egzaminu** — 40 pytań, 60 minut
 - **Statystyki** — Zustand + localStorage per użytkownik + sync na serwer

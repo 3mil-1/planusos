@@ -2,7 +2,6 @@
 
 import { BookOpen, FileText } from "lucide-react";
 import type { QuestionSource } from "@/data/questionTypes";
-import { formatQuestionSource } from "@/data/questionTypes";
 
 interface SourceBadgeProps {
   source: QuestionSource;
@@ -25,10 +24,10 @@ export function SourceBadge({ source, isSynthetic }: SourceBadgeProps) {
   return (
     <span
       className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-200"
-      title={source.type === "exam" ? source.note : formatQuestionSource(source)}
+      title={source.type === "exam" ? `${source.pdf} — ${source.note ?? ""}` : undefined}
     >
       <FileText className="h-3.5 w-3.5 shrink-0" />
-      Egzamin: {source.type === "exam" ? source.ref : "?"}
+      Egzamin {source.type === "exam" ? source.ref : "?"}
     </span>
   );
 }
