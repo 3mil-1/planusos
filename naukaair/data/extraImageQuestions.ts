@@ -9,11 +9,11 @@ type ImageQuestionRaw = {
   options: string[];
   correctAnswerIndex: number;
   explanation: string;
-  figureSrc: string;
-  figureAlt: string;
+  figureSrc?: string;
+  figureAlt?: string;
 };
 
-const IMG = (page: number) => `/exam-images/fizyka_2020_-_egzamin/page-${String(page).padStart(2, "0")}.jpg`;
+const CROP = (id: string) => `/exam-images/crops/fizyka_2020_-_egzamin/${id}.jpg`;
 
 export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
   {
@@ -31,7 +31,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     correctAnswerIndex: 1,
     explanation:
       "Przy toczeniu bez poślizgu: v_cm = ωR, punkt styku ma v = 0, góra ma v = 2v_cm — charakterystyczny rozkład zgodny z rysunkiem B.",
-    figureSrc: IMG(2),
+    figureSrc: CROP("q-ex-i01"),
     figureAlt: "Kula tocząca się — cztery warianty rozkładu prędkości",
   },
   {
@@ -44,7 +44,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     correctAnswerIndex: 2,
     explanation:
       "Wewnątrz przewodnika/sphere equipotential: V = const dla r < R; na zewnątrz V ∝ 1/r. Poprawny wykres C.",
-    figureSrc: IMG(3),
+    figureSrc: CROP("q-ex-i02"),
     figureAlt: "Wykres potencjału V(r) dla naładowanej kuli",
   },
   {
@@ -56,7 +56,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     options: ["Żadna z oznaczonych", "L1", "L2", "L3"],
     correctAnswerIndex: 1,
     explanation: "Długość fali to odległość między dwoma kolejnymi punktami o tej samej fazie — L1.",
-    figureSrc: IMG(4),
+    figureSrc: CROP("q-ex-i03"),
     figureAlt: "Sinusoida z oznaczeniami L1, L2, L3",
   },
   {
@@ -69,7 +69,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     correctAnswerIndex: 1,
     explanation:
       "Siła reakcji jest prostopadła do toru (do drutu) i skierowana od powierzchni — zgodnie z rysunkiem B na egzaminie 2020.",
-    figureSrc: IMG(6),
+    figureSrc: CROP("q-ex-i04"),
     figureAlt: "Koralik na wygiętym drucie — warianty siły reakcji",
   },
   {
@@ -82,7 +82,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     correctAnswerIndex: 2,
     explanation:
       "Środek masy leży bliżej masywniejszej gwiazdy M — poprawny rysunek C (potwierdzone na egzaminie 2020).",
-    figureSrc: IMG(7),
+    figureSrc: CROP("q-ex-i05"),
     figureAlt: "Układ podwójny — cztery warianty położenia osi obrotu",
   },
   {
@@ -95,7 +95,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     correctAnswerIndex: 0,
     explanation:
       "Prądy przeciwne → siły odpychające; kierunki z reguły prawej dłoni. Poprawny rysunek A.",
-    figureSrc: IMG(15),
+    figureSrc: CROP("q-ex-i06"),
     figureAlt: "Dwa przewodniki z przeciwnymi prądami — siły wzajemne",
   },
   {
@@ -108,7 +108,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     correctAnswerIndex: 1,
     explanation:
       "Z z.z. pędu: klin odpływa w przeciwną stronę niż składowa ruchu klocka — wariant B zgodny z typowym rozwiązaniem egzaminacyjnym.",
-    figureSrc: IMG(17),
+    figureSrc: CROP("q-ex-i07"),
     figureAlt: "Klocek na klinie — wektory prędkości",
   },
   {
@@ -126,7 +126,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     correctAnswerIndex: 2,
     explanation:
       "Moment siły τ = r × F — dla tej samej sioty i geometrii moment nie zależy od położenia α. Egzamin 2020 + notatki 2023 I termin.",
-    figureSrc: IMG(13),
+    figureSrc: CROP("q-ex-i08"),
     figureAlt: "Bloczek na krążku — dwa kąty α",
   },
   {
@@ -144,14 +144,14 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     correctAnswerIndex: 0,
     explanation:
       "L = r × p względem CM pręta — przy ruchu prostopadłym do pręta promień wektorowy i pęd dają L = 0.",
-    figureSrc: IMG(12),
+    figureSrc: CROP("q-ex-i09"),
     figureAlt: "Krążek zbliżający się do pręta",
   },
   {
     id: "q-ex-i10",
     basePointId: 139,
     topic: "Ruch harmoniczny — stwierdzenia",
-    question: "W ruchu harmonicznym nietłumionym (patrz pełna treść na ilustracji z egzaminu):",
+    question: "W ruchu harmonicznym nietłumionym:",
     options: [
       "największa siła działa w położeniu równowagi",
       "największe przyspieszenie jest przy maksymalnym wychyleniu",
@@ -160,8 +160,6 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     ],
     correctAnswerIndex: 1,
     explanation: "a = −ω²x → |a|_max przy |x|_max; v = 0 w skrajnych położeniach.",
-    figureSrc: IMG(9),
-    figureAlt: "Pytanie o ruch harmoniczny — treść egzaminacyjna",
   },
   {
     id: "q-ex-i11",
@@ -173,7 +171,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     correctAnswerIndex: 1,
     explanation:
       "V = const wewnątrz przewodnika, ciągłość na powierzchni, V ∝ 1/r na zewnątrz — wykres B (recall egzamin 2020).",
-    figureSrc: IMG(30),
+    figureSrc: CROP("q-ex-i11"),
     figureAlt: "Cztery wykresy V(r) dla naładowanej sfery",
   },
   {
@@ -185,7 +183,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     options: ["10 mA", "1 A", "50 mA", "0 A"],
     correctAnswerIndex: 2,
     explanation: "I(0) = U/R = 10/200 = 0,05 A = 50 mA.",
-    figureSrc: IMG(28),
+    figureSrc: CROP("q-ex-i12"),
     figureAlt: "Schemat obwodu RC z napięciem i elementami",
   },
 ];
@@ -209,11 +207,12 @@ export const EXTRA_IMAGE_META: Record<
 );
 
 export function imageRawToFigures(q: ImageQuestionRaw) {
+  if (!q.figureSrc) return [];
   return [
     {
       src: q.figureSrc,
-      alt: q.figureAlt,
-      caption: "Skan oryginalnego pytania — egzamin 2020",
+      alt: q.figureAlt ?? q.topic,
+      caption: "Skan pytania z egzaminu 2020 (przycięty)",
     },
   ];
 }
