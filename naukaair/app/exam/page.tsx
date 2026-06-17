@@ -2,8 +2,9 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getQuestionById, getRandomExamQuestions, type Question } from "@/data/questions";
+import { getRandomExamQuestions, type Question } from "@/data/questions";
 import { EXAM_DURATION_SECONDS, EXAM_QUESTION_COUNT } from "@/lib/utils";
+import { shuffleQuestionOptions } from "@/lib/shuffleOptions";
 import { useQuizStore } from "@/store/useQuizStore";
 import { Card } from "@/components/ui/Card";
 import { QuestionCard, LABELS } from "@/components/quiz/QuestionCard";
@@ -28,16 +29,14 @@ export interface ExamResultPayload {
 }
 
 function buildAndSaveResults(
-  questionIds: string[],
+  questions: Question[],
   answers: Record<string, number>,
 ): ExamResultPayload {
   let score = 0;
   const wrongItems: ExamResultPayload["wrongItems"] = [];
 
-  for (const id of questionIds) {
-    const q = getQuestionById(id);
-    if (!q) continue;
-    const selected = answers[id];
+  for (const q of questions) {
+    const selected = answers[q.id];
     if (selected === undefined) continue;
 
     if (selected === q.correctAnswerIndex) {
@@ -59,7 +58,7 @@ function buildAndSaveResults(
 
   const payload: ExamResultPayload = {
     score,
-    total: questionIds.length,
+    total: questions.length,
     wrongItems,
     finishedAt: new Date().toISOString(),
   };
@@ -81,7 +80,7 @@ export default function ExamPage() {
   const current = questions[index];
 
   const beginExam = () => {
-    const qs = getRandomExamQuestions(EXAM_QUESTION_COUNT);
+    const qs = getRandomExamQuestions(EXAM_QUESTION_COUNT).map(shuffleQuestionOptions);
     setQuestions(qs);
     setIndex(0);
     setAnswers({});
@@ -90,14 +89,12 @@ export default function ExamPage() {
   };
 
   const finishAndNavigate = useCallback(() => {
-    const ids = questions.map((q) => q.id);
-    const payload = buildAndSaveResults(ids, answers);
+    const payload = buildAndSaveResults(questions, answers);
 
-    for (const id of ids) {
-      const q = getQuestionById(id);
-      const sel = answers[id];
-      if (q && sel !== undefined) {
-        recordAnswer(id, sel === q.correctAnswerIndex);
+    for (const q of questions) {
+      const sel = answers[q.id];
+      if (sel !== undefined) {
+        recordAnswer(q.id, sel === q.correctAnswerIndex);
       }
     }
 
