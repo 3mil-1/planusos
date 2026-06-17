@@ -15,7 +15,9 @@ Otwórz [http://localhost:3000](http://localhost:3000) — zaloguj się samym lo
 ## Funkcje
 
 - **99 pytań** — po jednym na każdy punkt bazy 2025 (`data/questions.ts`)
-- **Tryb nauki** — natychmiastowa ocena + wyjaśnienie
+- **54 z egzaminów** — oznaczone źródłem PDF (obecnie: `fizyka_egzamin_2023_ii_termin.pdf`)
+- **45 syntetycznych** — uzupełniają braki; oparte o tytuły z bazy AGH 2025
+- Metadane źródeł: `data/questionMeta.ts`, typy: `data/questionTypes.ts`
 - **Symulacja egzaminu** — 40 pytań, 60 minut
 - **Statystyki** — Zustand + localStorage per użytkownik + sync na serwer
 - **Ranking globalny** — Postgres (Neon) lub plik lokalny jako fallback

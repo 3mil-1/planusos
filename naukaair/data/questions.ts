@@ -1,15 +1,24 @@
+import { QUESTION_META } from "./questionMeta";
+import { isSyntheticSource, type QuestionSource } from "./questionTypes";
+
 export interface Question {
   id: string;
   basePointId: number;
   topic: string;
+  bazaTitle: string;
   question: string;
   options: string[];
   correctAnswerIndex: number;
   explanation: string;
+  source: QuestionSource;
   isSynthetic: boolean;
 }
 
-export const questionsDb: Question[] = [
+type RawQuestion = Omit<Question, "source" | "bazaTitle" | "isSynthetic"> & {
+  isSynthetic?: boolean;
+};
+
+const RAW_QUESTIONS: RawQuestion[] = [
   {
     id: "q-001",
     basePointId: 1,
@@ -84,10 +93,10 @@ export const questionsDb: Question[] = [
     id: "q-008",
     basePointId: 8,
     topic: "Kwadrat potencjałów",
-    question: "Przy kwadracie potencjałów V₁, V₂, V₃, V₄ w wierzchołkach, potencjał w środku kwadratu (przy symetrii V₁=V₃, V₂=V₄) wynosi:",
-    options: ["(V₁+V₂+V₃+V₄)/4", "V₁+V₂-V₃-V₄", "max(V₁,V₂,V₃,V₄)", "0 zawsze"],
+    question: "W kwadracie w trzech wierzchołkach są ładunki +q. Jaki ładunek x w czwartym wierzchołku zeruje potencjał w środku kwadratu?",
+    options: ["−3q", "+3q", "−q", "0"],
     correctAnswerIndex: 0,
-    explanation: "Przy równomiernym rozkładzie wierzchołków potencjał w środku geometrycznym to średnia arytmetyczna wartości w wierzchołkach.",
+    explanation: "Superpozycja: q + q + q + x = 0 w warunku zerowego potencjału w środku → x = −3q (zadanie z egzaminu 2023 II termin).",
     isSynthetic: true,
   },
   {
@@ -144,10 +153,10 @@ export const questionsDb: Question[] = [
     id: "q-014",
     basePointId: 14,
     topic: "Przyspieszenie grawitacyjne planety",
-    question: "Planeta ma masę ½M_Ziemi i promień ½R_Ziemi. Stosunek g_planeta/g_Ziemia wynosi:",
-    options: ["2", "1/2", "4", "1/4"],
+    question: "Gdzie okres wahadła matematycznego T = 2π√(L/g) będzie najdłuższy?",
+    options: ["Na równiku (g mniejsze)", "Na biegunie (g większe)", "Wszędzie taki sam", "W próżni okres jest nieskończony"],
     correctAnswerIndex: 0,
-    explanation: "g = GM/R² → (1/2)/(1/2)² = 2.",
+    explanation: "g rośnie od równika do biegunów (spłaszczenie Ziemi + siła odśrodkowa). Mniejsze g → dłuższy okres — najdłuższy na równiku (egzamin 2023 II termin, JW1).",
     isSynthetic: false,
   },
   {
@@ -253,11 +262,11 @@ export const questionsDb: Question[] = [
   {
     id: "q-025",
     basePointId: 25,
-    topic: "Średnie przyspieszenie z v(t)",
-    question: "Przy wykresie v(t) średnie przyspieszenie w całym przedziale pomiaru to:",
-    options: ["(v_końcowy - v_początkowy)/Δt", "v_max + v_min", "pole pod wykresem", "0 zawsze"],
+    topic: "Satelita geostacjonarny",
+    question: "Satelita geostacjonarny (pozostający nad jednym punktem na Ziemi) musi orbitować:",
+    options: ["nad równikiem", "nad biegunem", "nad dowolną szerokością", "tylko w pobliżu Księżyca"],
     correctAnswerIndex: 0,
-    explanation: "Definicja a_śr = Δv/Δt.",
+    explanation: "Orbita geostacjonarna leży w płaszczyźnie równikowej — inaczej satelita „dryfuje” względem punktu na powierzchni (Baza 2025 pkt 25; recall WW 2023 II termin).",
     isSynthetic: true,
   },
   {
@@ -1001,6 +1010,20 @@ export const questionsDb: Question[] = [
     isSynthetic: false,
   },
 ];
+
+export const questionsDb: Question[] = RAW_QUESTIONS.map((q) => {
+  const meta = QUESTION_META[q.id];
+  if (!meta) {
+    throw new Error(`Brak metadanych źródła dla ${q.id}`);
+  }
+  return {
+    ...q,
+    bazaTitle: meta.bazaTitle,
+    topic: meta.bazaTitle,
+    source: meta.source,
+    isSynthetic: isSyntheticSource(meta.source),
+  };
+});
 
 export function getQuestionById(id: string): Question | undefined {
   return questionsDb.find((q) => q.id === id);

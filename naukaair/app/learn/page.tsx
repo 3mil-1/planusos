@@ -8,7 +8,7 @@ import { shuffleQuestionOptions } from "@/lib/shuffleOptions";
 import { useQuizStore } from "@/store/useQuizStore";
 import { Card } from "@/components/ui/Card";
 import { QuestionCard } from "@/components/quiz/QuestionCard";
-import { SyntheticBadge } from "@/components/quiz/SyntheticBadge";
+import { SourceBadge } from "@/components/quiz/SourceBadge";
 import { ProgressBar } from "@/components/quiz/ProgressBar";
 
 export default function LearnPage() {
@@ -115,8 +115,8 @@ export default function LearnPage() {
       <ProgressBar current={index + 1} total={questions.length} label={progressLabel} />
 
       <Card>
-        <div className="mb-4">
-          <SyntheticBadge visible={current.isSynthetic} />
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <SourceBadge source={current.source} isSynthetic={current.isSynthetic} />
         </div>
 
         <QuestionCard

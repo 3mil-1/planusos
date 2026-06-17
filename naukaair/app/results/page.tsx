@@ -6,7 +6,8 @@ import { NavAnchor } from "@/components/ui/NavAnchor";
 import type { ExamResultPayload } from "@/app/exam/page";
 import { Card } from "@/components/ui/Card";
 import { ScoreRing } from "@/components/quiz/ScoreRing";
-import { SyntheticBadge } from "@/components/quiz/SyntheticBadge";
+import { SourceBadge } from "@/components/quiz/SourceBadge";
+import { getQuestionById } from "@/data/questions";
 import { formatPercent } from "@/lib/utils";
 
 export default function ResultsPage() {
@@ -64,7 +65,11 @@ export default function ResultsPage() {
             <Card key={item.questionId} className="border-red-500/20">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span className="text-sm text-sky-400">{item.topic}</span>
-                <SyntheticBadge visible={item.isSynthetic} />
+                {(() => {
+                  const q = getQuestionById(item.questionId);
+                  if (!q) return null;
+                  return <SourceBadge source={q.source} isSynthetic={q.isSynthetic} />;
+                })()}
               </div>
               <p className="font-medium text-white">{item.question}</p>
               <div className="mt-4 grid gap-2 text-sm sm:grid-cols-2">

@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getRandomExamQuestions, type Question } from "@/data/questions";
 import { EXAM_DURATION_SECONDS, EXAM_QUESTION_COUNT } from "@/lib/utils";
+import { formatQuestionSource } from "@/data/questionTypes";
 import { shuffleQuestionOptions } from "@/lib/shuffleOptions";
 import { useQuizStore } from "@/store/useQuizStore";
 import { Card } from "@/components/ui/Card";
@@ -24,6 +25,7 @@ export interface ExamResultPayload {
     correctLabel: string;
     explanation: string;
     isSynthetic: boolean;
+    sourceLabel: string;
   }>;
   finishedAt: string;
 }
@@ -52,6 +54,7 @@ function buildAndSaveResults(
         correctLabel: LABELS[q.correctAnswerIndex] ?? "?",
         explanation: q.explanation,
         isSynthetic: q.isSynthetic,
+        sourceLabel: formatQuestionSource(q.source),
       });
     }
   }
