@@ -1,0 +1,165 @@
+---
+title: "Projekt R – Estymacja i testowanie hipotez"
+author: "Imię Nazwisko"
+date: "`r format(Sys.Date(), '%d.%m.%Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 5)
+```
+
+# Wprowadzenie
+
+Projekt obejmuje zadania z laboratorium statystyki:
+
+| Ocena | Liczba zadań | Tematyka |
+|-------|-------------|----------|
+| **3** | 1 | Estymacja parametrów z rozkładu normalnego |
+| **4** | 2 | Przedziały ufności, estymacja wartości oczekiwanej |
+| **5** | 2 | Testowanie hipotez na danych historycznych |
+
+---
+
+# Zadanie 3 – Estymacja z rozkładu normalnego
+
+**Cel:** Wygenerować dane z rozkładu normalnego (`rnorm`) i oszacować średnią oraz odchylenie standardowe.
+
+```{r zadanie3}
+set.seed(42)
+mu_populacji    <- 100
+sigma_populacji <- 15
+n               <- 50
+
+dane <- rnorm(n = n, mean = mu_populacji, sd = sigma_populacji)
+
+srednia_probki <- mean(dane)
+sd_probki      <- sd(dane)
+
+cat("Srednia probki:", round(srednia_probki, 4), "\n")
+cat("Odchylenie std:", round(sd_probki, 4), "\n")
+cat("Mu populacji:", mu_populacji, "| Sigma populacji:", sigma_populacji)
+```
+
+```{r zadanie3-hist, fig.cap="Histogram danych z rozkładu normalnego"}
+hist(dane, breaks = 15, col = "steelblue", border = "white",
+     main = "Histogram danych z N(100, 15²)", xlab = "Wartość")
+abline(v = mu_populacji, col = "red", lwd = 2, lty = 2)
+abline(v = srednia_probki, col = "darkgreen", lwd = 2)
+```
+
+> **Wstaw tutaj screen kodu z RStudio** (skopiuj z pliku `zadanie_3/estymacja_normalna.R`)
+
+---
+
+# Zadanie 4A – Przedział ufności dla średniej
+
+**Cel:** Obliczyć przedział ufności 95% dla średniej z danych normalnych.
+
+```{r zadanie4a}
+set.seed(123)
+dane <- rnorm(30, mean = 50, sd = 8)
+
+test <- t.test(dane, conf.level = 0.95)
+cat("Srednia:", round(mean(dane), 4), "\n")
+cat("Przedzial ufnosci 95%:", round(test$conf.int, 4))
+```
+
+---
+
+# Zadanie 4B – Estymacja wartości oczekiwanej z CSV
+
+**Źródło danych:** IMGW – miesięczne temperatury stacji WARSZAWA-OKĘCIE (https://danepubliczne.imgw.pl/), plik `dane/temperatury_warszawa.csv`, separator `;`. Pobrane skryptem `pobierz_dane.R`.
+
+```{r zadanie4b}
+temperatury <- read.csv("dane/temperatury_warszawa.csv", sep = ";", header = TRUE)
+
+head(temperatury)
+
+srednia <- mean(temperatury$srednia_temp_c)
+test <- t.test(temperatury$srednia_temp_c)
+
+cat("Estymacja E[X] =", round(srednia, 2), "°C\n")
+cat("Przedzial ufnosci 95%: [", round(test$conf.int[1], 2), ";",
+    round(test$conf.int[2], 2), "] °C")
+```
+
+```{r zadanie4b-plot, fig.cap="Szereg czasowy temperatur"}
+plot(temperatury$srednia_temp_c, type = "b", col = "tomato", pch = 19,
+     xlab = "Miesiąc", ylab = "Temperatura [°C]",
+     main = "Miesięczne średnie temperatury – Warszawa")
+abline(h = srednia, col = "steelblue", lty = 2)
+```
+
+> **Opis danych:** IMGW (https://danepubliczne.imgw.pl/) – archiwum danych synoptycznych, stacja Warszawa-Okęcie, lata 2019–2023. Pobrane: `source("pobierz_dane.R")`.
+
+---
+
+# Zadanie 5A – Test hipotezy (temperatury)
+
+**Hipoteza:**
+
+- H₀: średnia roczna temperatura w Warszawie = 10°C
+- H₁: średnia roczna temperatura ≠ 10°C
+
+```{r zadanie5a}
+temperatury <- read.csv("dane/temperatury_warszawa.csv", sep = ";")
+lata <- unique(temperatury$rok)
+srednie_roczne <- sapply(lata, function(r) mean(temperatury$srednia_temp_c[temperatury$rok == r]))
+
+test <- t.test(srednie_roczne, mu = 10)
+print(test)
+```
+
+**Wniosek:** `r if(test$p.value < 0.05) "Odrzucamy H0 – średnia istotnie różni się od 10°C." else "Nie odrzucamy H0 – brak dowodów na różnicę od 10°C."`
+
+> **Wstaw screen kodu i opis źródła danych (IMGW)**
+
+---
+
+# Zadanie 5B – Test hipotezy (bezrobocie)
+
+**Źródło danych:** GUS BDL API – stopa bezrobocia rejestrowanego w Polsce (miesięcznie), plik `dane/bezrobocie_polska.csv`, separator `,`. Pobrane skryptem `pobierz_dane.R`.
+
+**Hipoteza:**
+
+- H₀: μ_przed (2018–2019) = μ_po (2021–2023)
+- H₁: μ_przed ≠ μ_po
+
+```{r zadanie5b}
+bezrobocie <- read.csv("dane/bezrobocie_polska.csv", sep = ",")
+
+przed <- bezrobocie$stopa_bezrobocia_proc[bezrobocie$rok <= 2019]
+po    <- bezrobocie$stopa_bezrobocia_proc[bezrobocie$rok >= 2021]
+
+test <- t.test(przed, po)
+print(test)
+```
+
+```{r zadanie5b-box, fig.cap="Porównanie stopy bezrobocia"}
+boxplot(list("2018-2019" = przed, "2021-2023" = po),
+        col = c("lightblue", "lightcoral"),
+        ylab = "Stopa bezrobocia [%]",
+        main = "Bezrobocie: przed vs po pandemii")
+```
+
+**Wniosek:** `r if(test$p.value < 0.05) "Odrzucamy H0 – istotna różnica między okresami." else "Nie odrzucamy H0 – brak istotnej różnicy."`
+
+> **Opis danych:** GUS BDL API (https://bdl.stat.gov.pl/api/v1/) – zmienna „stopa bezrobocia rejestrowanego", dane miesięczne, Polska, lata 2018–2023.
+
+---
+
+# Podsumowanie
+
+| Zadanie | Metoda | Wynik |
+|---------|--------|-------|
+| 3 | Estymacja punktowa (`mean`, `sd`) | Oszacowanie μ i σ z próby normalnej |
+| 4A | Przedział ufności (`t.test`) | CI 95% dla średniej |
+| 4B | `read.csv(sep=";")` + estymacja | E[X] temperatur Warszawy |
+| 5A | Test t (jedna próba) | Hipoteza o średniej temperaturze |
+| 5B | Test t (dwie próby) | Hipoteza o bezrobociu przed/po |
