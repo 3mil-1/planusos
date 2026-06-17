@@ -1,5 +1,8 @@
+import { EXTRA_RAW_QUESTIONS, EXTRA_QUESTION_META } from "./extraQuestions";
 import { QUESTION_META } from "./questionMeta";
 import { isSyntheticSource, type QuestionSource } from "./questionTypes";
+
+const ALL_QUESTION_META = { ...QUESTION_META, ...EXTRA_QUESTION_META };
 
 export interface Question {
   id: string;
@@ -25,8 +28,9 @@ const RAW_QUESTIONS: RawQuestion[] = [
     topic: "Pole naładowanego krążku",
     question: "Na osi symetrii naładowanego krążka o promieniu R i ładunku Q, w odległości z od środka (z >> R), natężenie pola elektrycznego jest proporcjonalne do:",
     options: ["Q/z", "Q/z²", "Q/z³", "Q/R²"],
-    correctAnswerIndex: 2,
-    explanation: "Dla z >> R: E ≈ kQz/(z²+R²)^(3/2) ≈ kQ/z² w najwyższym przybliżeniu dla osi — dla dużych z maleje jak 1/z² w ujęciu dipolowym, a w bezpośrednim pomiarze krążka E ∝ Q/z² przy dużych odległościach.",
+    correctAnswerIndex: 1,
+    explanation:
+      "Dla z >> R na osi krążka: E ≈ kQz/(z²+R²)^(3/2) ≈ kQ/z² — natężenie maleje jak 1/z², więc E ∝ Q/z².",
     isSynthetic: true,
   },
   {
@@ -1009,10 +1013,11 @@ const RAW_QUESTIONS: RawQuestion[] = [
     explanation: "Baza 2025 pkt 99: w postaci różniczkowej jest dywergencja, nie rotacja. Strumień w postaci całkowej.",
     isSynthetic: false,
   },
+  ...EXTRA_RAW_QUESTIONS,
 ];
 
 export const questionsDb: Question[] = RAW_QUESTIONS.map((q) => {
-  const meta = QUESTION_META[q.id];
+  const meta = ALL_QUESTION_META[q.id];
   if (!meta) {
     throw new Error(`Brak metadanych źródła dla ${q.id}`);
   }
@@ -1031,6 +1036,14 @@ export function getQuestionById(id: string): Question | undefined {
 
 export function getQuestionsByRange(start: number, end: number): Question[] {
   return questionsDb.filter((q) => q.basePointId >= start && q.basePointId <= end);
+}
+
+export function getExtraQuestions(): Question[] {
+  return questionsDb.filter((q) => q.basePointId >= 100);
+}
+
+export function getBaza2025Questions(): Question[] {
+  return questionsDb.filter((q) => q.basePointId >= 1 && q.basePointId <= 99);
 }
 
 export function getRandomExamQuestions(count = 40): Question[] {

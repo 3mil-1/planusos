@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import type { Question } from "@/data/questions";
+import { isExtraPointId } from "@/data/extraQuestions";
 
 const LABELS = ["A", "B", "C", "D"];
 
@@ -25,7 +26,9 @@ export function QuestionCard({
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <span className="rounded-md bg-slate-800 px-2.5 py-1 text-xs font-mono text-slate-400">
-            #{question.basePointId}
+            {isExtraPointId(question.basePointId)
+              ? `Extra ${question.basePointId - 99}`
+              : `#${question.basePointId}`}
           </span>
           <span className="text-sm text-sky-400">{question.topic}</span>
         </div>

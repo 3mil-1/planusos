@@ -68,7 +68,7 @@ export default function LearnPage() {
       <div className="space-y-8 animate-fade-in">
         <div>
           <h1 className="text-2xl font-bold text-white">Tryb Nauki</h1>
-          <p className="mt-2 text-slate-400">Wybierz zakres pytań z bazy 2025 (1–99).</p>
+          <p className="mt-2 text-slate-400">Wybierz zakres pytań — baza 2025 (1–99) lub dodatkowe z egzaminów.</p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

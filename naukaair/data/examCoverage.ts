@@ -1,9 +1,12 @@
 import { questionsDb } from "./questions";
+import { isExtraPointId } from "./extraQuestions";
 import { formatQuestionSource } from "./questionTypes";
 
 export function getQuestionAuditSummary() {
   const exam = questionsDb.filter((q) => !q.isSynthetic);
   const synthetic = questionsDb.filter((q) => q.isSynthetic);
+  const extra = questionsDb.filter((q) => isExtraPointId(q.basePointId));
+  const baza = questionsDb.filter((q) => q.basePointId >= 1 && q.basePointId <= 99);
 
   const byPdf = new Map<string, number>();
   for (const q of exam) {
@@ -14,6 +17,8 @@ export function getQuestionAuditSummary() {
 
   return {
     total: questionsDb.length,
+    bazaCount: baza.length,
+    extraCount: extra.length,
     examCount: exam.length,
     syntheticCount: synthetic.length,
     byPdf: Object.fromEntries(byPdf),

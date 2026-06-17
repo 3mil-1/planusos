@@ -26,4 +26,6 @@ export const LEARN_RANGES = [
   { label: "61–80", start: 61, end: 80 },
   { label: "81–99", start: 81, end: 99 },
   { label: "Wszystkie (1–99)", start: 1, end: 99 },
+  { label: "Extra z egzaminów", start: 100, end: 199 },
+  { label: "Pełna baza (1–99 + extra)", start: 1, end: 199 },
 ] as const;
