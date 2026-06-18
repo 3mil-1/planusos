@@ -19,6 +19,7 @@ export default function LoginPage() {
     try {
       const ok = await login(username);
       if (ok) {
+        await new Promise((r) => setTimeout(r, 100));
         window.location.href = "/";
         return;
       }

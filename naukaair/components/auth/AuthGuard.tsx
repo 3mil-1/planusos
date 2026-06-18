@@ -1,65 +1,50 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 
-const PUBLIC_PATHS = ["/login"];
-const HYDRATION_TIMEOUT_MS = 2500;
+function readUsernameFromStorage(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("naukaair-auth");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { state?: { username?: string | null } };
+    return parsed.state?.username ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function getEffectiveUsername(storeUsername: string | null): string | null {
+  return storeUsername ?? readUsernameFromStorage();
+}
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
   const pathname = usePathname();
-  const username = useAuthStore((s) => s.username);
-  const isHydrated = useAuthStore((s) => s.isHydrated);
-  const [hydrationTimedOut, setHydrationTimedOut] = useState(false);
-
-  const isPublic = PUBLIC_PATHS.includes(pathname);
-  const ready = isHydrated || hydrationTimedOut;
+  const storeUsername = useAuthStore((s) => s.username);
 
   useEffect(() => {
-    const finish = () => useAuthStore.getState().setHydrated();
-    const unsub = useAuthStore.persist.onFinishHydration(finish);
-    const timeout = window.setTimeout(() => {
-      finish();
-      setHydrationTimedOut(true);
-    }, HYDRATION_TIMEOUT_MS);
+    void useAuthStore.persist.rehydrate();
 
-    return () => {
-      unsub();
-      window.clearTimeout(timeout);
-    };
+    const stored = readUsernameFromStorage();
+    if (stored && !useAuthStore.getState().username) {
+      useAuthStore.setState({ username: stored });
+    }
   }, []);
 
   useEffect(() => {
-    if (!ready) return;
+    const username = getEffectiveUsername(useAuthStore.getState().username);
 
-    if (!username && !isPublic) {
-      router.replace("/login");
+    if (!username && pathname !== "/login") {
+      window.location.replace("/login");
       return;
     }
 
     if (username && pathname === "/login") {
-      router.replace("/");
+      window.location.replace("/");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- router stabilny; bez fetchGlobalStats (powodowało pętlę #185)
-  }, [username, ready, pathname, isPublic]);
-
-  if (!ready && !isPublic) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-900 text-slate-300">
-        <div className="animate-pulse text-sm tracking-wide">Ładowanie naukaair…</div>
-      </div>
-    );
-  }
-
-  if (ready && !username && !isPublic) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-900 text-slate-300">
-        <div className="animate-pulse text-sm tracking-wide">Przekierowanie…</div>
-      </div>
-    );
-  }
+  }, [pathname, storeUsername]);
 
   return <>{children}</>;
 }

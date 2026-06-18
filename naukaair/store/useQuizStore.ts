@@ -142,6 +142,8 @@ async function pushToServer(username: string, data: UserQuizData): Promise<void>
   }
 }
 
+let mergeInFlightFor: string | null = null;
+
 function updateUser(
   get: () => QuizState,
   set: (partial: Partial<QuizState> | ((state: QuizState) => Partial<QuizState>)) => void,
@@ -180,6 +182,9 @@ export const useQuizStore = create<QuizState>()(
       clearCoinToast: () => set({ lastCoinToast: null }),
 
       loadAndMergeFromServer: async (username) => {
+        if (mergeInFlightFor === username) return;
+        mergeInFlightFor = username;
+
         const local: StoredUserStats = {
           ...withEconomy(get().byUser[username] ?? emptyQuiz),
           lastActive: new Date().toISOString(),
@@ -206,12 +211,12 @@ export const useQuizStore = create<QuizState>()(
             applyUserData(set, get, username, quizData);
             set({ isStatsReady: true });
             await pushToServer(username, quizData);
-            const { useAuthStore } = await import("./useAuthStore");
-            void useAuthStore.getState().fetchGlobalStats();
             return;
           }
         } catch {
           /* offline */
+        } finally {
+          mergeInFlightFor = null;
         }
 
         set({ isStatsReady: true });

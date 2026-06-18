@@ -18,13 +18,11 @@ export interface GlobalUserSummary {
 
 interface AuthState {
   username: string | null;
-  isHydrated: boolean;
   globalUsers: GlobalUserSummary[];
   globalStatsLoading: boolean;
   storagePersistent: boolean;
   login: (username: string) => Promise<boolean>;
   logout: () => void;
-  setHydrated: () => void;
   fetchGlobalStats: () => Promise<void>;
 }
 
@@ -32,16 +30,15 @@ function normalizeUsername(raw: string): string {
   return raw.trim().toLowerCase().replace(/\s+/g, "_");
 }
 
+let statsFetchInFlight = false;
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       username: null,
-      isHydrated: false,
       globalUsers: [],
       globalStatsLoading: false,
       storagePersistent: false,
-
-      setHydrated: () => set({ isHydrated: true }),
 
       login: async (rawUsername: string) => {
         const username = normalizeUsername(rawUsername);
@@ -62,7 +59,6 @@ export const useAuthStore = create<AuthState>()(
 
           set({ username });
           void useQuizStore.getState().loadAndMergeFromServer(username);
-          void get().fetchGlobalStats();
           return true;
         } catch {
           return false;
@@ -84,36 +80,42 @@ export const useAuthStore = create<AuthState>()(
       },
 
       fetchGlobalStats: async () => {
+        if (statsFetchInFlight) return;
+        statsFetchInFlight = true;
         set({ globalStatsLoading: true });
 
-        for (let attempt = 0; attempt < 3; attempt += 1) {
-          try {
-            const response = await fetch("/api/stats/global", { cache: "no-store" });
-            if (!response.ok) {
+        try {
+          for (let attempt = 0; attempt < 3; attempt += 1) {
+            try {
+              const response = await fetch("/api/stats/global", { cache: "no-store" });
+              if (!response.ok) {
+                await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+                continue;
+              }
+
+              const data = (await response.json()) as {
+                users: GlobalUserSummary[];
+                persistent?: boolean;
+              };
+              set({
+                globalUsers: (data.users ?? []).map((u) => ({
+                  ...u,
+                  coins: u.coins ?? 0,
+                  equipped: u.equipped ?? {},
+                })),
+                storagePersistent: Boolean(data.persistent),
+                globalStatsLoading: false,
+              });
+              return;
+            } catch {
               await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
-              continue;
             }
-
-            const data = (await response.json()) as {
-              users: GlobalUserSummary[];
-              persistent?: boolean;
-            };
-            set({
-              globalUsers: (data.users ?? []).map((u) => ({
-                ...u,
-                coins: u.coins ?? 0,
-                equipped: u.equipped ?? {},
-              })),
-              storagePersistent: Boolean(data.persistent),
-              globalStatsLoading: false,
-            });
-            return;
-          } catch {
-            await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
           }
-        }
 
-        set({ globalStatsLoading: false });
+          set({ globalStatsLoading: false });
+        } finally {
+          statsFetchInFlight = false;
+        }
       },
     }),
     {
@@ -124,11 +126,9 @@ export const useAuthStore = create<AuthState>()(
         storagePersistent: state.storagePersistent,
       }),
       onRehydrateStorage: () => () => {
-        useAuthStore.getState().setHydrated();
         import("@/lib/initStats").then(({ maybeLoadStatsFromServer }) => {
           maybeLoadStatsFromServer();
         });
-        void useAuthStore.getState().fetchGlobalStats();
       },
     },
   ),

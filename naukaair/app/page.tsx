@@ -13,8 +13,10 @@ import { formatPercent } from "@/lib/utils";
 import {
   COINS_EXAM_CORRECT,
   COINS_LEARN_CORRECT,
-  normalizeEconomy,
+  type EquippedCosmetics,
 } from "@/lib/economy";
+
+const EMPTY_EQUIPPED: EquippedCosmetics = {};
 
 export default function DashboardPage() {
   const totalAnswered = useQuizStore((s) => s.totalAnswered);
@@ -22,7 +24,7 @@ export default function DashboardPage() {
   const wrongAnswers = useQuizStore((s) => s.wrongAnswers);
   const questionStats = useQuizStore((s) => s.questionStats);
   const history = useQuizStore((s) => s.history);
-  const economy = useQuizStore((s) => normalizeEconomy(s.economy));
+  const equipped = useQuizStore((s) => s.economy?.equipped ?? EMPTY_EQUIPPED);
   const username = useAuthStore((s) => s.username);
   const globalUsers = useAuthStore((s) => s.globalUsers);
   const storagePersistent = useAuthStore((s) => s.storagePersistent);
@@ -86,7 +88,7 @@ export default function DashboardPage() {
         </h1>
         <p className="mt-2 text-slate-400">
           Witaj,{" "}
-          <ProfileBadge username={username ?? ""} equipped={economy.equipped} highlight />. Baza:{" "}
+          <ProfileBadge username={username ?? ""} equipped={equipped} highlight />. Baza:{" "}
           <span className="text-white">{TOTAL_QUESTIONS}</span> pytań — zdobywaj punkty za
           poprawne odpowiedzi (+{COINS_LEARN_CORRECT} nauka, +{COINS_EXAM_CORRECT} egzamin).
         </p>

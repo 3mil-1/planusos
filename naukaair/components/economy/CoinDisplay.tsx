@@ -2,7 +2,6 @@
 
 import { Coins } from "lucide-react";
 import { useQuizStore } from "@/store/useQuizStore";
-import { normalizeEconomy } from "@/lib/economy";
 import { cn } from "@/lib/utils";
 
 interface CoinDisplayProps {
@@ -11,7 +10,7 @@ interface CoinDisplayProps {
 }
 
 export function CoinDisplay({ className, showLabel = true }: CoinDisplayProps) {
-  const economy = useQuizStore((s) => normalizeEconomy(s.economy));
+  const coins = useQuizStore((s) => s.economy?.coins ?? 0);
 
   return (
     <div
@@ -22,7 +21,7 @@ export function CoinDisplay({ className, showLabel = true }: CoinDisplayProps) {
       title="Punkty — zdobywaj za poprawne odpowiedzi, wydawaj w kasynie i sklepie"
     >
       <Coins className="h-4 w-4 shrink-0 text-amber-400" />
-      <span>{economy.coins.toLocaleString("pl-PL")}</span>
+      <span>{coins.toLocaleString("pl-PL")}</span>
       {showLabel && <span className="hidden font-normal text-amber-300/80 sm:inline">pkt</span>}
     </div>
   );
