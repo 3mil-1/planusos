@@ -10,7 +10,8 @@ const HYDRATION_TIMEOUT_MS = 2500;
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { username, isHydrated, fetchGlobalStats } = useAuthStore();
+  const username = useAuthStore((s) => s.username);
+  const isHydrated = useAuthStore((s) => s.isHydrated);
   const [hydrationTimedOut, setHydrationTimedOut] = useState(false);
 
   const isPublic = PUBLIC_PATHS.includes(pathname);
@@ -40,13 +41,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     if (username && pathname === "/login") {
       router.replace("/");
-      return;
     }
-
-    if (username) {
-      void fetchGlobalStats();
-    }
-  }, [username, ready, pathname, router, fetchGlobalStats, isPublic]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- router stabilny; bez fetchGlobalStats (powodowało pętlę #185)
+  }, [username, ready, pathname, isPublic]);
 
   if (!ready && !isPublic) {
     return (

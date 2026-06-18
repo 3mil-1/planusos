@@ -16,7 +16,8 @@ const links = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const { username, logout } = useAuthStore();
+  const username = useAuthStore((s) => s.username);
+  const logout = useAuthStore((s) => s.logout);
 
   if (pathname === "/login") return null;
 

@@ -17,31 +17,31 @@ import {
 } from "@/lib/economy";
 
 export default function DashboardPage() {
-  const {
-    totalAnswered,
-    correctAnswers,
-    wrongAnswers,
-    questionStats,
-    history,
-  } = useQuizStore();
-  const { username, globalUsers, fetchGlobalStats, storagePersistent, globalStatsLoading } =
-    useAuthStore();
+  const totalAnswered = useQuizStore((s) => s.totalAnswered);
+  const correctAnswers = useQuizStore((s) => s.correctAnswers);
+  const wrongAnswers = useQuizStore((s) => s.wrongAnswers);
+  const questionStats = useQuizStore((s) => s.questionStats);
+  const history = useQuizStore((s) => s.history);
   const economy = useQuizStore((s) => normalizeEconomy(s.economy));
+  const username = useAuthStore((s) => s.username);
+  const globalUsers = useAuthStore((s) => s.globalUsers);
+  const storagePersistent = useAuthStore((s) => s.storagePersistent);
+  const globalStatsLoading = useAuthStore((s) => s.globalStatsLoading);
   const [hardTopics, setHardTopics] = useState<
     Array<{ topic: string; accuracy: number; attempts: number }>
   >([]);
 
   useEffect(() => {
-    void fetchGlobalStats();
+    void useAuthStore.getState().fetchGlobalStats();
 
     const onVisible = () => {
       if (document.visibilityState === "visible") {
-        void fetchGlobalStats();
+        void useAuthStore.getState().fetchGlobalStats();
       }
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
-  }, [fetchGlobalStats]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
