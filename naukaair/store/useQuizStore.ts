@@ -9,18 +9,18 @@ import {
   CASINO_MIN_BET,
   COINS_EXAM_CORRECT,
   COINS_LEARN_CORRECT,
-  PLINKO_SLOTS,
-  ROULETTE_SEGMENTS,
   SHOP_ITEMS,
-  calcCasinoPayout,
-  clampBet,
   emptyEconomy,
   examBonusCoins,
   getShopItem,
   normalizeEconomy,
-  pickWeightedSegment,
+  rollCasino,
+  type CasinoResult,
   type UserEconomy,
 } from "@/lib/economy";
+import { resolveUsername } from "@/lib/resolveUsername";
+
+export type { CasinoResult } from "@/lib/economy";
 
 export type SessionType = "nauka" | "egzamin";
 
@@ -41,16 +41,6 @@ export interface ExamSessionState {
   answers: Record<string, number>;
   startedAt: string;
   finished: boolean;
-}
-
-export interface CasinoResult {
-  game: "roulette" | "plinko";
-  bet: number;
-  multiplier: number;
-  label: string;
-  payout: number;
-  net: number;
-  slotIndex: number;
 }
 
 type UserQuizData = Omit<StoredUserStats, "lastActive">;
@@ -77,6 +67,8 @@ interface QuizState extends UserQuizData {
   finishExam: () => ExamSessionState | null;
   clearExam: () => void;
   playCasino: (game: "roulette" | "plinko", bet: number) => CasinoResult | null;
+  holdCasinoBet: (bet: number) => boolean;
+  settleCasinoResult: (result: CasinoResult) => void;
   buyItem: (itemId: string) => boolean;
   equipItem: (itemId: string) => boolean;
   unequipSlot: (slot: keyof UserEconomy["equipped"]) => void;
@@ -149,17 +141,21 @@ function updateUser(
   set: (partial: Partial<QuizState> | ((state: QuizState) => Partial<QuizState>)) => void,
   updater: (data: UserQuizData) => UserQuizData,
 ): UserQuizData | null {
-  const username = get().activeUsername;
+  const username = resolveUsername(get().activeUsername);
   if (!username) return null;
 
   let next: UserQuizData | null = null;
   set((state) => {
     const current = withEconomy(state.byUser[username] ?? emptyQuiz);
     next = withEconomy(updater(current));
-    return {
+    const patch: Partial<QuizState> = {
       ...next,
       byUser: { ...state.byUser, [username]: next },
     };
+    if (!state.activeUsername) {
+      patch.activeUsername = username;
+    }
+    return { ...state, ...patch };
   });
 
   if (next) void pushToServer(username, next);
@@ -335,43 +331,64 @@ export const useQuizStore = create<QuizState>()(
       clearExam: () => set({ activeExam: null }),
 
       playCasino: (game, rawBet) => {
-        const username = get().activeUsername;
-        if (!username) return null;
-
         const economy = normalizeEconomy(get().economy);
-        const bet = clampBet(rawBet, economy.coins);
-        if (bet < CASINO_MIN_BET || bet > CASINO_MAX_BET || bet > economy.coins) {
-          return null;
+        const result = rollCasino(game, rawBet, economy.coins);
+        if (!result) return null;
+        if (!get().holdCasinoBet(result.bet)) return null;
+        get().settleCasinoResult(result);
+        return result;
+      },
+
+      holdCasinoBet: (rawBet) => {
+        const username = resolveUsername(get().activeUsername);
+        if (!username) return false;
+
+        let ok = false;
+        set((state) => {
+          const user = resolveUsername(state.activeUsername);
+          if (!user) return state;
+          const current = withEconomy(state.byUser[user] ?? emptyQuiz);
+          const eco = normalizeEconomy(current.economy);
+          if (rawBet < CASINO_MIN_BET || rawBet > CASINO_MAX_BET || rawBet > eco.coins) {
+            return state;
+          }
+          ok = true;
+          const next = withEconomy({
+            ...current,
+            economy: {
+              ...eco,
+              coins: eco.coins - rawBet,
+              totalSpentCasino: eco.totalSpentCasino + rawBet,
+            },
+          });
+          const patch: Partial<QuizState> = {
+            ...next,
+            byUser: { ...state.byUser, [user]: next },
+          };
+          if (!state.activeUsername) patch.activeUsername = user;
+          return { ...state, ...patch };
+        });
+
+        if (ok) {
+          const user = resolveUsername(get().activeUsername)!;
+          const data = withEconomy(get().byUser[user] ?? emptyQuiz);
+          void pushToServer(user, data);
         }
+        return ok;
+      },
 
-        const segments = game === "roulette" ? ROULETTE_SEGMENTS : PLINKO_SLOTS;
-        const segment = pickWeightedSegment(segments);
-        const slotIndex = segments.indexOf(segment);
-        const payout = calcCasinoPayout(bet, segment.multiplier);
-        const net = payout - bet;
-
+      settleCasinoResult: (result) => {
         updateUser(get, set, (data) => {
           const eco = normalizeEconomy(data.economy);
           return {
             ...data,
             economy: {
               ...eco,
-              coins: eco.coins - bet + payout,
-              totalSpentCasino: eco.totalSpentCasino + bet,
-              totalEarned: net > 0 ? eco.totalEarned + net : eco.totalEarned,
+              coins: eco.coins + result.payout,
+              totalEarned: result.net > 0 ? eco.totalEarned + result.net : eco.totalEarned,
             },
           };
         });
-
-        return {
-          game,
-          bet,
-          multiplier: segment.multiplier,
-          label: segment.label,
-          payout,
-          net,
-          slotIndex,
-        };
       },
 
       buyItem: (itemId) => {
