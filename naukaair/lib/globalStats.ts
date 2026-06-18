@@ -35,7 +35,10 @@ export async function readGlobalStats(): Promise<GlobalStatsFile> {
 
 export async function writeGlobalStats(data: GlobalStatsFile): Promise<void> {
   await fs.mkdir(path.dirname(STATS_PATH), { recursive: true });
-  await fs.writeFile(STATS_PATH, JSON.stringify(data, null, 2), "utf-8");
+  const payload = JSON.stringify(data, null, 2);
+  const tmpPath = `${STATS_PATH}.${process.pid}.${Date.now()}.tmp`;
+  await fs.writeFile(tmpPath, payload, "utf-8");
+  await fs.rename(tmpPath, STATS_PATH);
 }
 
 export function normalizeUsername(raw: string): string {

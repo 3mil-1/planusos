@@ -16,13 +16,17 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const ok = await login(username);
-    setLoading(false);
-
-    if (ok) {
-      window.location.href = "/";
-    } else {
-      setError("Login musi mieć 2–32 znaki (litery, cyfry, _)");
+    try {
+      const ok = await login(username);
+      if (ok) {
+        window.location.href = "/";
+        return;
+      }
+      setError("Login musi mieć 2–32 znaki (litery, cyfry, _) albo serwer nie odpowiada.");
+    } catch {
+      setError("Błąd połączenia — Render może się budzić. Spróbuj za chwilę.");
+    } finally {
+      setLoading(false);
     }
   };
 

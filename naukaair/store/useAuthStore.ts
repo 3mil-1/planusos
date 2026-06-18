@@ -49,20 +49,24 @@ export const useAuthStore = create<AuthState>()(
           return false;
         }
 
-        const response = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username }),
-        });
+        try {
+          const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username }),
+          });
 
-        if (!response.ok) {
+          if (!response.ok) {
+            return false;
+          }
+
+          set({ username });
+          void useQuizStore.getState().loadAndMergeFromServer(username);
+          void get().fetchGlobalStats();
+          return true;
+        } catch {
           return false;
         }
-
-        set({ username });
-        await useQuizStore.getState().loadAndMergeFromServer(username);
-        await get().fetchGlobalStats();
-        return true;
       },
 
       logout: () => {

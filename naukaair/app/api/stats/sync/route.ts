@@ -5,6 +5,7 @@ import {
 } from "@/lib/globalStats";
 import { getUserStats, saveUserStats } from "@/lib/statsStore";
 import { emptyUserStats, mergeUserStats } from "@/lib/statsMerge";
+import { normalizeEconomy } from "@/lib/economy";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as {
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
     wrongAnswers: incoming.wrongAnswers ?? 0,
     history: incoming.history ?? [],
     questionStats: incoming.questionStats ?? {},
+    economy: normalizeEconomy(incoming.economy ?? existing.economy),
     lastActive: new Date().toISOString(),
   });
 

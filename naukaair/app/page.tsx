@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle, BookOpen, Coins, GraduationCap, ShoppingBag, TrendingDown, Users } from "lucide-react";
 import { NavAnchor } from "@/components/ui/NavAnchor";
-import { questionsDb } from "@/data/questions";
+import { TOTAL_QUESTIONS } from "@/data/questionBankMeta";
 import { useQuizStore } from "@/store/useQuizStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Card } from "@/components/ui/Card";
@@ -27,6 +27,9 @@ export default function DashboardPage() {
   const { username, globalUsers, fetchGlobalStats, storagePersistent, globalStatsLoading } =
     useAuthStore();
   const economy = useQuizStore((s) => normalizeEconomy(s.economy));
+  const [hardTopics, setHardTopics] = useState<
+    Array<{ topic: string; accuracy: number; attempts: number }>
+  >([]);
 
   useEffect(() => {
     void fetchGlobalStats();
@@ -40,31 +43,38 @@ export default function DashboardPage() {
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, [fetchGlobalStats]);
 
-  const accuracy = formatPercent(correctAnswers, totalAnswered);
-
-  const hardTopics = useMemo(() => {
-    const topicMap: Record<string, { attempts: number; correct: number }> = {};
-
-    for (const q of questionsDb) {
-      const stat = questionStats[q.id];
-      if (!stat || stat.attempts === 0) continue;
-      if (!topicMap[q.topic]) {
-        topicMap[q.topic] = { attempts: 0, correct: 0 };
+  useEffect(() => {
+    let cancelled = false;
+    void import("@/data/questions").then(({ questionsDb }) => {
+      if (cancelled) return;
+      const topicMap: Record<string, { attempts: number; correct: number }> = {};
+      for (const q of questionsDb) {
+        const stat = questionStats[q.id];
+        if (!stat || stat.attempts === 0) continue;
+        if (!topicMap[q.topic]) {
+          topicMap[q.topic] = { attempts: 0, correct: 0 };
+        }
+        topicMap[q.topic].attempts += stat.attempts;
+        topicMap[q.topic].correct += stat.correct;
       }
-      topicMap[q.topic].attempts += stat.attempts;
-      topicMap[q.topic].correct += stat.correct;
-    }
-
-    return Object.entries(topicMap)
-      .map(([topic, data]) => ({
-        topic,
-        accuracy: formatPercent(data.correct, data.attempts),
-        attempts: data.attempts,
-      }))
-      .filter((t) => t.attempts >= 2)
-      .sort((a, b) => a.accuracy - b.accuracy)
-      .slice(0, 3);
+      setHardTopics(
+        Object.entries(topicMap)
+          .map(([topic, data]) => ({
+            topic,
+            accuracy: formatPercent(data.correct, data.attempts),
+            attempts: data.attempts,
+          }))
+          .filter((t) => t.attempts >= 2)
+          .sort((a, b) => a.accuracy - b.accuracy)
+          .slice(0, 3),
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [questionStats]);
+
+  const accuracy = formatPercent(correctAnswers, totalAnswered);
 
   const recentSessions = history.slice(0, 5);
 
@@ -77,7 +87,7 @@ export default function DashboardPage() {
         <p className="mt-2 text-slate-400">
           Witaj,{" "}
           <ProfileBadge username={username ?? ""} equipped={economy.equipped} highlight />. Baza:{" "}
-          <span className="text-white">{questionsDb.length}</span> pytań — zdobywaj punkty za
+          <span className="text-white">{TOTAL_QUESTIONS}</span> pytań — zdobywaj punkty za
           poprawne odpowiedzi (+{COINS_LEARN_CORRECT} nauka, +{COINS_EXAM_CORRECT} egzamin).
         </p>
         <div className="mt-3">
