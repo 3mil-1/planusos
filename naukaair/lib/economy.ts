@@ -10,12 +10,32 @@ export const CASINO_MIN_BET = 10;
 export const CASINO_MAX_BET = 200;
 export const CASINO_BET_STEP = 10;
 
-export type CosmeticSlot = "prefix" | "nameStyle" | "border";
+export type CosmeticSlot =
+  | "prefix"
+  | "title"
+  | "suffix"
+  | "nameStyle"
+  | "border"
+  | "aura"
+  | "badge";
+
+export type ShopCategory =
+  | "runy"
+  | "tytuly"
+  | "kometki"
+  | "energia"
+  | "ramki"
+  | "emanacje"
+  | "medale";
 
 export interface EquippedCosmetics {
   prefix?: string;
+  title?: string;
+  suffix?: string;
   nameStyle?: string;
   border?: string;
+  aura?: string;
+  badge?: string;
 }
 
 export interface UserEconomy {
@@ -32,7 +52,10 @@ export interface ShopItem {
   description: string;
   price: number;
   slot: CosmeticSlot;
+  category: ShopCategory;
   emoji: string;
+  /** Tekst odznaki dla slotu title, np. [ΔG<0] */
+  tag?: string;
   rarity: "common" | "rare" | "epic" | "legendary";
 }
 
@@ -76,115 +99,75 @@ export const PLINKO_SLOTS: CasinoSegment[] = [
   { label: "5×", multiplier: 5, weight: 6, color: "#ca8a04", glow: "#fde047" },
 ];
 
+export const SHOP_CATEGORIES: Record<
+  ShopCategory,
+  { label: string; blurb: string; icon: string }
+> = {
+  runy: { label: "Runy laboratoryjne", blurb: "Ikona przed nickiem — twój znak rozpoznawczy", icon: "⚗️" },
+  tytuly: { label: "Tytuły naukowe", blurb: "Odznaki tekstowe z fizyki i AGH", icon: "📜" },
+  kometki: { label: "Smugi cząstek", blurb: "Efekt za nickiem — ślad po twojej partii", icon: "💨" },
+  energia: { label: "Style energii", blurb: "Gradient i poświata na loginie", icon: "⚡" },
+  ramki: { label: "Ramki pola", blurb: "Obwódka profilu w rankingu", icon: "🛡️" },
+  emanacje: { label: "Emanacje", blurb: "Aura wokół całego profilu", icon: "🌟" },
+  medale: { label: "Medale AGH", blurb: "Pin nad profilem — prestiż", icon: "🏅" },
+};
+
 export const SHOP_ITEMS: ShopItem[] = [
-  {
-    id: "prefix-foton",
-    name: "Foton",
-    description: "Energia kwantowa obok nicku — widoczny w rankingu",
-    price: 100,
-    slot: "prefix",
-    emoji: "⚡",
-    rarity: "common",
-  },
-  {
-    id: "prefix-maxwell",
-    name: "Maxwell",
-    description: "Demon termodynamiki pilnuje twojego miejsca w tabeli",
-    price: 140,
-    slot: "prefix",
-    emoji: "🔥",
-    rarity: "rare",
-  },
-  {
-    id: "prefix-schrodinger",
-    name: "Schrödinger",
-    description: "Jednocześnie pierwszy i ostatni — dopóki nie otworzysz rankingu",
-    price: 200,
-    slot: "prefix",
-    emoji: "🐈",
-    rarity: "epic",
-  },
-  {
-    id: "prefix-singular",
-    name: "Singularność",
-    description: "Grawitacyjny flex dla kumatych z AGH",
-    price: 320,
-    slot: "prefix",
-    emoji: "🕳️",
-    rarity: "epic",
-  },
-  {
-    id: "prefix-nobel",
-    name: "Laureat",
-    description: "Noblowski blask — rzadki status w rankingu",
-    price: 480,
-    slot: "prefix",
-    emoji: "🏆",
-    rarity: "legendary",
-  },
-  {
-    id: "name-kwant",
-    name: "Kwantowy nick",
-    description: "Superpozycja kolorów na loginie",
-    price: 130,
-    slot: "nameStyle",
-    emoji: "🌀",
-    rarity: "common",
-  },
-  {
-    id: "name-plazma",
-    name: "Plazmowy nick",
-    description: "Jonizowany gradient — gorący wygląd",
-    price: 180,
-    slot: "nameStyle",
-    emoji: "💫",
-    rarity: "rare",
-  },
-  {
-    id: "name-anty",
-    name: "Antymateria",
-    description: "Energia E=mc² w każdej literze nicku",
-    price: 260,
-    slot: "nameStyle",
-    emoji: "☄️",
-    rarity: "epic",
-  },
-  {
-    id: "border-em",
-    name: "Pole EM",
-    description: "Elektromagnetyczna poświata wokół profilu",
-    price: 90,
-    slot: "border",
-    emoji: "🧲",
-    rarity: "common",
-  },
-  {
-    id: "border-horizon",
-    name: "Horyzont zdarzeń",
-    description: "Ciemna obwódka z fioletowym światłem",
-    price: 170,
-    slot: "border",
-    emoji: "🌑",
-    rarity: "rare",
-  },
-  {
-    id: "border-supernova",
-    name: "Supernova",
-    description: "Wybuchająca tęcza — animowana ramka",
-    price: 340,
-    slot: "border",
-    emoji: "💥",
-    rarity: "epic",
-  },
-  {
-    id: "border-entropia",
-    name: "Entropia",
-    description: "Kosmiczna mgławica — top tier w rankingu",
-    price: 520,
-    slot: "border",
-    emoji: "🌌",
-    rarity: "legendary",
-  },
+  // —— Runy (prefix) ——
+  { id: "prefix-foton", name: "Foton", description: "Minimalna jednostka flexu", price: 80, slot: "prefix", category: "runy", emoji: "⚡", rarity: "common" },
+  { id: "prefix-proton", name: "Proton", description: "Dodatni ładunek pewności siebie", price: 90, slot: "prefix", category: "runy", emoji: "🔴", rarity: "common" },
+  { id: "prefix-neutron", name: "Neutron", description: "Neutralny, ale ciężki kaliber", price: 90, slot: "prefix", category: "runy", emoji: "⚪", rarity: "common" },
+  { id: "prefix-electron", name: "Elektron", description: "Szybki jak poprawna odpowiedź", price: 100, slot: "prefix", category: "runy", emoji: "🔵", rarity: "common" },
+  { id: "prefix-magnes", name: "Magnes", description: "Przyciągasz spojrzenia w rankingu", price: 120, slot: "prefix", category: "runy", emoji: "🧲", rarity: "rare" },
+  { id: "prefix-maxwell", name: "Maxwell", description: "Demon pilnuje twoich punktów", price: 150, slot: "prefix", category: "runy", emoji: "👹", rarity: "rare" },
+  { id: "prefix-laser", name: "Laser", description: "Skupiona wiązka precyzji", price: 180, slot: "prefix", category: "runy", emoji: "🔦", rarity: "rare" },
+  { id: "prefix-schrodinger", name: "Schrödinger", description: "Jesteś i nie jesteś w top 10 naraz", price: 220, slot: "prefix", category: "runy", emoji: "🐈", rarity: "epic" },
+  { id: "prefix-singular", name: "Singularność", description: "Grawitacja twojego ELO", price: 340, slot: "prefix", category: "runy", emoji: "🕳️", rarity: "epic" },
+  { id: "prefix-nobel", name: "Laureat", description: "Nagrooda Nobla za poprawne ABC", price: 500, slot: "prefix", category: "runy", emoji: "🏆", rarity: "legendary" },
+
+  // —— Tytuły ——
+  { id: "title-student", name: "Student AGH", description: "Oficjalny vibe pierwszego roku", price: 70, slot: "title", category: "tytuly", emoji: "🎓", tag: "[STUD]", rarity: "common" },
+  { id: "title-inz", name: "Inżynier", description: "Już prawie ogarniasz całą bazę", price: 110, slot: "title", category: "tytuly", emoji: "📐", tag: "[INŻ.]", rarity: "common" },
+  { id: "title-delta", name: "Delta G", description: "Spontanicznie idziesz na egzamin", price: 130, slot: "title", category: "tytuly", emoji: "📉", tag: "[ΔG<0]", rarity: "rare" },
+  { id: "title-qed", name: "QED", description: "Problem rozwiązany elegancko", price: 160, slot: "title", category: "tytuly", emoji: "✅", tag: "[QED]", rarity: "rare" },
+  { id: "title-101", name: "101%", description: "Więcej niż wymagane minimum", price: 200, slot: "title", category: "tytuly", emoji: "💯", tag: "[101%]", rarity: "epic" },
+  { id: "title-phd", name: "PhD", description: "Doktor od egzaminów", price: 280, slot: "title", category: "tytuly", emoji: "🔬", tag: "[PhD]", rarity: "epic" },
+  { id: "title-heisenberg", name: "Heisenberg", description: "Pozycja w rankingu nieoznaczona", price: 400, slot: "title", category: "tytuly", emoji: "❓", tag: "[ΔxΔp]", rarity: "legendary" },
+
+  // —— Smugi (suffix) ——
+  { id: "suffix-spark", name: "Iskra", description: "Mała iskra za nickiem", price: 60, slot: "suffix", category: "kometki", emoji: "✨", rarity: "common" },
+  { id: "suffix-trail", name: "Smuga", description: "Kometowy ogon poprawnych odpowiedzi", price: 100, slot: "suffix", category: "kometki", emoji: "☄️", rarity: "common" },
+  { id: "suffix-wave", name: "Fala", description: "Rozchodzisz się jak front EM", price: 120, slot: "suffix", category: "kometki", emoji: "〰️", rarity: "rare" },
+  { id: "suffix-decay", name: "Rozpad β", description: "Radioaktywny flex za loginem", price: 160, slot: "suffix", category: "kometki", emoji: "☢️", rarity: "rare" },
+  { id: "suffix-photon", name: "Emisja fotonu", description: "Promieniujesz po dobrym egzaminie", price: 210, slot: "suffix", category: "kometki", emoji: "💡", rarity: "epic" },
+  { id: "suffix-blackhole", name: "Horyzont", description: "Po twoim nicku nic już nie ma", price: 350, slot: "suffix", category: "kometki", emoji: "🌌", rarity: "legendary" },
+
+  // —— Style energii ——
+  { id: "name-kwant", name: "Kwantowy", description: "Superpozycja kolorów", price: 120, slot: "nameStyle", category: "energia", emoji: "🌀", rarity: "common" },
+  { id: "name-plazma", name: "Plazmowy", description: "Gorący jonizowany gradient", price: 170, slot: "nameStyle", category: "energia", emoji: "💫", rarity: "rare" },
+  { id: "name-anty", name: "Antymateria", description: "E=mc² w każdej literze", price: 250, slot: "nameStyle", category: "energia", emoji: "☄️", rarity: "epic" },
+  { id: "name-supercon", name: "Supracon", description: "Zero oporu — płynie jak złoto", price: 320, slot: "nameStyle", category: "energia", emoji: "🥇", rarity: "epic" },
+  { id: "name-cherenkov", name: "Cerenkov", description: "Niebieski blask przekraczania prędkości", price: 420, slot: "nameStyle", category: "energia", emoji: "🔷", rarity: "legendary" },
+
+  // —— Ramki ——
+  { id: "border-em", name: "Pole EM", description: "Elektromagnetyczna obwódka", price: 85, slot: "border", category: "ramki", emoji: "🧲", rarity: "common" },
+  { id: "border-crystal", name: "Krystalograf", description: "Struktura krystaliczna ramki", price: 130, slot: "border", category: "ramki", emoji: "💎", rarity: "common" },
+  { id: "border-horizon", name: "Horyzont zdarzeń", description: "Fioletowe światło z ciemności", price: 175, slot: "border", category: "ramki", emoji: "🌑", rarity: "rare" },
+  { id: "border-fusion", name: "Fuzja", description: "Plazmowa ramka jądrowa", price: 240, slot: "border", category: "ramki", emoji: "🔥", rarity: "epic" },
+  { id: "border-supernova", name: "Supernova", description: "Animowana tęcza wokół profilu", price: 360, slot: "border", category: "ramki", emoji: "💥", rarity: "epic" },
+  { id: "border-entropia", name: "Entropia max", description: "Kosmiczna mgławica — top tier", price: 550, slot: "border", category: "ramki", emoji: "🌌", rarity: "legendary" },
+
+  // —— Emanacje (aura) ——
+  { id: "aura-static", name: "Ładunek statyczny", description: "Delikatna poświata wokół profilu", price: 140, slot: "aura", category: "emanacje", emoji: "⚡", rarity: "common" },
+  { id: "aura-heat", name: "Ciepło", description: "Termiczna aura po sesji nauki", price: 190, slot: "aura", category: "emanacje", emoji: "🌡️", rarity: "rare" },
+  { id: "aura-magnetic", name: "Magnetyczna", description: "Pole wokół ciebie w rankingu", price: 260, slot: "aura", category: "emanacje", emoji: "🧭", rarity: "epic" },
+  { id: "aura-quantum", name: "Kwantowa", description: "Fluktuująca poświata prawdopodobieństwa", price: 380, slot: "aura", category: "emanacje", emoji: "🔮", rarity: "legendary" },
+
+  // —— Medale ——
+  { id: "badge-bronze", name: "Brąz AGH", description: "Pierwszy krok w rankingu", price: 75, slot: "badge", category: "medale", emoji: "🥉", rarity: "common" },
+  { id: "badge-silver", name: "Srebro AGH", description: "Solidny wynik — widać w tabeli", price: 150, slot: "badge", category: "medale", emoji: "🥈", rarity: "rare" },
+  { id: "badge-gold", name: "Złoto AGH", description: "Elitarny pin nad profilem", price: 280, slot: "badge", category: "medale", emoji: "🥇", rarity: "epic" },
+  { id: "badge-reactor", name: "Reaktor", description: "Jądrowy medal za wytrwałość", price: 450, slot: "badge", category: "medale", emoji: "☢️", rarity: "legendary" },
 ];
 
 const SHOP_BY_ID = Object.fromEntries(SHOP_ITEMS.map((i) => [i.id, i]));
@@ -285,13 +268,35 @@ export function examBonusCoins(score: number, total: number): number {
 
 export function prefixEmoji(itemId?: string): string | null {
   if (!itemId) return null;
-  return SHOP_BY_ID[itemId]?.emoji ?? null;
+  const item = SHOP_BY_ID[itemId];
+  if (!item || item.slot !== "prefix") return null;
+  return item.emoji;
+}
+
+export function suffixEmoji(itemId?: string): string | null {
+  if (!itemId) return null;
+  const item = SHOP_BY_ID[itemId];
+  return item?.slot === "suffix" ? item.emoji : null;
+}
+
+export function titleTag(itemId?: string): string | null {
+  if (!itemId) return null;
+  const item = SHOP_BY_ID[itemId];
+  return item?.slot === "title" ? (item.tag ?? item.name) : null;
+}
+
+export function badgeEmoji(itemId?: string): string | null {
+  if (!itemId) return null;
+  const item = SHOP_BY_ID[itemId];
+  return item?.slot === "badge" ? item.emoji : null;
 }
 
 export const NAME_STYLE_CLASS: Record<string, string> = {
   "name-kwant": "cosmetic-name-quantum",
   "name-plazma": "cosmetic-name-plasma",
   "name-anty": "cosmetic-name-antimatter",
+  "name-supercon": "cosmetic-name-supercon",
+  "name-cherenkov": "cosmetic-name-cherenkov",
   "name-neon": "cosmetic-name-quantum",
   "name-ogien": "cosmetic-name-plasma",
   "name-zloto": "cosmetic-name-antimatter",
@@ -299,7 +304,9 @@ export const NAME_STYLE_CLASS: Record<string, string> = {
 
 export const BORDER_STYLE_CLASS: Record<string, string> = {
   "border-em": "cosmetic-border-em",
+  "border-crystal": "cosmetic-border-crystal",
   "border-horizon": "cosmetic-border-horizon",
+  "border-fusion": "cosmetic-border-fusion",
   "border-supernova": "cosmetic-border-supernova",
   "border-entropia": "cosmetic-border-entropia",
   "border-sky": "cosmetic-border-em",
@@ -307,3 +314,30 @@ export const BORDER_STYLE_CLASS: Record<string, string> = {
   "border-rainbow": "cosmetic-border-supernova",
   "border-galaxy": "cosmetic-border-entropia",
 };
+
+export const AURA_STYLE_CLASS: Record<string, string> = {
+  "aura-static": "cosmetic-aura-static",
+  "aura-heat": "cosmetic-aura-heat",
+  "aura-magnetic": "cosmetic-aura-magnetic",
+  "aura-quantum": "cosmetic-aura-quantum",
+};
+
+export const TITLE_STYLE_CLASS: Record<string, string> = {
+  "title-student": "cosmetic-title-student",
+  "title-inz": "cosmetic-title-inz",
+  "title-delta": "cosmetic-title-delta",
+  "title-qed": "cosmetic-title-qed",
+  "title-101": "cosmetic-title-101",
+  "title-phd": "cosmetic-title-phd",
+  "title-heisenberg": "cosmetic-title-heisenberg",
+};
+
+export function itemsByCategory(): Record<ShopCategory, ShopItem[]> {
+  const map = Object.fromEntries(
+    (Object.keys(SHOP_CATEGORIES) as ShopCategory[]).map((c) => [c, [] as ShopItem[]]),
+  ) as Record<ShopCategory, ShopItem[]>;
+  for (const item of SHOP_ITEMS) {
+    map[item.category].push(item);
+  }
+  return map;
+}

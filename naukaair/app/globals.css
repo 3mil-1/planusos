@@ -71,6 +71,30 @@ body {
   box-shadow: 0 0 24px rgba(251, 191, 36, 0.45);
 }
 
+.casino-wheel-blur {
+  filter: blur(0.6px) brightness(1.08);
+}
+
+.casino-pointer-bounce {
+  animation: pointer-bounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.casino-rim-flash {
+  box-shadow: 0 0 28px rgba(251, 191, 36, 0.55);
+}
+
+@keyframes pointer-bounce {
+  0% {
+    transform: translateX(-50%) translateY(0);
+  }
+  40% {
+    transform: translateX(-50%) translateY(8px);
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 .casino-segment-win {
   animation: segment-flash 0.8s ease-in-out 3;
 }
@@ -189,7 +213,109 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+.cosmetic-name-supercon {
+  background: linear-gradient(90deg, #fef08a, #facc15, #fef9c3, #eab308);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: fire-shimmer 1.8s ease-in-out infinite;
+}
+
+.cosmetic-name-cherenkov {
+  color: #38bdf8;
+  text-shadow:
+    0 0 10px rgba(56, 189, 248, 1),
+    0 0 22px rgba(14, 165, 233, 0.7);
+  animation: cherenkov-pulse 2s ease-in-out infinite;
+}
+
+.cosmetic-border-crystal {
+  border: 2px solid rgba(125, 211, 252, 0.5);
+  border-radius: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+  background: linear-gradient(135deg, rgba(12, 74, 110, 0.35), transparent);
+}
+
+.cosmetic-border-fusion {
+  border: 2px solid rgba(249, 115, 22, 0.65);
+  border-radius: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.4);
+  animation: fire-pulse 1.8s ease-in-out infinite;
+}
+
+.cosmetic-title-default,
+.cosmetic-title-student {
+  background: rgba(51, 65, 85, 0.8);
+  color: #94a3b8;
+}
+
+.cosmetic-title-inz {
+  background: rgba(14, 116, 144, 0.35);
+  color: #67e8f9;
+  border: 1px solid rgba(34, 211, 238, 0.35);
+}
+
+.cosmetic-title-delta {
+  background: rgba(127, 29, 29, 0.35);
+  color: #fca5a5;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+}
+
+.cosmetic-title-qed {
+  background: rgba(21, 128, 61, 0.35);
+  color: #86efac;
+  border: 1px solid rgba(74, 222, 128, 0.35);
+}
+
+.cosmetic-title-101 {
+  background: linear-gradient(90deg, rgba(234, 179, 8, 0.35), rgba(249, 115, 22, 0.35));
+  color: #fde68a;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+}
+
+.cosmetic-title-phd {
+  background: rgba(76, 29, 149, 0.45);
+  color: #e9d5ff;
+  border: 1px solid rgba(192, 132, 252, 0.45);
+}
+
+.cosmetic-title-heisenberg {
+  background: rgba(15, 23, 42, 0.9);
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.55);
+  animation: quantum-shift 2.5s ease-in-out infinite;
+}
+
+.cosmetic-aura-static {
+  filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.45));
+}
+
+.cosmetic-aura-heat {
+  filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.55));
+  animation: fire-pulse 2s ease-in-out infinite;
+}
+
+.cosmetic-aura-magnetic {
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.55));
+}
+
+.cosmetic-aura-quantum {
+  filter: drop-shadow(0 0 14px rgba(167, 139, 250, 0.65));
+  animation: quantum-shift 3s ease-in-out infinite;
+}
+
+@keyframes cherenkov-pulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.35);
+  }
 }
 
 .cosmetic-border-em {

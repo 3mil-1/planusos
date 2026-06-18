@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CASINO_BET_STEP,
   CASINO_MAX_BET,
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { WinBurst } from "./WinBurst";
 
 const SEGMENT_ANGLE = 360 / ROULETTE_SEGMENTS.length;
-const SPIN_MS = 4200;
+const SPIN_MS = 4800;
 
 function segmentPath(index: number, innerR: number, outerR: number): string {
   const start = (index * SEGMENT_ANGLE - 90) * (Math.PI / 180);
@@ -41,21 +41,50 @@ function labelPos(index: number): { x: number; y: number; rotate: number } {
   };
 }
 
+/** Koło zatrzymuje się tak, że środek segmentu `slotIndex` jest pod wskaźnikiem u góry. */
+function spinDelta(slotIndex: number): number {
+  const fullSpins = 5 + Math.floor(Math.random() * 3);
+  return fullSpins * 360 + (360 - (slotIndex + 0.5) * SEGMENT_ANGLE);
+}
+
+function easeOutQuint(t: number): number {
+  return 1 - (1 - t) ** 5;
+}
+
 export function RouletteGame() {
   const coins = useQuizStore((s) => s.economy?.coins ?? 0);
   const holdCasinoBet = useQuizStore((s) => s.holdCasinoBet);
   const settleCasinoResult = useQuizStore((s) => s.settleCasinoResult);
+
+  const wheelRef = useRef<HTMLDivElement>(null);
+  const rotationRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
+
   const [bet, setBet] = useState(CASINO_MIN_BET);
   const [spinning, setSpinning] = useState(false);
-  const [rotation, setRotation] = useState(0);
+  const [wheelBlur, setWheelBlur] = useState(false);
+  const [pointerBounce, setPointerBounce] = useState(false);
+  const [tickFlash, setTickFlash] = useState(false);
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [lastResult, setLastResult] = useState<CasinoResult | null>(null);
   const pendingRef = useRef<CasinoResult | null>(null);
+  const lastTickSegRef = useRef(-1);
 
   const canPlay = coins >= CASINO_MIN_BET && bet >= CASINO_MIN_BET && bet <= coins && !spinning;
 
-  const wheelSegments = useMemo(() => ROULETTE_SEGMENTS, []);
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  const applyWheelRotation = useCallback((deg: number) => {
+    rotationRef.current = deg;
+    if (wheelRef.current) {
+      wheelRef.current.style.transform = `rotate(${deg}deg)`;
+    }
+  }, []);
 
   const spin = useCallback(() => {
     if (!canPlay) return;
@@ -68,92 +97,141 @@ export function RouletteGame() {
     setShowResult(false);
     setLastResult(null);
     setActiveSlot(null);
+    setWheelBlur(true);
+    lastTickSegRef.current = -1;
 
-    const targetAngle =
-      360 * 6 + (360 - preview.slotIndex * SEGMENT_ANGLE - SEGMENT_ANGLE / 2);
+    const startRot = rotationRef.current;
+    const delta = spinDelta(preview.slotIndex);
+    const endRot = startRot + delta;
+    const t0 = performance.now();
 
-    setRotation((prev) => prev + targetAngle);
+    const animate = (now: number) => {
+      const raw = Math.min(1, (now - t0) / SPIN_MS);
+      const eased = easeOutQuint(raw);
+      const current = startRot + delta * eased;
+      applyWheelRotation(current);
 
-    window.setTimeout(() => {
-      const result = pendingRef.current;
-      if (!result) {
-        setSpinning(false);
-        return;
+      const norm = ((current % 360) + 360) % 360;
+      const segUnderPointer = Math.floor(((360 - norm + SEGMENT_ANGLE / 2) % 360) / SEGMENT_ANGLE) % ROULETTE_SEGMENTS.length;
+      if (segUnderPointer !== lastTickSegRef.current && raw < 0.92) {
+        lastTickSegRef.current = segUnderPointer;
+        setTickFlash(true);
+        window.setTimeout(() => setTickFlash(false), 60);
       }
-      settleCasinoResult(result);
-      setActiveSlot(result.slotIndex);
-      setLastResult(result);
-      setShowResult(true);
-      setSpinning(false);
-      pendingRef.current = null;
-    }, SPIN_MS);
-  }, [bet, canPlay, coins, holdCasinoBet, settleCasinoResult]);
+
+      if (raw < 0.35) setWheelBlur(true);
+      else setWheelBlur(false);
+
+      if (raw < 1) {
+        rafRef.current = requestAnimationFrame(animate);
+      } else {
+        applyWheelRotation(endRot);
+        setWheelBlur(false);
+        setPointerBounce(true);
+        window.setTimeout(() => setPointerBounce(false), 500);
+
+        const result = pendingRef.current;
+        if (result) {
+          settleCasinoResult(result);
+          setActiveSlot(result.slotIndex);
+          setLastResult(result);
+          setShowResult(true);
+        }
+        setSpinning(false);
+        pendingRef.current = null;
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(animate);
+  }, [applyWheelRotation, bet, canPlay, coins, holdCasinoBet, settleCasinoResult]);
 
   return (
     <div className="casino-panel-roulette space-y-6">
       <p className="text-sm text-amber-100/70">
-        Stawka schodzi od razu — wypłata dopiero po zatrzymaniu koła. Szansa na ×5, ale statystycznie
-        wygrywa dom (~87% zwrotu).
+        Stawka schodzi od razu — wypłata dopiero po zatrzymaniu. Koło ma prawdziwe hamowanie, nie
+        sztywny CSS.
       </p>
 
       <div className="flex flex-col items-center gap-8 lg:flex-row lg:justify-center">
         <div className="relative">
-          <div className="casino-wheel-glow absolute inset-0 rounded-full" />
-          <div className="absolute -top-4 left-1/2 z-20 -translate-x-1/2">
-            <div className="casino-pointer h-0 w-0 border-x-[12px] border-b-[22px] border-x-transparent border-b-amber-300 drop-shadow-[0_0_12px_rgba(252,211,77,0.9)]" />
+          <div
+            className={cn(
+              "casino-wheel-glow absolute inset-0 rounded-full transition-opacity duration-300",
+              spinning && "opacity-100",
+              !spinning && "opacity-70",
+            )}
+          />
+          <div
+            className={cn(
+              "absolute -top-5 left-1/2 z-20 -translate-x-1/2 transition-transform",
+              pointerBounce && "casino-pointer-bounce",
+            )}
+          >
+            <div className="casino-pointer relative h-0 w-0 border-x-[14px] border-b-[26px] border-x-transparent border-b-amber-300 drop-shadow-[0_0_16px_rgba(252,211,77,1)]" />
+            <div className="absolute -top-1 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-amber-200 shadow-[0_0_10px_#fde047]" />
           </div>
 
           <div
-            className="relative h-64 w-64 transition-transform md:h-72 md:w-72"
-            style={{
-              transform: `rotate(${rotation}deg)`,
-              transition: spinning
-                ? `transform ${SPIN_MS}ms cubic-bezier(0.12, 0.75, 0.18, 1)`
-                : "none",
-            }}
+            className={cn(
+              "relative rounded-full border-4 border-amber-500/40 p-1 shadow-[0_0_40px_rgba(251,191,36,0.25)]",
+              tickFlash && "casino-rim-flash",
+            )}
           >
-            <svg viewBox="0 0 100 100" className="h-full w-full drop-shadow-2xl">
-              <circle cx="50" cy="50" r="49" fill="#0f172a" stroke="#fbbf24" strokeWidth="0.6" />
-              {wheelSegments.map((seg, i) => (
-                <path
-                  key={seg.label}
-                  d={segmentPath(i, 14, 48)}
-                  fill={seg.color}
-                  stroke="rgba(255,255,255,0.12)"
-                  strokeWidth="0.15"
-                  className={cn(
-                    activeSlot === i && "casino-segment-win",
-                  )}
-                  style={
-                    activeSlot === i
-                      ? { filter: `drop-shadow(0 0 8px ${seg.glow ?? seg.color})` }
-                      : undefined
-                  }
-                />
-              ))}
-              {wheelSegments.map((seg, i) => {
-                const pos = labelPos(i);
-                return (
-                  <text
-                    key={`lbl-${seg.label}`}
-                    x={pos.x}
-                    y={pos.y}
-                    fill="white"
-                    fontSize="4.2"
-                    fontWeight="700"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    transform={`rotate(${pos.rotate}, ${pos.x}, ${pos.y})`}
-                  >
-                    {seg.label}
-                  </text>
-                );
-              })}
-              <circle cx="50" cy="50" r="13" fill="#020617" stroke="#fbbf24" strokeWidth="0.5" />
-              <text x="50" y="50.5" fill="#fde68a" fontSize="3.2" fontWeight="800" textAnchor="middle">
-                SPIN
-              </text>
-            </svg>
+            <div
+              ref={wheelRef}
+              className={cn(
+                "relative h-64 w-64 will-change-transform md:h-80 md:w-80",
+                wheelBlur && "casino-wheel-blur",
+              )}
+              style={{ transform: `rotate(${rotationRef.current}deg)` }}
+            >
+              <svg viewBox="0 0 100 100" className="h-full w-full drop-shadow-2xl">
+                <defs>
+                  <radialGradient id="wheelHub" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#1e293b" />
+                    <stop offset="100%" stopColor="#020617" />
+                  </radialGradient>
+                </defs>
+                <circle cx="50" cy="50" r="49" fill="#0f172a" stroke="#fbbf24" strokeWidth="0.8" />
+                {ROULETTE_SEGMENTS.map((seg, i) => (
+                  <path
+                    key={seg.label}
+                    d={segmentPath(i, 15, 48)}
+                    fill={seg.color}
+                    stroke="rgba(255,255,255,0.15)"
+                    strokeWidth="0.2"
+                    className={cn(activeSlot === i && "casino-segment-win")}
+                    style={
+                      activeSlot === i
+                        ? { filter: `drop-shadow(0 0 10px ${seg.glow ?? seg.color})` }
+                        : undefined
+                    }
+                  />
+                ))}
+                {ROULETTE_SEGMENTS.map((seg, i) => {
+                  const pos = labelPos(i);
+                  return (
+                    <text
+                      key={`lbl-${seg.label}`}
+                      x={pos.x}
+                      y={pos.y}
+                      fill="white"
+                      fontSize="4.5"
+                      fontWeight="800"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      transform={`rotate(${pos.rotate}, ${pos.x}, ${pos.y})`}
+                    >
+                      {seg.label}
+                    </text>
+                  );
+                })}
+                <circle cx="50" cy="50" r="14" fill="url(#wheelHub)" stroke="#fbbf24" strokeWidth="0.6" />
+                <text x="50" y="51" fill="#fde68a" fontSize="3" fontWeight="800" textAnchor="middle">
+                  SPIN
+                </text>
+              </svg>
+            </div>
           </div>
 
           <WinBurst
@@ -171,9 +249,7 @@ export function RouletteGame() {
               {coins.toLocaleString("pl-PL")} pkt
             </p>
             {spinning && (
-              <p className="mt-1 animate-pulse text-xs text-amber-300/80">
-                Koło się kręci — czekaj na wynik…
-              </p>
+              <p className="mt-1 animate-pulse text-xs text-amber-300/80">Hamowanie koła…</p>
             )}
           </div>
 
@@ -203,6 +279,7 @@ export function RouletteGame() {
               canPlay
                 ? "bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 hover:brightness-110"
                 : "cursor-not-allowed bg-slate-700 text-slate-500",
+              spinning && "scale-[0.98] opacity-80",
             )}
           >
             {spinning ? "Kręci się…" : "Zakręć!"}
