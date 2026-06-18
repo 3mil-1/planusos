@@ -55,7 +55,7 @@ Bez `DATABASE_URL` statystyki działają tylko w localStorage przeglądarki — 
 |------|---------|
 | Root Directory | `naukaair` |
 | Build Command | `npm install && npm run build` |
-| Start Command | `npm start` |
+| Start Command | `npm run build && node .next/standalone/server.js` |
 | Typ | **Web Service** (nie Static Site!) |
 | `DATABASE_URL` | connection string Neon Postgres (wymagane dla trwałych statystyk) |
 
