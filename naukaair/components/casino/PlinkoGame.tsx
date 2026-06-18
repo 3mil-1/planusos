@@ -1,17 +1,19 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CASINO_BET_STEP,
   CASINO_MAX_BET,
   CASINO_MIN_BET,
   PLINKO_SLOTS,
-  normalizeEconomy,
+  rollCasino,
+  type CasinoResult,
 } from "@/lib/economy";
 import { useQuizStore } from "@/store/useQuizStore";
 import { cn } from "@/lib/utils";
+import { WinBurst } from "./WinBurst";
 
-const ROWS = 8;
+const ROWS = 9;
 const COLS = PLINKO_SLOTS.length;
 
 function buildPath(slotIndex: number): number[] {
@@ -32,113 +34,186 @@ function buildPath(slotIndex: number): number[] {
   return path;
 }
 
+function colToPercent(col: number): number {
+  return ((col + 0.5) / COLS) * 100;
+}
+
+function rowToPercent(row: number): number {
+  return ((row + 0.5) / (ROWS + 1.6)) * 100;
+}
+
 export function PlinkoGame() {
-  const playCasino = useQuizStore((s) => s.playCasino);
-  const coins = useQuizStore((s) => normalizeEconomy(s.economy).coins);
+  const coins = useQuizStore((s) => s.economy?.coins ?? 0);
+  const holdCasinoBet = useQuizStore((s) => s.holdCasinoBet);
+  const settleCasinoResult = useQuizStore((s) => s.settleCasinoResult);
+  const rafRef = useRef<number | null>(null);
+
   const [bet, setBet] = useState(CASINO_MIN_BET);
   const [dropping, setDropping] = useState(false);
-  const [ballCol, setBallCol] = useState<number | null>(null);
-  const [ballRow, setBallRow] = useState(0);
-  const [lastResult, setLastResult] = useState<string | null>(null);
+  const [ball, setBall] = useState<{ x: number; y: number; scale: number } | null>(null);
+  const [flashRow, setFlashRow] = useState<number | null>(null);
+  const [activeSlot, setActiveSlot] = useState<number | null>(null);
+  const [showResult, setShowResult] = useState(false);
+  const [lastResult, setLastResult] = useState<CasinoResult | null>(null);
+  const pendingRef = useRef<CasinoResult | null>(null);
 
   const canPlay = coins >= CASINO_MIN_BET && bet >= CASINO_MIN_BET && bet <= coins && !dropping;
 
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
   const drop = useCallback(() => {
     if (!canPlay) return;
+
+    const preview = rollCasino("plinko", bet, coins);
+    if (!preview || !holdCasinoBet(preview.bet)) return;
+
+    pendingRef.current = preview;
     setDropping(true);
+    setShowResult(false);
     setLastResult(null);
+    setActiveSlot(null);
 
-    const result = playCasino("plinko", bet);
-    if (!result) {
-      setDropping(false);
-      return;
-    }
+    const path = buildPath(preview.slotIndex);
+    const waypoints = path.map((col, row) => ({
+      x: colToPercent(col),
+      y: row === 0 ? 3 : rowToPercent(row - 1),
+    }));
+    waypoints.push({ x: colToPercent(preview.slotIndex), y: 88 });
 
-    const path = buildPath(result.slotIndex);
-    setBallCol(path[0]);
-    setBallRow(0);
+    const start = performance.now();
+    const duration = 3000;
 
-    let step = 0;
-    const interval = window.setInterval(() => {
-      step += 1;
-      if (step <= ROWS) {
-        setBallRow(step);
-        setBallCol(path[step]);
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - (1 - t) ** 2.4;
+      const totalSeg = waypoints.length - 1;
+      const pos = eased * totalSeg;
+      const seg = Math.min(Math.floor(pos), totalSeg - 1);
+      const local = pos - seg;
+      const a = waypoints[seg];
+      const b = waypoints[seg + 1];
+      const bounce = Math.sin(local * Math.PI) * 4;
+      const x = a.x + (b.x - a.x) * local;
+      const y = a.y + (b.y - a.y) * local - bounce;
+      const scale = 1 + Math.sin(local * Math.PI) * 0.4;
+
+      setBall({ x, y, scale });
+      setFlashRow(seg);
+
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(tick);
       } else {
-        window.clearInterval(interval);
+        const result = pendingRef.current;
+        if (result) {
+          settleCasinoResult(result);
+          setActiveSlot(result.slotIndex);
+          setLastResult(result);
+          setShowResult(true);
+        }
         setDropping(false);
-        const sign = result.net >= 0 ? "+" : "";
-        setLastResult(`${result.label} → ${sign}${result.net} pkt (wygrana ${result.payout})`);
+        pendingRef.current = null;
         window.setTimeout(() => {
-          setBallCol(null);
-          setBallRow(0);
-        }, 1200);
+          setBall(null);
+          setFlashRow(null);
+        }, 1500);
       }
-    }, 180);
-  }, [bet, canPlay, playCasino]);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+  }, [bet, canPlay, coins, holdCasinoBet, settleCasinoResult]);
 
   return (
-    <div className="space-y-6">
-      <p className="text-sm text-slate-400">
-        Puść kulkę — odbija się między kołkami i ląduje w slocie z mnożnikiem. Ta sama ekonomia
-        co ruletka: szansa na ×5, ale statystycznie wygrywa dom.
+    <div className="casino-panel-plinko space-y-6">
+      <p className="text-sm text-violet-100/70">
+        Kulka spada przez labirynt kołków — wypłata dopiero po wylądowaniu w slocie. Im bardziej na
+        skraj, tym wyższy mnożnik (i mniejsze szanse).
       </p>
 
-      <div className="mx-auto max-w-md">
-        <div className="relative rounded-xl border border-slate-700 bg-slate-950/80 p-4">
-          <div className="relative mx-auto aspect-[4/5] w-full max-w-xs">
+      <div className="mx-auto max-w-lg">
+        <div className="casino-plinko-board relative overflow-hidden rounded-2xl border border-violet-400/30 p-1">
+          <div className="relative aspect-[4/5] w-full">
             {Array.from({ length: ROWS }).map((_, row) => (
               <div
                 key={row}
-                className="absolute flex w-full justify-center gap-3"
-                style={{ top: `${(row / (ROWS + 1)) * 100}%`, transform: "translateY(-50%)" }}
+                className="absolute flex w-full justify-center gap-[6%]"
+                style={{ top: `${rowToPercent(row)}%`, transform: "translateY(-50%)" }}
               >
                 {Array.from({ length: row + 3 }).map((__, peg) => (
                   <div
                     key={peg}
-                    className="h-2 w-2 shrink-0 rounded-full bg-slate-600"
+                    className={cn(
+                      "h-2.5 w-2.5 shrink-0 rounded-full bg-violet-300/90 shadow-[0_0_10px_rgba(167,139,250,0.9)] transition-all duration-100",
+                      flashRow === row + 1 && "scale-150 bg-white shadow-[0_0_16px_#fff]",
+                    )}
                   />
                 ))}
               </div>
             ))}
 
-            {ballCol !== null && (
+            {ball && (
               <div
-                className="absolute h-4 w-4 rounded-full bg-amber-400 shadow-lg shadow-amber-400/50 transition-all duration-150"
+                className="absolute z-10 h-5 w-5 rounded-full bg-gradient-to-br from-amber-200 to-orange-500 shadow-[0_0_20px_rgba(251,191,36,0.9)]"
                 style={{
-                  left: `${((ballCol + 0.5) / COLS) * 100}%`,
-                  top: `${(ballRow / (ROWS + 1)) * 100}%`,
-                  transform: "translate(-50%, -50%)",
+                  left: `${ball.x}%`,
+                  top: `${ball.y}%`,
+                  transform: `translate(-50%, -50%) scale(${ball.scale})`,
                 }}
               />
             )}
 
-            <div
-              className="absolute bottom-0 flex w-full gap-1"
-              style={{ transform: "translateY(50%)" }}
-            >
-              {PLINKO_SLOTS.map((slot) => (
+            <div className="absolute bottom-[4%] flex w-full gap-1 px-[4%]">
+              {PLINKO_SLOTS.map((slot, i) => (
                 <div
                   key={slot.label}
-                  className="flex flex-1 flex-col items-center rounded-md py-1 text-[10px] font-bold text-white"
-                  style={{ backgroundColor: slot.color }}
+                  className={cn(
+                    "flex flex-1 flex-col items-center rounded-lg py-2 text-[10px] font-black text-white transition-all duration-300 md:text-xs",
+                    activeSlot === i && "casino-slot-win z-10 scale-110",
+                  )}
+                  style={{
+                    backgroundColor: slot.color,
+                    boxShadow:
+                      activeSlot === i
+                        ? `0 0 24px ${slot.glow ?? slot.color}`
+                        : `0 0 8px ${slot.glow ?? slot.color}44`,
+                  }}
                 >
                   {slot.label}
                 </div>
               ))}
             </div>
+
+            <WinBurst
+              show={showResult && lastResult !== null}
+              multiplier={lastResult?.multiplier ?? 0}
+              net={lastResult?.net ?? 0}
+              label={lastResult?.label ?? ""}
+            />
           </div>
         </div>
 
-        <div className="mt-8 space-y-4">
+        <div className="mt-6 space-y-4">
+          <div className="rounded-xl border border-violet-500/25 bg-black/30 px-4 py-3">
+            <p className="text-xs uppercase tracking-wide text-violet-200/60">Saldo</p>
+            <p className="text-2xl font-black tabular-nums text-violet-100">
+              {coins.toLocaleString("pl-PL")} pkt
+            </p>
+            {dropping && (
+              <p className="mt-1 animate-pulse text-xs text-violet-300/80">Kulka w locie…</p>
+            )}
+          </div>
+
           <div>
-            <label className="text-sm text-slate-400">Stawka</label>
+            <label className="text-sm text-violet-100/70">Stawka</label>
             <input
               type="range"
               min={CASINO_MIN_BET}
-              max={Math.min(CASINO_MAX_BET, coins)}
+              max={Math.min(CASINO_MAX_BET, Math.max(coins, CASINO_MIN_BET))}
               step={CASINO_BET_STEP}
-              value={Math.min(bet, coins)}
+              value={Math.min(bet, Math.max(coins, CASINO_MIN_BET))}
               disabled={coins < CASINO_MIN_BET || dropping}
               onChange={(e) => setBet(Number(e.target.value))}
               className="mt-2 w-full accent-violet-400"
@@ -151,20 +226,14 @@ export function PlinkoGame() {
             disabled={!canPlay}
             onClick={drop}
             className={cn(
-              "w-full rounded-xl py-3 font-semibold text-white transition-all",
+              "w-full rounded-xl py-3.5 text-lg font-black uppercase tracking-wide transition-all",
               canPlay
-                ? "bg-violet-500 hover:bg-violet-400 focus:ring-2 focus:ring-violet-500/50"
+                ? "bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-600 text-white hover:brightness-110"
                 : "cursor-not-allowed bg-slate-700 text-slate-500",
             )}
           >
             {dropping ? "Spada…" : "Puść kulkę!"}
           </button>
-
-          {lastResult && (
-            <p className="animate-fade-in rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-2 text-center text-sm text-slate-200">
-              {lastResult}
-            </p>
-          )}
         </div>
       </div>
     </div>

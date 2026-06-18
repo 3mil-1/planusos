@@ -41,135 +41,146 @@ export interface CasinoSegment {
   multiplier: number;
   weight: number;
   color: string;
+  glow?: string;
+}
+
+export interface CasinoResult {
+  game: "roulette" | "plinko";
+  bet: number;
+  multiplier: number;
+  label: string;
+  payout: number;
+  net: number;
+  slotIndex: number;
 }
 
 /** ~87% zwrotu — kasyno jest zabawą, nie głównym źródłem punktów */
 export const ROULETTE_SEGMENTS: CasinoSegment[] = [
-  { label: "0×", multiplier: 0, weight: 35, color: "#475569" },
-  { label: "0.5×", multiplier: 0.5, weight: 15, color: "#64748b" },
-  { label: "1×", multiplier: 1, weight: 20, color: "#0ea5e9" },
-  { label: "1.5×", multiplier: 1.5, weight: 15, color: "#6366f1" },
-  { label: "2×", multiplier: 2, weight: 10, color: "#a855f7" },
-  { label: "3×", multiplier: 3, weight: 4, color: "#ec4899" },
-  { label: "5×", multiplier: 5, weight: 1, color: "#eab308" },
+  { label: "0×", multiplier: 0, weight: 35, color: "#334155", glow: "#64748b" },
+  { label: "0.5×", multiplier: 0.5, weight: 15, color: "#475569", glow: "#94a3b8" },
+  { label: "1×", multiplier: 1, weight: 20, color: "#0369a1", glow: "#38bdf8" },
+  { label: "1.5×", multiplier: 1.5, weight: 15, color: "#4338ca", glow: "#818cf8" },
+  { label: "2×", multiplier: 2, weight: 10, color: "#7e22ce", glow: "#c084fc" },
+  { label: "3×", multiplier: 3, weight: 4, color: "#be185d", glow: "#f472b6" },
+  { label: "5×", multiplier: 5, weight: 1, color: "#ca8a04", glow: "#fde047" },
 ];
 
 /** Plinko — 7 slotów, suma wag ≈ ta sama krzywa jak ruletka */
 export const PLINKO_SLOTS: CasinoSegment[] = [
-  { label: "0×", multiplier: 0, weight: 18, color: "#475569" },
-  { label: "0.5×", multiplier: 0.5, weight: 12, color: "#64748b" },
-  { label: "1×", multiplier: 1, weight: 22, color: "#0ea5e9" },
-  { label: "1.5×", multiplier: 1.5, weight: 18, color: "#6366f1" },
-  { label: "2×", multiplier: 2, weight: 14, color: "#a855f7" },
-  { label: "3×", multiplier: 3, weight: 10, color: "#ec4899" },
-  { label: "5×", multiplier: 5, weight: 6, color: "#eab308" },
+  { label: "0×", multiplier: 0, weight: 18, color: "#334155", glow: "#64748b" },
+  { label: "0.5×", multiplier: 0.5, weight: 12, color: "#475569", glow: "#94a3b8" },
+  { label: "1×", multiplier: 1, weight: 22, color: "#0369a1", glow: "#38bdf8" },
+  { label: "1.5×", multiplier: 1.5, weight: 18, color: "#4338ca", glow: "#818cf8" },
+  { label: "2×", multiplier: 2, weight: 14, color: "#7e22ce", glow: "#c084fc" },
+  { label: "3×", multiplier: 3, weight: 10, color: "#be185d", glow: "#f472b6" },
+  { label: "5×", multiplier: 5, weight: 6, color: "#ca8a04", glow: "#fde047" },
 ];
 
 export const SHOP_ITEMS: ShopItem[] = [
   {
-    id: "prefix-kotek",
-    name: "Kotek",
-    description: "Słodki kotek obok nicku w rankingu",
-    price: 120,
-    slot: "prefix",
-    emoji: "🐱",
-    rarity: "common",
-  },
-  {
-    id: "prefix-fizyk",
-    name: "Fizyk",
-    description: "Ikona atomu — dla prawdziwych kumatych",
+    id: "prefix-foton",
+    name: "Foton",
+    description: "Energia kwantowa obok nicku — widoczny w rankingu",
     price: 100,
     slot: "prefix",
-    emoji: "⚛️",
+    emoji: "⚡",
     rarity: "common",
   },
   {
-    id: "prefix-rocket",
-    name: "Rakieta",
-    description: "Startujesz w ranking szybciej niż inni",
-    price: 160,
+    id: "prefix-maxwell",
+    name: "Maxwell",
+    description: "Demon termodynamiki pilnuje twojego miejsca w tabeli",
+    price: 140,
     slot: "prefix",
-    emoji: "🚀",
-    rarity: "rare",
-  },
-  {
-    id: "prefix-korona",
-    name: "Korona",
-    description: "Król bazy pytań",
-    price: 280,
-    slot: "prefix",
-    emoji: "👑",
-    rarity: "epic",
-  },
-  {
-    id: "prefix-diament",
-    name: "Diament",
-    description: "Legendarny blask w rankingu",
-    price: 450,
-    slot: "prefix",
-    emoji: "💎",
-    rarity: "legendary",
-  },
-  {
-    id: "name-ogien",
-    name: "Ognisty nick",
-    description: "Płomienny gradient na loginie",
-    price: 150,
-    slot: "nameStyle",
     emoji: "🔥",
     rarity: "rare",
   },
   {
-    id: "name-neon",
-    name: "Neonowy nick",
-    description: "Świecący cyfrowy napis",
-    price: 120,
-    slot: "nameStyle",
-    emoji: "💜",
-    rarity: "common",
-  },
-  {
-    id: "name-zloto",
-    name: "Złoty nick",
-    description: "Złoty połysk — premium look",
-    price: 220,
-    slot: "nameStyle",
-    emoji: "✨",
+    id: "prefix-schrodinger",
+    name: "Schrödinger",
+    description: "Jednocześnie pierwszy i ostatni — dopóki nie otworzysz rankingu",
+    price: 200,
+    slot: "prefix",
+    emoji: "🐈",
     rarity: "epic",
   },
   {
-    id: "border-sky",
-    name: "Błękitna obwódka",
-    description: "Delikatna ramka wokół nicku",
-    price: 80,
-    slot: "border",
-    emoji: "🔵",
+    id: "prefix-singular",
+    name: "Singularność",
+    description: "Grawitacyjny flex dla kumatych z AGH",
+    price: 320,
+    slot: "prefix",
+    emoji: "🕳️",
+    rarity: "epic",
+  },
+  {
+    id: "prefix-nobel",
+    name: "Laureat",
+    description: "Noblowski blask — rzadki status w rankingu",
+    price: 480,
+    slot: "prefix",
+    emoji: "🏆",
+    rarity: "legendary",
+  },
+  {
+    id: "name-kwant",
+    name: "Kwantowy nick",
+    description: "Superpozycja kolorów na loginie",
+    price: 130,
+    slot: "nameStyle",
+    emoji: "🌀",
     rarity: "common",
   },
   {
-    id: "border-fire",
-    name: "Ognista obwódka",
-    description: "Płomienna ramka w rankingu",
+    id: "name-plazma",
+    name: "Plazmowy nick",
+    description: "Jonizowany gradient — gorący wygląd",
     price: 180,
-    slot: "border",
-    emoji: "🌋",
+    slot: "nameStyle",
+    emoji: "💫",
     rarity: "rare",
   },
   {
-    id: "border-rainbow",
-    name: "Tęczowa obwódka",
-    description: "Animowana tęcza wokół profilu",
-    price: 350,
-    slot: "border",
-    emoji: "🌈",
+    id: "name-anty",
+    name: "Antymateria",
+    description: "Energia E=mc² w każdej literze nicku",
+    price: 260,
+    slot: "nameStyle",
+    emoji: "☄️",
     rarity: "epic",
   },
   {
-    id: "border-galaxy",
-    name: "Galaktyczna obwódka",
-    description: "Kosmiczna poświata — top tier",
-    price: 500,
+    id: "border-em",
+    name: "Pole EM",
+    description: "Elektromagnetyczna poświata wokół profilu",
+    price: 90,
+    slot: "border",
+    emoji: "🧲",
+    rarity: "common",
+  },
+  {
+    id: "border-horizon",
+    name: "Horyzont zdarzeń",
+    description: "Ciemna obwódka z fioletowym światłem",
+    price: 170,
+    slot: "border",
+    emoji: "🌑",
+    rarity: "rare",
+  },
+  {
+    id: "border-supernova",
+    name: "Supernova",
+    description: "Wybuchająca tęcza — animowana ramka",
+    price: 340,
+    slot: "border",
+    emoji: "💥",
+    rarity: "epic",
+  },
+  {
+    id: "border-entropia",
+    name: "Entropia",
+    description: "Kosmiczna mgławica — top tier w rankingu",
+    price: 520,
     slot: "border",
     emoji: "🌌",
     rarity: "legendary",
@@ -226,6 +237,33 @@ export function pickWeightedSegment(segments: CasinoSegment[]): CasinoSegment {
   return segments[segments.length - 1];
 }
 
+export function rollCasino(
+  game: "roulette" | "plinko",
+  rawBet: number,
+  balance: number,
+): CasinoResult | null {
+  const bet = clampBet(rawBet, balance);
+  if (bet < CASINO_MIN_BET || bet > CASINO_MAX_BET || bet > balance) {
+    return null;
+  }
+
+  const segments = game === "roulette" ? ROULETTE_SEGMENTS : PLINKO_SLOTS;
+  const segment = pickWeightedSegment(segments);
+  const slotIndex = segments.indexOf(segment);
+  const payout = calcCasinoPayout(bet, segment.multiplier);
+  const net = payout - bet;
+
+  return {
+    game,
+    bet,
+    multiplier: segment.multiplier,
+    label: segment.label,
+    payout,
+    net,
+    slotIndex,
+  };
+}
+
 export function calcCasinoPayout(bet: number, multiplier: number): number {
   return Math.floor(bet * multiplier);
 }
@@ -251,14 +289,21 @@ export function prefixEmoji(itemId?: string): string | null {
 }
 
 export const NAME_STYLE_CLASS: Record<string, string> = {
-  "name-ogien": "cosmetic-name-fire",
-  "name-neon": "cosmetic-name-neon",
-  "name-zloto": "cosmetic-name-gold",
+  "name-kwant": "cosmetic-name-quantum",
+  "name-plazma": "cosmetic-name-plasma",
+  "name-anty": "cosmetic-name-antimatter",
+  "name-neon": "cosmetic-name-quantum",
+  "name-ogien": "cosmetic-name-plasma",
+  "name-zloto": "cosmetic-name-antimatter",
 };
 
 export const BORDER_STYLE_CLASS: Record<string, string> = {
-  "border-sky": "cosmetic-border-sky",
-  "border-fire": "cosmetic-border-fire",
-  "border-rainbow": "cosmetic-border-rainbow",
-  "border-galaxy": "cosmetic-border-galaxy",
+  "border-em": "cosmetic-border-em",
+  "border-horizon": "cosmetic-border-horizon",
+  "border-supernova": "cosmetic-border-supernova",
+  "border-entropia": "cosmetic-border-entropia",
+  "border-sky": "cosmetic-border-em",
+  "border-fire": "cosmetic-border-horizon",
+  "border-rainbow": "cosmetic-border-supernova",
+  "border-galaxy": "cosmetic-border-entropia",
 };

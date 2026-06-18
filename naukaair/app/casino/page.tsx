@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dices, CircleDot } from "lucide-react";
+import { CircleDot, Dices, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { CoinDisplay } from "@/components/economy/CoinDisplay";
 import { RouletteGame } from "@/components/casino/RouletteGame";
@@ -21,33 +21,36 @@ export default function CasinoPage() {
   const [tab, setTab] = useState<GameTab>("roulette");
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="casino-hero -mx-4 space-y-8 rounded-3xl px-4 py-8 animate-fade-in md:-mx-0 md:px-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Mini kasyno</h1>
-          <p className="mt-2 max-w-xl text-slate-400">
-            Wydaj punkty zdobyte za naukę. Ruletka i plinko mają dom (~13% przewagi) — to
-            dodatek, nie sposób na szybki zarobek.
+          <p className="text-xs font-bold uppercase tracking-[0.25em] text-amber-400/80">Jackpot zone</p>
+          <h1 className="mt-1 text-3xl font-black text-white">
+            Kasyno <span className="bg-gradient-to-r from-amber-300 to-fuchsia-400 bg-clip-text text-transparent">naukaair</span>
+          </h1>
+          <p className="mt-2 max-w-xl text-slate-300">
+            Neon, dźwięk wyobraźni i adrenalinowy spin. Punkty z nauki — wypłata dopiero po wyniku.
           </p>
         </div>
-        <CoinDisplay />
+        <CoinDisplay className="border-amber-400/40 bg-black/40 text-lg" />
       </div>
 
-      <Card className="border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-violet-500/5">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+      <Card className="border-amber-500/25 bg-black/25 backdrop-blur-sm">
+        <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-amber-200/80">
+          <Sparkles className="h-4 w-4" />
           Jak zdobywać punkty
         </h2>
         <ul className="mt-3 grid gap-2 text-sm text-slate-300 sm:grid-cols-2">
-          <li>• Nauka — +{COINS_LEARN_CORRECT} pkt za poprawną odpowiedź</li>
+          <li>• Nauka — +{COINS_LEARN_CORRECT} pkt za poprawną</li>
           <li>• Egzamin — +{COINS_EXAM_CORRECT} pkt za poprawną</li>
           <li>• Egzamin ≥70% — bonus +{COINS_EXAM_PASS_BONUS} pkt</li>
           <li>• Egzamin 100% — dodatkowo +{COINS_EXAM_PERFECT_BONUS} pkt</li>
         </ul>
         <NavAnchor
           href="/shop"
-          className="mt-4 inline-block text-sm text-sky-400 hover:text-sky-300"
+          className="mt-4 inline-block text-sm font-medium text-fuchsia-300 hover:text-fuchsia-200"
         >
-          → Sklep z kosmetykami do rankingu
+          → Sklep z kosmetykami AGH do rankingu
         </NavAnchor>
       </Card>
 
@@ -56,10 +59,10 @@ export default function CasinoPage() {
           type="button"
           onClick={() => setTab("roulette")}
           className={cn(
-            "flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all",
+            "flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-all",
             tab === "roulette"
-              ? "bg-amber-500 text-white"
-              : "border border-slate-700 text-slate-300 hover:bg-slate-800",
+              ? "bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-950 shadow-[0_0_20px_rgba(251,191,36,0.4)]"
+              : "border border-amber-500/30 text-amber-100/80 hover:bg-amber-500/10",
           )}
         >
           <CircleDot className="h-4 w-4" />
@@ -69,18 +72,20 @@ export default function CasinoPage() {
           type="button"
           onClick={() => setTab("plinko")}
           className={cn(
-            "flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all",
+            "flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-all",
             tab === "plinko"
-              ? "bg-violet-500 text-white"
-              : "border border-slate-700 text-slate-300 hover:bg-slate-800",
+              ? "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-[0_0_20px_rgba(139,92,246,0.45)]"
+              : "border border-violet-500/30 text-violet-100/80 hover:bg-violet-500/10",
           )}
         >
           <Dices className="h-4 w-4" />
-          Plinko (kulka)
+          Plinko
         </button>
       </div>
 
-      <Card>{tab === "roulette" ? <RouletteGame /> : <PlinkoGame />}</Card>
+      <Card className="overflow-hidden border-white/10 bg-black/35 backdrop-blur-md">
+        {tab === "roulette" ? <RouletteGame /> : <PlinkoGame />}
+      </Card>
     </div>
   );
 }
