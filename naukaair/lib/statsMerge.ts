@@ -1,4 +1,5 @@
 import type { StoredUserStats } from "@/lib/globalStats";
+import { mergeEconomy, normalizeEconomy, emptyEconomy } from "@/lib/economy";
 
 export function mergeUserStats(
   local: StoredUserStats,
@@ -29,6 +30,10 @@ export function mergeUserStats(
     wrongAnswers: Math.max(local.wrongAnswers, remote.wrongAnswers),
     history,
     questionStats,
+    economy: mergeEconomy(
+      normalizeEconomy(local.economy),
+      normalizeEconomy(remote.economy),
+    ),
     lastActive: new Date().toISOString(),
   };
 }
@@ -40,6 +45,7 @@ export function emptyUserStats(): StoredUserStats {
     wrongAnswers: 0,
     history: [],
     questionStats: {},
+    economy: emptyEconomy(),
     lastActive: new Date().toISOString(),
   };
 }

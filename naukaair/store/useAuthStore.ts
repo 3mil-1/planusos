@@ -4,12 +4,16 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useQuizStore } from "./useQuizStore";
 
+import type { EquippedCosmetics } from "@/lib/economy";
+
 export interface GlobalUserSummary {
   username: string;
   totalAnswered: number;
   correctAnswers: number;
   accuracy: number;
   lastActive: string;
+  coins: number;
+  equipped: EquippedCosmetics;
 }
 
 interface AuthState {
@@ -71,6 +75,7 @@ export const useAuthStore = create<AuthState>()(
           wrongAnswers: 0,
           history: [],
           questionStats: {},
+          economy: undefined,
         });
       },
 

@@ -1,14 +1,17 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { BookOpen, GraduationCap, Home, LogOut, User } from "lucide-react";
+import { BookOpen, Coins, GraduationCap, Home, LogOut, ShoppingBag, User } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { NavAnchor, navLinkClass } from "@/components/ui/NavAnchor";
+import { CoinDisplay } from "@/components/economy/CoinDisplay";
 
 const links = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/learn", label: "Nauka", icon: BookOpen },
   { href: "/exam", label: "Egzamin", icon: GraduationCap },
+  { href: "/casino", label: "Kasyno", icon: Coins },
+  { href: "/shop", label: "Sklep", icon: ShoppingBag },
 ];
 
 export function Navbar() {
@@ -34,7 +37,8 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-2 rounded-lg bg-slate-800/80 px-3 py-1.5 text-sm text-slate-300 sm:flex">
+          <CoinDisplay className="hidden sm:inline-flex" showLabel={false} />
+          <div className="hidden items-center gap-2 rounded-lg bg-slate-800/80 px-3 py-1.5 text-sm text-slate-300 md:flex">
             <User className="h-4 w-4 text-sky-400" />
             {username}
           </div>

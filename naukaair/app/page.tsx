@@ -1,13 +1,20 @@
 "use client";
 
 import { useMemo, useEffect } from "react";
-import { AlertTriangle, BookOpen, GraduationCap, TrendingDown, Users } from "lucide-react";
+import { AlertTriangle, BookOpen, Coins, GraduationCap, ShoppingBag, TrendingDown, Users } from "lucide-react";
 import { NavAnchor } from "@/components/ui/NavAnchor";
 import { questionsDb } from "@/data/questions";
 import { useQuizStore } from "@/store/useQuizStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Card } from "@/components/ui/Card";
+import { CoinDisplay } from "@/components/economy/CoinDisplay";
+import { ProfileBadge } from "@/components/profile/ProfileBadge";
 import { formatPercent } from "@/lib/utils";
+import {
+  COINS_EXAM_CORRECT,
+  COINS_LEARN_CORRECT,
+  normalizeEconomy,
+} from "@/lib/economy";
 
 export default function DashboardPage() {
   const {
@@ -19,6 +26,7 @@ export default function DashboardPage() {
   } = useQuizStore();
   const { username, globalUsers, fetchGlobalStats, storagePersistent, globalStatsLoading } =
     useAuthStore();
+  const economy = useQuizStore((s) => normalizeEconomy(s.economy));
 
   useEffect(() => {
     void fetchGlobalStats();
@@ -67,10 +75,14 @@ export default function DashboardPage() {
           naukaair — Baza Egzaminacyjna Fizyka 2025
         </h1>
         <p className="mt-2 text-slate-400">
-          Witaj, <span className="text-sky-400">{username}</span>. Baza:{" "}
-          <span className="text-white">{questionsDb.length}</span> pytań z bazy 2025 i
-          egzaminów — podzielone działami fizyki.
+          Witaj,{" "}
+          <ProfileBadge username={username ?? ""} equipped={economy.equipped} highlight />. Baza:{" "}
+          <span className="text-white">{questionsDb.length}</span> pytań — zdobywaj punkty za
+          poprawne odpowiedzi (+{COINS_LEARN_CORRECT} nauka, +{COINS_EXAM_CORRECT} egzamin).
         </p>
+        <div className="mt-3">
+          <CoinDisplay />
+        </div>
       </div>
 
       {!storagePersistent && (
@@ -124,7 +136,7 @@ export default function DashboardPage() {
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <NavAnchor
           href="/learn"
           className="group block rounded-2xl border border-slate-800 bg-gradient-to-br from-sky-500/10 to-indigo-500/10 p-8 transition-all hover:border-sky-500/40 hover:shadow-lg hover:shadow-sky-500/10 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
@@ -132,8 +144,7 @@ export default function DashboardPage() {
           <BookOpen className="mb-4 h-10 w-10 text-sky-400 transition-transform group-hover:scale-110" />
           <h3 className="text-xl font-semibold text-white">Tryb Nauki</h3>
           <p className="mt-2 text-sm text-slate-400">
-            Fiszki z natychmiastową oceną i wyjaśnieniem. Wybierz dział albo losuj z całej
-            bazy.
+            Fiszki z natychmiastową oceną. +{COINS_LEARN_CORRECT} pkt za poprawną odpowiedź.
           </p>
         </NavAnchor>
 
@@ -144,7 +155,29 @@ export default function DashboardPage() {
           <GraduationCap className="mb-4 h-10 w-10 text-violet-400 transition-transform group-hover:scale-110" />
           <h3 className="text-xl font-semibold text-white">Symulacja Egzaminu</h3>
           <p className="mt-2 text-sm text-slate-400">
-            40 losowych pytań, 60 minut, wynik dopiero na końcu.
+            40 losowych pytań, 60 minut. +{COINS_EXAM_CORRECT} pkt za poprawną + bonusy.
+          </p>
+        </NavAnchor>
+
+        <NavAnchor
+          href="/casino"
+          className="group block rounded-2xl border border-slate-800 bg-gradient-to-br from-amber-500/10 to-orange-500/10 p-8 transition-all hover:border-amber-500/40 hover:shadow-lg hover:shadow-amber-500/10 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+        >
+          <Coins className="mb-4 h-10 w-10 text-amber-400 transition-transform group-hover:scale-110" />
+          <h3 className="text-xl font-semibold text-white">Mini kasyno</h3>
+          <p className="mt-2 text-sm text-slate-400">
+            Ruletka i plinko — ryzykuj punkty, wygraj mnożnik do ×5.
+          </p>
+        </NavAnchor>
+
+        <NavAnchor
+          href="/shop"
+          className="group block rounded-2xl border border-slate-800 bg-gradient-to-br from-pink-500/10 to-rose-500/10 p-8 transition-all hover:border-pink-500/40 hover:shadow-lg hover:shadow-pink-500/10 focus:outline-none focus:ring-2 focus:ring-pink-500/40"
+        >
+          <ShoppingBag className="mb-4 h-10 w-10 text-pink-400 transition-transform group-hover:scale-110" />
+          <h3 className="text-xl font-semibold text-white">Sklepik</h3>
+          <p className="mt-2 text-sm text-slate-400">
+            Ognisty nick, obwódka, kotek — kosmetyki w rankingu.
           </p>
         </NavAnchor>
       </div>
@@ -163,9 +196,10 @@ export default function DashboardPage() {
               <thead>
                 <tr className="border-b border-slate-800 text-left text-slate-400">
                   <th className="pb-3 pr-4">#</th>
-                  <th className="pb-3 pr-4">Login</th>
+                  <th className="pb-3 pr-4">Gracz</th>
                   <th className="pb-3 pr-4">Skuteczność</th>
-                  <th className="pb-3">Odpowiedzi</th>
+                  <th className="pb-3 pr-4">Odpowiedzi</th>
+                  <th className="pb-3">Punkty</th>
                 </tr>
               </thead>
               <tbody>
@@ -177,14 +211,20 @@ export default function DashboardPage() {
                     }`}
                   >
                     <td className="py-3 pr-4 text-slate-500">{i + 1}</td>
-                    <td className="py-3 pr-4 font-medium text-slate-200">
-                      {u.username}
+                    <td className="py-3 pr-4 font-medium">
+                      <ProfileBadge
+                        username={u.username}
+                        equipped={u.equipped}
+                        highlight={u.username === username}
+                        size="sm"
+                      />
                       {u.username === username && (
                         <span className="ml-2 text-xs text-sky-400">(Ty)</span>
                       )}
                     </td>
                     <td className="py-3 pr-4 text-emerald-400">{u.accuracy}%</td>
-                    <td className="py-3 text-slate-400">{u.totalAnswered}</td>
+                    <td className="py-3 pr-4 text-slate-400">{u.totalAnswered}</td>
+                    <td className="py-3 font-mono text-amber-300/90">{u.coins ?? 0}</td>
                   </tr>
                 ))}
               </tbody>

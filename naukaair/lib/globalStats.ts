@@ -1,6 +1,8 @@
 import { promises as fs } from "fs";
 import path from "path";
 
+import type { UserEconomy } from "./economy";
+
 export interface StoredUserStats {
   totalAnswered: number;
   correctAnswers: number;
@@ -13,6 +15,7 @@ export interface StoredUserStats {
   }>;
   questionStats: Record<string, { attempts: number; correct: number }>;
   lastActive: string;
+  economy?: UserEconomy;
 }
 
 export interface GlobalStatsFile {

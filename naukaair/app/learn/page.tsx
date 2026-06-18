@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { ChevronRight, RotateCcw } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ChevronRight, Coins, RotateCcw } from "lucide-react";
 import {
   countQuestionsForLearnSection,
   getQuestionsForLearnSection,
@@ -17,6 +17,8 @@ import { ProgressBar } from "@/components/quiz/ProgressBar";
 
 export default function LearnPage() {
   const recordAnswer = useQuizStore((s) => s.recordAnswer);
+  const lastCoinToast = useQuizStore((s) => s.lastCoinToast);
+  const clearCoinToast = useQuizStore((s) => s.clearCoinToast);
   const [sectionId, setSectionId] = useState<LearnSectionId | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [index, setIndex] = useState(0);
@@ -50,11 +52,17 @@ export default function LearnPage() {
       setSelected(optionIndex);
       setShowResult(true);
       const isCorrect = optionIndex === current.correctAnswerIndex;
-      recordAnswer(current.id, isCorrect);
+      recordAnswer(current.id, isCorrect, "nauka");
       if (isCorrect) setSessionCorrect((c) => c + 1);
     },
     [current, showResult, recordAnswer],
   );
+
+  useEffect(() => {
+    if (!lastCoinToast) return;
+    const t = window.setTimeout(() => clearCoinToast(), 2500);
+    return () => window.clearTimeout(t);
+  }, [lastCoinToast, clearCoinToast]);
 
   const handleNext = () => {
     if (index + 1 >= questions.length) {
@@ -175,6 +183,13 @@ export default function LearnPage() {
               {current.explanation}
             </p>
           </div>
+        )}
+
+        {showResult && lastCoinToast && (
+          <p className="mt-4 flex animate-fade-in items-center justify-center gap-2 text-sm font-semibold text-amber-300">
+            <Coins className="h-4 w-4" />
+            +{lastCoinToast.amount} pkt!
+          </p>
         )}
 
         {showResult && (

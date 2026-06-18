@@ -97,7 +97,7 @@ export default function ExamPage() {
     for (const q of questions) {
       const sel = answers[q.id];
       if (sel !== undefined) {
-        recordAnswer(q.id, sel === q.correctAnswerIndex);
+        recordAnswer(q.id, sel === q.correctAnswerIndex, "egzamin");
       }
     }
 
