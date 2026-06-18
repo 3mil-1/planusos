@@ -55,11 +55,21 @@ Bez `DATABASE_URL` statystyki działają tylko w localStorage przeglądarki — 
 |------|---------|
 | Root Directory | `naukaair` |
 | Build Command | `npm install && npm run build` |
-| Start Command | `npm run build && node .next/standalone/server.js` |
+| Start Command | `node .next/standalone/server.js` |
 | Typ | **Web Service** (nie Static Site!) |
 | `DATABASE_URL` | connection string Neon Postgres (wymagane dla trwałych statystyk) |
 
 ### Typowy błąd
 
-Klik w link → „Not Found”, odświeżenie działa = źle skonfiguowany **Static Site** zamiast **Web Service**.
+Klik w link → „Not Found”, odświeżenie działa = źle skonfigurowany **Static Site** zamiast **Web Service**.
 
+### „This page couldn't load” / Not Found z Rendera
+
+Nagłówek `x-render-routing: no-server` oznacza, że **pod tym adresem nie ma aktywnego Web Service** (usunięty serwis, zły URL albo nieudany deploy).
+
+1. Render Dashboard → Web Service (lub **New Web Service**)
+2. Repo: `3mil-1/planusos`, branch: **`cursor/naukaair-app-a248`**
+3. **Root Directory:** `naukaair`, Runtime: **Docker**
+4. Po deployu: `https://TWOJ-SERWIS.onrender.com/api/health` → `{"ok":true}`
+
+Adres bierz z panelu Render — literówka w URL (np. `naukaaaair` zamiast `naukaair`) też daje ten błąd.
