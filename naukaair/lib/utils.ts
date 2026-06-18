@@ -18,15 +18,3 @@ export function shuffleArray<T>(array: T[]): T[] {
 
 export const EXAM_DURATION_SECONDS = 60 * 60;
 export const EXAM_QUESTION_COUNT = 40;
-
-export const LEARN_RANGES = [
-  { label: "1–20", start: 1, end: 20 },
-  { label: "21–40", start: 21, end: 40 },
-  { label: "41–60", start: 41, end: 60 },
-  { label: "61–80", start: 61, end: 80 },
-  { label: "81–99", start: 81, end: 99 },
-  { label: "Wszystkie (1–99)", start: 1, end: 99 },
-  { label: "Extra z egzaminów", start: 100, end: 129 },
-  { label: "Z obrazkami (skany PDF)", start: 130, end: 199 },
-  { label: "Pełna baza (1–99 + extra)", start: 1, end: 199 },
-] as const;

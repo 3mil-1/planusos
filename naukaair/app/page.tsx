@@ -68,8 +68,8 @@ export default function DashboardPage() {
         </h1>
         <p className="mt-2 text-slate-400">
           Witaj, <span className="text-sky-400">{username}</span>. Baza:{" "}
-          <span className="text-white">{questionsDb.length}</span> pytań (99 pkt 2025 +{" "}
-          {questionsDb.length - 99} extra, w tym ze skanami PDF).
+          <span className="text-white">{questionsDb.length}</span> pytań z bazy 2025 i
+          egzaminów — podzielone działami fizyki.
         </p>
       </div>
 
@@ -132,7 +132,8 @@ export default function DashboardPage() {
           <BookOpen className="mb-4 h-10 w-10 text-sky-400 transition-transform group-hover:scale-110" />
           <h3 className="text-xl font-semibold text-white">Tryb Nauki</h3>
           <p className="mt-2 text-sm text-slate-400">
-            Fiszki z natychmiastową oceną i wyjaśnieniem. Wybierz zakres 1–99.
+            Fiszki z natychmiastową oceną i wyjaśnieniem. Wybierz dział albo losuj z całej
+            bazy.
           </p>
         </NavAnchor>
 

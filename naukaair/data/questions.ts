@@ -5,6 +5,12 @@ import {
   imageRawToFigures,
 } from "./extraImageQuestions";
 import { getQuestionFigures, type QuestionFigure } from "./questionImages";
+import {
+  getQuestionDomain,
+  type LearnDomainId,
+  type LearnSectionId,
+  DOMAIN_LABELS,
+} from "./learnDomains";
 import { QUESTION_META } from "./questionMeta";
 import { isSyntheticSource, type QuestionSource } from "./questionTypes";
 
@@ -13,6 +19,8 @@ const ALL_QUESTION_META = { ...QUESTION_META, ...EXTRA_QUESTION_META, ...EXTRA_I
 export interface Question {
   id: string;
   basePointId: number;
+  domain: LearnDomainId;
+  domainLabel: string;
   topic: string;
   bazaTitle: string;
   question: string;
@@ -24,7 +32,7 @@ export interface Question {
   figures?: QuestionFigure[];
 }
 
-type RawQuestion = Omit<Question, "source" | "bazaTitle" | "isSynthetic"> & {
+type RawQuestion = Omit<Question, "source" | "bazaTitle" | "isSynthetic" | "domain" | "domainLabel"> & {
   isSynthetic?: boolean;
   figures?: QuestionFigure[];
 };
@@ -1036,7 +1044,9 @@ export const questionsDb: Question[] = RAW_QUESTIONS.map((q) => {
   return {
     ...q,
     bazaTitle: meta.bazaTitle,
-    topic: meta.bazaTitle,
+    topic: q.topic,
+    domain: getQuestionDomain(q.id, q.basePointId),
+    domainLabel: DOMAIN_LABELS[getQuestionDomain(q.id, q.basePointId)],
     source: meta.source,
     isSynthetic: isSyntheticSource(meta.source),
     figures: q.figures ?? getQuestionFigures(q.id),
@@ -1047,16 +1057,22 @@ export function getQuestionById(id: string): Question | undefined {
   return questionsDb.find((q) => q.id === id);
 }
 
-export function getQuestionsByRange(start: number, end: number): Question[] {
-  return questionsDb.filter((q) => q.basePointId >= start && q.basePointId <= end);
+export function getQuestionsByDomain(domain: LearnDomainId) {
+  return questionsDb.filter((q) => q.domain === domain);
 }
 
-export function getExtraQuestions(): Question[] {
-  return questionsDb.filter((q) => q.basePointId >= 100);
+export function getAllQuestions(shuffled = false) {
+  return shuffled ? [...questionsDb].sort(() => Math.random() - 0.5) : [...questionsDb];
 }
 
-export function getBaza2025Questions(): Question[] {
-  return questionsDb.filter((q) => q.basePointId >= 1 && q.basePointId <= 99);
+export function getQuestionsForLearnSection(sectionId: LearnSectionId) {
+  if (sectionId === "random") return getAllQuestions(true);
+  if (sectionId === "all") return getAllQuestions(false);
+  return getQuestionsByDomain(sectionId);
+}
+
+export function countQuestionsForLearnSection(sectionId: LearnSectionId) {
+  return getQuestionsForLearnSection(sectionId).length;
 }
 
 export function getRandomExamQuestions(count = 40): Question[] {

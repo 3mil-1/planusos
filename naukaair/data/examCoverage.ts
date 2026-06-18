@@ -1,12 +1,17 @@
 import { questionsDb } from "./questions";
-import { isExtraPointId } from "./extraQuestions";
+import { DOMAIN_LABELS, type LearnDomainId } from "./learnDomains";
 import { formatQuestionSource } from "./questionTypes";
 
 export function getQuestionAuditSummary() {
   const exam = questionsDb.filter((q) => !q.isSynthetic);
   const synthetic = questionsDb.filter((q) => q.isSynthetic);
-  const extra = questionsDb.filter((q) => isExtraPointId(q.basePointId));
-  const baza = questionsDb.filter((q) => q.basePointId >= 1 && q.basePointId <= 99);
+
+  const byDomain = Object.fromEntries(
+    (Object.keys(DOMAIN_LABELS) as LearnDomainId[]).map((id) => [
+      id,
+      questionsDb.filter((q) => q.domain === id).length,
+    ]),
+  );
 
   const byPdf = new Map<string, number>();
   for (const q of exam) {
@@ -17,14 +22,14 @@ export function getQuestionAuditSummary() {
 
   return {
     total: questionsDb.length,
-    bazaCount: baza.length,
-    extraCount: extra.length,
+    byDomain,
     examCount: exam.length,
     syntheticCount: synthetic.length,
     byPdf: Object.fromEntries(byPdf),
     examQuestions: exam.map((q) => ({
       id: q.id,
       point: q.basePointId,
+      domain: q.domain,
       ref: q.source.type === "exam" ? q.source.ref : "",
       source: formatQuestionSource(q.source),
     })),
