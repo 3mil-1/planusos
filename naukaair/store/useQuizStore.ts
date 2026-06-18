@@ -437,8 +437,8 @@ export const useQuizStore = create<QuizState>()(
           ...userData,
         };
       },
-      onRehydrateStorage: () => (state) => {
-        state?.setQuizHydrated();
+      onRehydrateStorage: () => () => {
+        useQuizStore.getState().setQuizHydrated();
         import("@/lib/initStats").then(({ maybeLoadStatsFromServer }) => {
           maybeLoadStatsFromServer();
         });

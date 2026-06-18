@@ -95,7 +95,11 @@ export const useAuthStore = create<AuthState>()(
               persistent?: boolean;
             };
             set({
-              globalUsers: data.users,
+              globalUsers: (data.users ?? []).map((u) => ({
+                ...u,
+                coins: u.coins ?? 0,
+                equipped: u.equipped ?? {},
+              })),
               storagePersistent: Boolean(data.persistent),
               globalStatsLoading: false,
             });
@@ -115,12 +119,12 @@ export const useAuthStore = create<AuthState>()(
         globalUsers: state.globalUsers,
         storagePersistent: state.storagePersistent,
       }),
-      onRehydrateStorage: () => (state) => {
-        state?.setHydrated();
+      onRehydrateStorage: () => () => {
+        useAuthStore.getState().setHydrated();
         import("@/lib/initStats").then(({ maybeLoadStatsFromServer }) => {
           maybeLoadStatsFromServer();
         });
-        void state?.fetchGlobalStats();
+        void useAuthStore.getState().fetchGlobalStats();
       },
     },
   ),
