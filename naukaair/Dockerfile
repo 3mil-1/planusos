@@ -8,7 +8,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # bust cache when app version changes
-ARG APP_REVISION=8
+ARG APP_REVISION=9
 RUN echo "build revision ${APP_REVISION}" && npm run build
 
 FROM node:20-alpine AS runner

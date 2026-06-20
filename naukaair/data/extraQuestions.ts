@@ -154,7 +154,7 @@ export const EXTRA_RAW_QUESTIONS: ExtraRaw[] = [
     basePointId: 109,
     topic: "Moment pędu względem środka masy",
     question:
-      "Krążek zbliża się prostopadle do leżącego pręta z prędkością stałą (przed zderzeniem). Moment pędu krążka względem środka masy pręta:",
+      "Krążek zbliża się prostopadle do leżącego pręta, prosto nad środkiem masy pręta (przed zderzeniem). Moment pędu krążka względem środka masy pręta:",
     options: [
       "nie istnieje (jest zerowy)",
       "ma stałą wartość niezerową",
@@ -251,7 +251,7 @@ export const EXTRA_RAW_QUESTIONS: ExtraRaw[] = [
     id: "q-ex-017",
     basePointId: 116,
     topic: "Potencjał w przewodniku",
-    question: "Wewnątrz naładowanej metalowej kuli w stanie electrostatycznej równowagi potencjał:",
+    question: "Wewnątrz naładowanej metalowej kuli w stanie elektrostatycznej równowagi potencjał:",
     options: [
       "jest stały (równy potencjałowi powierzchni)",
       "maleje liniowo od środka do powierzchni",
@@ -275,7 +275,7 @@ export const EXTRA_RAW_QUESTIONS: ExtraRaw[] = [
     ],
     correctAnswerIndex: 0,
     explanation:
-      "I prawo Keplera: Słońce w ognisku elipsy. Egzamin 2021 I termin — poprawne stwierdzenie d.",
+      "I prawo Keplera: Słońce w jednym z ognisk elipsy (nie w geometrycznym środku). Egzamin 2021 I termin.",
   },
   {
     id: "q-ex-019",
@@ -312,16 +312,16 @@ export const EXTRA_RAW_QUESTIONS: ExtraRaw[] = [
     basePointId: 120,
     topic: "Moment bezwładności — prostopadłościan",
     question:
-      "Jednorodny prostopadłościan ma boki a < b < c (oś X — najkrótsza krawędź a). Największy moment bezwładności względem osi przechodzących przez środek masy ma względem osi:",
+      "Jednorodny prostopadłościan ma wymiary boków jak na rysunku egzaminu 2020: 100 wzdłuż osi X, 10 wzdłuż osi Y, 25 wzdłuż osi Z. Największy moment bezwładności względem osi przechodzących przez środek masy ma względem osi:",
     options: [
-      "X (najkrótszy wymiar)",
-      "Y (średni wymiar)",
-      "Z (najdłuższy wymiar)",
+      "X (wzdłuż najdłuższego boku)",
+      "Y (wzdłuż najkrótszego boku — wysokość 10)",
+      "Z (wzdłuż boku 25)",
       "wszystkie momenty są równe",
     ],
     correctAnswerIndex: 1,
     explanation:
-      "Dla jednorodnego prostopadłościanu I zależy od kwadratów wymiarów prostopadłych do osi; na egzaminie 2020 poprawna była oś Y (zależnie od etykiet na rysunku).",
+      "I_X ∝ 10²+25², I_Y ∝ 100²+25², I_Z ∝ 100²+10² — największy moment dla osi Y (prostopadłej do płaszczyzny 100×25).",
   },
   {
     id: "q-ex-022",

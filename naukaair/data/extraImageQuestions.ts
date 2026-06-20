@@ -40,10 +40,10 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     topic: "Potencjał naładowanej kuli",
     question:
       "Piłeczka ping-pongowa o promieniu R naładowana dodatnio. Wskaż wykres poprawnie przedstawiający zależność potencjału V(r) od odległości r od środka (patrz ilustracja).",
-    options: ["Rysunek A", "Rysunek B", "Rysunek C", "Rysunek D"],
+    options: ["Rysunek A", "Rysunek B", "Rysunek C"],
     correctAnswerIndex: 2,
     explanation:
-      "Wewnątrz przewodnika/sphere equipotential: V = const dla r < R; na zewnątrz V ∝ 1/r. Poprawny wykres C.",
+      "Dla naładowanej kulistej powłoki: V = const wewnątrz (r < R), na zewnątrz V ∝ 1/r. Na skanie egzaminu 2020 poprawny jest wykres c.",
     figureSrc: CROP("q-ex-i02"),
     figureAlt: "Wykres potencjału V(r) dla naładowanej kuli",
   },
@@ -134,7 +134,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     basePointId: 138,
     topic: "Moment pędu względem CM",
     question:
-      "Krążek zbliża się prostopadle do leżącego pręta (przed zderzeniem). Moment pędu krążka względem środka masy pręta (patrz ilustracja):",
+      "Krążek zbliża się prostopadle do leżącego pręta, prosto nad środkiem masy pręta (przed zderzeniem). Moment pędu krążka względem środka masy pręta (patrz ilustracja):",
     options: [
       "nie istnieje (jest zerowy)",
       "ma stałą wartość niezerową",
@@ -151,7 +151,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     id: "q-ex-i10",
     basePointId: 139,
     topic: "Ruch harmoniczny — stwierdzenia",
-    question: "W ruchu harmonicznym nietłumionym:",
+    question: "W ruchu harmonicznym nietłumionym (pytanie uzupełniające tekstowe — bez osobnego rysunku na skanie):",
     options: [
       "największa siła działa w położeniu równowagi",
       "największe przyspieszenie jest przy maksymalnym wychyleniu",
@@ -168,9 +168,9 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     question:
       "Wskaż wykres poprawnie przedstawiający potencjał V(r) naładowanej sfery/przewodnika kulistego (patrz ilustracja z czterema wykresami).",
     options: ["Wykres A", "Wykres B", "Wykres C", "Wykres D"],
-    correctAnswerIndex: 1,
+    correctAnswerIndex: 3,
     explanation:
-      "V = const wewnątrz przewodnika, ciągłość na powierzchni, V ∝ 1/r na zewnątrz — wykres B (recall egzamin 2020).",
+      "Dla naładowanej sfery/przewodnika: V = const wewnątrz (r ≤ R), ciągłość na powierzchni, V ∝ 1/r na zewnątrz — wykres D na egzaminie 2020.",
     figureSrc: CROP("q-ex-i11"),
     figureAlt: "Cztery wykresy V(r) dla naładowanej sfery",
   },

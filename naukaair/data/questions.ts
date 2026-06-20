@@ -116,7 +116,7 @@ const RAW_QUESTIONS: RawQuestion[] = [
     question: "W kwadracie w trzech wierzchołkach są ładunki +q. Jaki ładunek x w czwartym wierzchołku zeruje potencjał w środku kwadratu?",
     options: ["−3q", "+3q", "−q", "0"],
     correctAnswerIndex: 0,
-    explanation: "Superpozycja: q + q + q + x = 0 w warunku zerowego potencjału w środku → x = −3q (zadanie z egzaminu 2023 II termin).",
+    explanation: "Superpozycja: q + q + q + x = 0 w warunku zerowego potencjału w środku → x = −3q (egzamin 2023 I termin, JW).",
     isSynthetic: true,
   },
   {
@@ -433,10 +433,17 @@ const RAW_QUESTIONS: RawQuestion[] = [
     id: "q-040",
     basePointId: 40,
     topic: "Pole okręgu ładunków",
-    question: "W środku płaskiego naładowanego okręgu wektor E jest:",
-    options: ["prostopadły do płaszczyzny okręgu (wzdłuż osi)", "równoległy do płaszczyzny okręgu", "zerowy co do kierunku — nie istnieje", "zawsze poziomy"],
-    correctAnswerIndex: 0,
-    explanation: "W środku E = 0; poza osią E jest prostopadły do płaszczyzny — pytanie dotyczy kierunku na osi vs w płaszczyźnie.",
+    question:
+      "Czy wektor natężenia pola E w geometrycznym środku płaskiego naładowanego dodatnio okręgu jest prostopadły do płaszczyzny okręgu? (Baza AGH 2025, pkt 40)",
+    options: [
+      "Tak — E jest prostopadły do płaszczyzny okręgu",
+      "Nie — E w środku wynosi zero (brak składowej prostopadłej ani równoległej)",
+      "Tak — E jest równoległy do płaszczyzny",
+      "Nie wiadomo — zależy od promienia",
+    ],
+    correctAnswerIndex: 1,
+    explanation:
+      "W geometrycznym środku cienkiego okręgu ładunków w płaszczyźnie E = 0 z symetrii — wektor nie jest prostopadły do płaszczyzny, bo nie ma go w ogóle.",
     isSynthetic: true,
   },
   {
@@ -473,10 +480,16 @@ const RAW_QUESTIONS: RawQuestion[] = [
     id: "q-044",
     basePointId: 44,
     topic: "Zasada zachowania pędu — łódka",
-    question: "Pies (m/2) przechodzi po łódce (m) ze stałą prędkością względem łódki. Łódka przesuwa się względem brzegu o:",
-    options: ["połowę drogi psa (w układzie brzegu, z z.z. pędu)", "taką samą drogę jak pies", "zero", "podwójną drogę psa"],
+    question: "Pies (m/2) przechodzi po łódce (m) ze stałą prędkością względem łódki drogę L. Łódka przesuwa się względem brzegu o:",
+    options: [
+      "L/3 (w układzie brzegu, z z.z. pędu)",
+      "L/2 drogi psa",
+      "taką samą drogę L jak pies względem brzegu",
+      "zero",
+    ],
     correctAnswerIndex: 0,
-    explanation: "Z z.z. pędu: m_łódka·v_łódka = (m/2)·v_pies → łódka cofa się o połowę drogi względnej.",
+    explanation:
+      "Z z.z. pędu: m·x_łódka + (m/2)·(L + x_łódka) = 0 → x_łódka = −L/3. Łódka cofa się o jedną trzecią drogi psa.",
     isSynthetic: true,
   },
   {
@@ -523,7 +536,8 @@ const RAW_QUESTIONS: RawQuestion[] = [
     id: "q-049",
     basePointId: 49,
     topic: "RLC szeregowy — impedancja",
-    question: "Szeregowy obwód L–C–R (AC): czy opór rezystora R wpływa na impedancję zastępczą Z układu?",
+    question:
+      "Szeregowy obwód L–C–R (AC): czy opór rezystora R wpływa na impedancję zastępczą Z układu? (Sformułowanie bazy AGH 2025, pkt 49)",
     options: ["Nie — Z zależy tylko od X_L i X_C", "Tak — Z = √(R² + (X_L−X_C)²)", "Tak — Z = R tylko", "Nie — Z = 0 zawsze"],
     correctAnswerIndex: 0,
     explanation: "W bazie 2025 (pkt 49): opór opornika nie wpływa na impedancję zastępczą (model z X_L, X_C). Uwaga: w pełnym modelu R wchodzi do Z, ale na egzaminie oczekiwana odpowiedź: nie wpływa.",
@@ -533,10 +547,17 @@ const RAW_QUESTIONS: RawQuestion[] = [
     id: "q-050",
     basePointId: 50,
     topic: "Linie pola dipola",
-    question: "Linie pola dipola elektrycznego w pobliżu osi symetrii:",
-    options: ["biegną wzdłuż osi dipolu (nie prostopadle do osi symetralnej w sensie promieniowym)", "są prostopadłe do osi dipolu wszędzie", "są równoległe do siebie", "tworzą okręgi wokół dipolu"],
+    question:
+      "Linie pola dipola elektrycznego w pobliżu osi łączącej ładunki (+q i −q) biegną:",
+    options: [
+      "wzdłuż osi dipolu (od +q do −q)",
+      "prostopadle do osi dipolu w całej okolicy osi",
+      "równolegle do siebie i do osi symetralnej",
+      "wyłącznie po okręgach wokół środka dipolu",
+    ],
     correctAnswerIndex: 0,
-    explanation: "Linie wychodzą z +q i wchodzą w -q; wzdłuż osi łączącej ładunki.",
+    explanation:
+      "Linie wychodzą z +q i wchodzą w −q; w pobliżu osi dipolu biegną wzdłuż niej. (Baza pkt 50 — nie mylić z liniami prostopadłymi do symetralnej w dalekim polu.)",
     isSynthetic: true,
   },
   {
@@ -604,7 +625,7 @@ const RAW_QUESTIONS: RawQuestion[] = [
     basePointId: 57,
     topic: "Terapia nowotworowa",
     question: "Cyklotron/synchrotron w medycynie może służyć do:",
-    options: ["terapii protonowej nowotworów", "pomiaru masy", "sterylizacji wody pitnej wyłącnie", "grawitacji"],
+    options: ["terapii protonowej nowotworów", "pomiaru masy", "sterylizacji wody pitnej wyłącznie", "grawitacji"],
     correctAnswerIndex: 0,
     explanation: "Hadronoterapia protonowa — precyzyjne naświetlanie guzów.",
     isSynthetic: false,
@@ -986,17 +1007,19 @@ const RAW_QUESTIONS: RawQuestion[] = [
     question: "Tuż po zamknięciu wyłącznika w szeregowym RC z baterią U, prąd I(0) wynosi:",
     options: ["U/R (kondensator jak zwarcie)", "0", "U·C", "nieskończony"],
     correctAnswerIndex: 0,
-    explanation: "Nienaładowany C: short → I = U/R.",
+    explanation: "Nienaładowany kondensator przy zamknięciu obwodu zachowuje się jak zwarcie → I(0) = U/R.",
     isSynthetic: false,
   },
   {
     id: "q-096",
     basePointId: 96,
     topic: "Energia orbitalna",
-    question: "Energia potencjalna ciała masy m na orbicie kołowej o promieniu R wokół M: U = −GMm/(2R). Rakieta na takiej orbicie:",
+    question:
+      "Energia mechaniczna ciała masy m na orbicie kołowej o promieniu R wokół M wynosi E = −GMm/(2R). Rakieta na takiej orbicie:",
     options: ["ma określoną energię mechaniczną związaną z orbity", "musi uciekać z układu", "ma E = 0", "nie może orbitować"],
     correctAnswerIndex: 0,
-    explanation: "Wzór dotyczy energii wiązania orbitalnej (wiązana orbita kołowa).",
+    explanation:
+      "Wzór E = −GMm/(2R) to całkowita energia mechaniczna na wiązanej orbicie kołowej (E_kin + E_pot = −GMm/(2R)).",
     isSynthetic: true,
   },
   {
