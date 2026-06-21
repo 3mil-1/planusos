@@ -22,6 +22,7 @@ export default function InformatykaLearnPage() {
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [sessionKnown, setSessionKnown] = useState(0);
+  const [draftAnswer, setDraftAnswer] = useState("");
 
   const section = useMemo(
     () => CS_LEARN_SECTIONS.find((s) => s.id === sectionId),
@@ -36,6 +37,7 @@ export default function InformatykaLearnPage() {
     setIndex(0);
     setRevealed(false);
     setSessionKnown(0);
+    setDraftAnswer("");
   };
 
   const handleReveal = useCallback(() => {
@@ -50,10 +52,12 @@ export default function InformatykaLearnPage() {
       if (index + 1 >= cards.length) {
         setSectionId(null);
         setCards([]);
+        setDraftAnswer("");
         return;
       }
       setIndex((i) => i + 1);
       setRevealed(false);
+      setDraftAnswer("");
     },
     [revealed, index, cards.length],
   );
@@ -61,9 +65,21 @@ export default function InformatykaLearnPage() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!current) return;
-      if (e.key === " " || e.key === "Enter") {
+      const target = e.target;
+      const isTyping =
+        target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement;
+
+      if (isTyping) {
+        if (e.key === "Enter" && e.ctrlKey && !revealed) {
+          e.preventDefault();
+          handleReveal();
+        }
+        return;
+      }
+
+      if (e.key === " " && !revealed) {
         e.preventDefault();
-        if (!revealed) handleReveal();
+        handleReveal();
       }
       if (revealed && e.key === "1") handleRate(true);
       if (revealed && e.key === "2") handleRate(false);
@@ -100,8 +116,8 @@ export default function InformatykaLearnPage() {
           </div>
           <h1 className="text-2xl font-bold text-white">Tryb Nauki — Informatyka</h1>
           <p className="mt-2 text-slate-400">
-            Definicje C++/Python i pytania otwarte z terminów 0–1. Pokaż odpowiedź i oceń się
-            samodzielnie.
+            Napisz odpowiedź własnymi słowami (nic się nie zapisuje), potem porównaj z bazą i oceń
+            się.
           </p>
         </div>
 
@@ -191,6 +207,27 @@ export default function InformatykaLearnPage() {
           </p>
         </div>
 
+        <div className="mt-4">
+          <label htmlFor="cs-draft-answer" className="mb-2 block text-sm font-medium text-slate-400">
+            Twoja odpowiedź
+            <span className="ml-2 font-normal text-slate-600">— tylko na tej karcie, bez zapisu</span>
+          </label>
+          <textarea
+            id="cs-draft-answer"
+            value={draftAnswer}
+            onChange={(e) => setDraftAnswer(e.target.value)}
+            readOnly={revealed}
+            placeholder="Wpisz definicję albo odpowiedź własnymi słowami…"
+            rows={5}
+            className="w-full resize-y rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm leading-relaxed text-slate-200 placeholder:text-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 read-only:opacity-80"
+          />
+          {!revealed && (
+            <p className="mt-2 text-xs text-slate-600">
+              Ctrl+Enter — pokaż odpowiedź z bazy
+            </p>
+          )}
+        </div>
+
         {!revealed ? (
           <button
             type="button"
@@ -198,14 +235,14 @@ export default function InformatykaLearnPage() {
             className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 font-medium text-white transition-all hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
           >
             <Eye className="h-5 w-5" />
-            Pokaż odpowiedź
+            Pokaż odpowiedź z bazy
             <span className="text-sm font-normal text-emerald-100/80">(Spacja)</span>
           </button>
         ) : (
           <div className="mt-6 space-y-4 animate-fade-in">
             <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-800/50">
               <div className="border-b border-slate-700 px-4 py-3 text-sm font-medium text-emerald-400">
-                Odpowiedź:
+                Odpowiedź z bazy:
               </div>
               <p className="whitespace-pre-wrap px-4 py-4 text-sm leading-relaxed text-slate-300">
                 {getCsCardAnswer(current)}
@@ -228,7 +265,7 @@ export default function InformatykaLearnPage() {
                 className="flex items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 py-3 font-medium text-red-200 transition-all hover:bg-red-500/20"
               >
                 <ThumbsDown className="h-5 w-5" />
-                Do powtórki
+                Nie umiem
               </button>
             </div>
 
