@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronRight, Coins, RotateCcw } from "lucide-react";
+import { ChevronRight, Coins, Cpu, RotateCcw } from "lucide-react";
 import {
   countQuestionsForLearnSection,
   getQuestionsForLearnSection,
@@ -91,10 +92,26 @@ export default function LearnPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Tryb Nauki</h1>
           <p className="mt-2 text-slate-400">
-            Wybierz dział fizyki albo losuj z całej bazy. Obrazki przy pytaniu to tylko
-            ilustracja — nie ma osobnego trybu.
+            Wybierz przedmiot i dział. Fizyka: MCQ z natychmiastową oceną. Informatyka: fiszki z
+            bazy baza2k24 (definicje + pytania otwarte).
           </p>
         </div>
+
+        <Link
+          href="/learn/informatyka"
+          className="flex items-center gap-4 rounded-xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 px-6 py-5 transition-all hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+        >
+          <Cpu className="h-10 w-10 shrink-0 text-emerald-400" />
+          <div>
+            <span className="text-lg font-semibold text-white">Informatyka (C++ / Python)</span>
+            <p className="mt-1 text-sm text-slate-400">
+              92 definicje + 32 pytania otwarte z terminów 0–1 — baza2k24
+            </p>
+          </div>
+          <ChevronRight className="ml-auto h-5 w-5 text-emerald-400" />
+        </Link>
+
+        <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">Fizyka</h2>
 
         <div className="grid gap-3 sm:grid-cols-2">
           {globalSections.map((s) => (
