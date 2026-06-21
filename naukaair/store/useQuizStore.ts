@@ -23,6 +23,7 @@ import { resolveUsername } from "@/lib/resolveUsername";
 export type { CasinoResult } from "@/lib/economy";
 
 export type SessionType = "nauka" | "egzamin";
+export type AnswerMode = SessionType | "informatyka";
 
 export interface SessionRecord {
   date: string;
@@ -59,7 +60,7 @@ interface QuizState extends UserQuizData {
 
   setQuizHydrated: () => void;
   loadAndMergeFromServer: (username: string) => Promise<void>;
-  recordAnswer: (questionId: string, isCorrect: boolean, mode?: SessionType) => number;
+  recordAnswer: (questionId: string, isCorrect: boolean, mode?: AnswerMode) => number;
   saveSession: (score: number, totalQuestions: number, type: SessionType) => number;
   resetStats: () => void;
   startExam: (questionIds: string[]) => void;

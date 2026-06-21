@@ -2,6 +2,7 @@
 
 export const STARTER_COINS = 50;
 export const COINS_LEARN_CORRECT = 10;
+export const COINS_CS_LEARN_CORRECT = 10;
 export const COINS_EXAM_CORRECT = 15;
 export const COINS_EXAM_PASS_BONUS = 60; // ≥70% poprawnych
 export const COINS_EXAM_PERFECT_BONUS = 200; // 100% na egzaminie

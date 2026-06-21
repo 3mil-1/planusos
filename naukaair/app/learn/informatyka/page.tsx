@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronRight, Eye, RotateCcw, ThumbsDown, ThumbsUp } from "lucide-react";
+import { CheckCircle2, Coins, Eye, RotateCcw, ThumbsDown, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import {
   CS_LEARN_SECTIONS,
@@ -13,30 +13,58 @@ import {
   type CsSectionId,
 } from "@/data/csLearnSections";
 import type { CsCard } from "@/data/csBaza2024";
+import { COINS_CS_LEARN_CORRECT } from "@/lib/economy";
+import { useQuizStore } from "@/store/useQuizStore";
 import { Card } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/quiz/ProgressBar";
 
+interface MasterySession {
+  sectionId: CsSectionId;
+  totalCount: number;
+  queue: CsCard[];
+  index: number;
+  round: number;
+  retryPool: CsCard[];
+  masteredIds: string[];
+}
+
 export default function InformatykaLearnPage() {
-  const [sectionId, setSectionId] = useState<CsSectionId | null>(null);
-  const [cards, setCards] = useState<CsCard[]>([]);
-  const [index, setIndex] = useState(0);
+  const recordAnswer = useQuizStore((s) => s.recordAnswer);
+  const lastCoinToast = useQuizStore((s) => s.lastCoinToast);
+  const clearCoinToast = useQuizStore((s) => s.clearCoinToast);
+
+  const [session, setSession] = useState<MasterySession | null>(null);
+  const [complete, setComplete] = useState(false);
   const [revealed, setRevealed] = useState(false);
-  const [sessionKnown, setSessionKnown] = useState(0);
   const [draftAnswer, setDraftAnswer] = useState("");
 
   const section = useMemo(
-    () => CS_LEARN_SECTIONS.find((s) => s.id === sectionId),
-    [sectionId],
+    () => CS_LEARN_SECTIONS.find((s) => s.id === session?.sectionId),
+    [session?.sectionId],
   );
 
-  const current = cards[index];
+  const current = session?.queue[session.index];
 
   const startSection = (id: CsSectionId) => {
-    setSectionId(id);
-    setCards(getCsCardsForSection(id));
-    setIndex(0);
+    const cards = getCsCardsForSection(id);
+    setSession({
+      sectionId: id,
+      totalCount: cards.length,
+      queue: cards,
+      index: 0,
+      round: 1,
+      retryPool: [],
+      masteredIds: [],
+    });
+    setComplete(false);
     setRevealed(false);
-    setSessionKnown(0);
+    setDraftAnswer("");
+  };
+
+  const exitSession = () => {
+    setSession(null);
+    setComplete(false);
+    setRevealed(false);
     setDraftAnswer("");
   };
 
@@ -46,25 +74,57 @@ export default function InformatykaLearnPage() {
 
   const handleRate = useCallback(
     (known: boolean) => {
-      if (!revealed) return;
-      if (known) setSessionKnown((c) => c + 1);
+      if (!revealed || !current || !session) return;
 
-      if (index + 1 >= cards.length) {
-        setSectionId(null);
-        setCards([]);
-        setDraftAnswer("");
-        return;
+      recordAnswer(current.id, known, "informatyka");
+
+      const retryPool = known ? session.retryPool : [...session.retryPool, current];
+      const masteredIds = known
+        ? session.masteredIds.includes(current.id)
+          ? session.masteredIds
+          : [...session.masteredIds, current.id]
+        : session.masteredIds;
+
+      const isLastInRound = session.index + 1 >= session.queue.length;
+
+      if (isLastInRound) {
+        if (retryPool.length === 0) {
+          setSession({ ...session, retryPool, masteredIds });
+          setComplete(true);
+        } else {
+          setSession({
+            ...session,
+            queue: retryPool,
+            index: 0,
+            round: session.round + 1,
+            retryPool: [],
+            masteredIds,
+          });
+        }
+      } else {
+        setSession({
+          ...session,
+          index: session.index + 1,
+          retryPool,
+          masteredIds,
+        });
       }
-      setIndex((i) => i + 1);
+
       setRevealed(false);
       setDraftAnswer("");
     },
-    [revealed, index, cards.length],
+    [revealed, current, session, recordAnswer],
   );
 
   useEffect(() => {
+    if (!lastCoinToast) return;
+    const t = window.setTimeout(() => clearCoinToast(), 2500);
+    return () => window.clearTimeout(t);
+  }, [lastCoinToast, clearCoinToast]);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!current) return;
+      if (!current || complete) return;
       const target = e.target;
       const isTyping =
         target instanceof HTMLTextAreaElement || target instanceof HTMLInputElement;
@@ -86,7 +146,7 @@ export default function InformatykaLearnPage() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [current, revealed, handleReveal, handleRate]);
+  }, [current, complete, revealed, handleReveal, handleRate]);
 
   const globalSections = CS_LEARN_SECTIONS.filter(
     (s) => s.id === "random-all" || s.id === "random-definitions" || s.id === "definitions",
@@ -95,29 +155,32 @@ export default function InformatykaLearnPage() {
     (s) => s.id === "all-open" || s.id.startsWith("termin-"),
   );
 
-  const progressLabel = section
-    ? `Karta ${index + 1} z ${cards.length} (${section.label})`
-    : "";
+  const masteredCount = session?.masteredIds.length ?? 0;
+  const totalCount = session?.totalCount ?? 0;
 
-  if (!sectionId || !section || !current) {
+  const progressLabel = useMemo(() => {
+    if (!session || !section) return "";
+    const roundInfo =
+      session.round > 1 ? ` · runda ${session.round}` : "";
+    return `Opanowane ${masteredCount}/${totalCount}${roundInfo} · karta ${session.index + 1}/${session.queue.length}`;
+  }, [session, section, masteredCount, totalCount]);
+
+  if (!session || !section) {
     return (
       <div className="space-y-8 animate-fade-in">
         <div>
-          <div className="mb-3 flex flex-wrap items-center gap-3 text-sm">
+          <div className="mb-3">
             <Link
               href="/learn"
-              className="rounded-lg border border-slate-700 px-3 py-1.5 text-slate-300 transition-colors hover:border-sky-500/40 hover:text-white"
+              className="inline-flex rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-300 transition-colors hover:border-sky-500/40 hover:text-white"
             >
-              ← Fizyka
+              ← Nauka
             </Link>
-            <span className="rounded-lg bg-emerald-500/15 px-3 py-1.5 font-medium text-emerald-300">
-              Informatyka (baza2k24)
-            </span>
           </div>
           <h1 className="text-2xl font-bold text-white">Tryb Nauki — Informatyka</h1>
           <p className="mt-2 text-slate-400">
-            Napisz odpowiedź własnymi słowami (nic się nie zapisuje), potem porównaj z bazą i oceń
-            się.
+            Wpisz odpowiedź, porównaj z bazą i oceń się. Karty z „nie umiem” wracają w kolejnej
+            rundzie, aż opanujesz całą sekcję. +{COINS_CS_LEARN_CORRECT} pkt za każde „umiem”.
           </p>
         </div>
 
@@ -127,11 +190,11 @@ export default function InformatykaLearnPage() {
               key={s.id}
               type="button"
               onClick={() => startSection(s.id)}
-              className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-5 text-left transition-all hover:border-emerald-500/50 hover:bg-emerald-500/15 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+              className="rounded-xl border border-sky-500/30 bg-sky-500/10 px-6 py-5 text-left transition-all hover:border-sky-500/50 hover:bg-sky-500/15 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
             >
               <span className="text-lg font-semibold text-white">{s.label}</span>
               <p className="mt-1 text-sm text-slate-400">{s.description}</p>
-              <p className="mt-2 text-sm font-medium text-emerald-300">
+              <p className="mt-2 text-sm font-medium text-sky-300">
                 {countCsCardsForSection(s.id)} kart
               </p>
             </button>
@@ -148,7 +211,7 @@ export default function InformatykaLearnPage() {
                 key={s.id}
                 type="button"
                 onClick={() => startSection(s.id)}
-                className="rounded-xl border border-slate-800 bg-slate-900/70 px-6 py-5 text-left transition-all hover:border-emerald-500/40 hover:bg-slate-800/80 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                className="rounded-xl border border-slate-800 bg-slate-900/70 px-6 py-5 text-left transition-all hover:border-sky-500/40 hover:bg-slate-800/80 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
               >
                 <span className="text-lg font-semibold text-white">{s.label}</span>
                 <p className="mt-1 text-sm text-slate-400">{s.description}</p>
@@ -163,21 +226,52 @@ export default function InformatykaLearnPage() {
     );
   }
 
+  if (complete) {
+    return (
+      <div className="mx-auto max-w-lg space-y-6 animate-fade-in py-8 text-center">
+        <CheckCircle2 className="mx-auto h-16 w-16 text-emerald-400" />
+        <h1 className="text-2xl font-bold text-white">Sekcja opanowana!</h1>
+        <p className="text-slate-400">
+          Wszystkie {totalCount} kart z „{section.label}” masz za sobą — każda dostała „umiem”.
+        </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <button
+            type="button"
+            onClick={() => startSection(session.sectionId)}
+            className="rounded-xl bg-sky-500 px-6 py-3 font-medium text-white transition-all hover:bg-sky-400"
+          >
+            Powtórz sekcję
+          </button>
+          <button
+            type="button"
+            onClick={exitSession}
+            className="rounded-xl border border-slate-700 px-6 py-3 font-medium text-slate-300 transition-all hover:bg-slate-800"
+          >
+            Wybierz inną sekcję
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!current) return null;
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white">Informatyka — {section.label}</h1>
+          <h1 className="text-xl font-bold text-white">{section.label}</h1>
           <p className="text-sm text-slate-400">
-            Sesja: {sessionKnown}/{index + (revealed ? 1 : 0)} „umiem”
+            Opanowane {masteredCount}/{totalCount}
+            {session.round > 1 ? ` · runda ${session.round}` : ""}
+            {session.retryPool.length > 0
+              ? ` · czeka na powtórkę: ${session.retryPool.length}`
+              : ""}
           </p>
         </div>
         <button
           type="button"
-          onClick={() => {
-            setSectionId(null);
-            setCards([]);
-          }}
+          onClick={exitSession}
           className="flex items-center gap-2 rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-300 transition-all hover:bg-slate-800"
         >
           <RotateCcw className="h-4 w-4" />
@@ -185,20 +279,25 @@ export default function InformatykaLearnPage() {
         </button>
       </div>
 
-      <ProgressBar current={index + 1} total={cards.length} label={progressLabel} />
+      <ProgressBar current={masteredCount} total={totalCount} label={progressLabel} />
 
       <Card>
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <span
             className={`rounded-full px-2.5 py-1 text-xs font-medium ${
               current.kind === "definition"
-                ? "bg-emerald-500/15 text-emerald-300"
+                ? "bg-sky-500/15 text-sky-300"
                 : "bg-violet-500/15 text-violet-300"
             }`}
           >
             {current.kind === "definition" ? "Definicja" : "Pytanie otwarte"}
           </span>
           <span className="text-xs text-slate-500">{getCsCardLabel(current)}</span>
+          {session.round > 1 && (
+            <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-medium text-amber-300">
+              Powtórka
+            </span>
+          )}
         </div>
 
         <div className="min-h-[120px] rounded-xl border border-slate-700/80 bg-slate-800/40 px-5 py-6">
@@ -219,12 +318,10 @@ export default function InformatykaLearnPage() {
             readOnly={revealed}
             placeholder="Wpisz definicję albo odpowiedź własnymi słowami…"
             rows={5}
-            className="w-full resize-y rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm leading-relaxed text-slate-200 placeholder:text-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 read-only:opacity-80"
+            className="w-full resize-y rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm leading-relaxed text-slate-200 placeholder:text-slate-600 focus:border-sky-500/50 focus:outline-none focus:ring-2 focus:ring-sky-500/30 read-only:opacity-80"
           />
           {!revealed && (
-            <p className="mt-2 text-xs text-slate-600">
-              Ctrl+Enter — pokaż odpowiedź z bazy
-            </p>
+            <p className="mt-2 text-xs text-slate-600">Ctrl+Enter — pokaż odpowiedź z bazy</p>
           )}
         </div>
 
@@ -232,16 +329,16 @@ export default function InformatykaLearnPage() {
           <button
             type="button"
             onClick={handleReveal}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 font-medium text-white transition-all hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 py-3 font-medium text-white transition-all hover:bg-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
           >
             <Eye className="h-5 w-5" />
             Pokaż odpowiedź z bazy
-            <span className="text-sm font-normal text-emerald-100/80">(Spacja)</span>
+            <span className="text-sm font-normal text-sky-100/80">(Spacja)</span>
           </button>
         ) : (
           <div className="mt-6 space-y-4 animate-fade-in">
             <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-800/50">
-              <div className="border-b border-slate-700 px-4 py-3 text-sm font-medium text-emerald-400">
+              <div className="border-b border-slate-700 px-4 py-3 text-sm font-medium text-sky-400">
                 Odpowiedź z bazy:
               </div>
               <p className="whitespace-pre-wrap px-4 py-4 text-sm leading-relaxed text-slate-300">
@@ -269,14 +366,16 @@ export default function InformatykaLearnPage() {
               </button>
             </div>
 
-            <button
-              type="button"
-              onClick={() => handleRate(false)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 py-2.5 text-sm text-slate-400 transition-all hover:bg-slate-800"
-            >
-              {index + 1 >= cards.length ? "Zakończ sesję" : "Następna karta"}
-              <ChevronRight className="h-4 w-4" />
-            </button>
+            {lastCoinToast && (
+              <p className="flex animate-fade-in items-center justify-center gap-2 text-sm font-semibold text-amber-300">
+                <Coins className="h-4 w-4" />
+                +{lastCoinToast.amount} pkt!
+              </p>
+            )}
+
+            <p className="text-center text-xs text-slate-600">
+              „Nie umiem” wraca w następnej rundzie · „Umiem” +{COINS_CS_LEARN_CORRECT} pkt
+            </p>
           </div>
         )}
       </Card>
