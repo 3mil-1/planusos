@@ -1,7 +1,4 @@
-/**
- * Generuje naukaair/data/csBaza2024.ts z PDF baza2k24.
- * Uruchom: python3 naukaair/scripts/generate-cs-baza.py [ścieżka-do-pdf]
- */
+"""Generuje naukaair/data/csBaza2024.ts z PDF baza2k24."""
 from __future__ import annotations
 
 import json
@@ -65,6 +62,46 @@ def parse_definitions(text: str) -> list[dict]:
     return defs
 
 
+ANSWER_LINE_START = re.compile(
+    r"^(?:"
+    r"[•]|"
+    r"Mechanizm|Różnice|Podobieństwa|"
+    r"Skorzystaj|Wskaźniki|W konstruktorze|Aby blok|Polimorfizm|"
+    r"Obiekty|r-wartości|auto jest"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def split_open_prompt_answer(rest: str) -> tuple[str, str]:
+    rest = rest.strip()
+    if "?" in rest:
+        q_end = rest.index("?")
+        return normalize_ws(rest[: q_end + 1]), normalize_ws(rest[q_end + 1 :])
+
+    lines = [normalize_ws(line) for line in rest.split("\n") if line.strip()]
+    prompt_lines: list[str] = []
+    answer_lines: list[str] = []
+    in_answer = False
+
+    for line in lines:
+        if not in_answer:
+            title_then_body = (
+                prompt_lines
+                and prompt_lines[-1].endswith(":")
+                and not line.endswith(":")
+            )
+            if ANSWER_LINE_START.match(line) or title_then_body:
+                in_answer = True
+                answer_lines.append(line)
+            else:
+                prompt_lines.append(line)
+        else:
+            answer_lines.append(line)
+
+    return " ".join(prompt_lines), " ".join(answer_lines)
+
+
 def parse_open_questions(content: str, section_id: str) -> list[dict]:
     qs: list[dict] = []
     text = re.sub(r"(\d+)\.\s", r"\n\1. ", content.strip())
@@ -77,17 +114,7 @@ def parse_open_questions(content: str, section_id: str) -> list[dict]:
         if not m:
             continue
         num, rest = m.groups()
-        rest = rest.strip()
-        q_end = rest.find("?")
-        if q_end != -1:
-            prompt = rest[: q_end + 1].strip()
-            answer = rest[q_end + 1 :].strip()
-        else:
-            prompt, _, answer = rest.partition("\n")
-            prompt = prompt.strip()
-            answer = answer.strip()
-        prompt = normalize_ws(prompt)
-        answer = normalize_ws(answer)
+        prompt, answer = split_open_prompt_answer(rest)
         if not prompt:
             continue
         qs.append(
