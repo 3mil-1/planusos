@@ -21,7 +21,7 @@ export async function GET() {
         equipped: economy.equipped,
       };
     })
-    .sort((a, b) => b.accuracy - a.accuracy || b.totalAnswered - a.totalAnswered);
+    .sort((a, b) => b.coins - a.coins || b.accuracy - a.accuracy || b.totalAnswered - a.totalAnswered);
 
   return NextResponse.json({
     users: list,

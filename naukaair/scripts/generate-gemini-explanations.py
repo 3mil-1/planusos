@@ -48,15 +48,17 @@ def split_raw_entries(text: str) -> list[tuple[int, str, str]]:
         title_line = lines[0].strip()
         body = lines[1].strip() if len(lines) > 1 else ""
 
-        # Title may be "Obiekt" alone or "Obiekt\n" with body on next lines
+        # Title may be "Obiekt", "Obiekt:", or "Obiekt: …" (body same or next line)
         if body:
-            title = title_line
-        elif ":" in title_line and not title_line.endswith(":"):
+            title = title_line.rstrip(":")
+        elif title_line.endswith(":"):
+            title = title_line.rstrip(":")
+        elif ":" in title_line:
             title, _, body_start = title_line.partition(":")
+            title = title.strip()
             body = body_start.strip()
         else:
             title = title_line
-            body = ""
 
         title = normalize_ws(title.strip(":- "))
         body = normalize_ws(body)

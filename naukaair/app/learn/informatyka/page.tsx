@@ -13,6 +13,7 @@ import {
   type CsSectionId,
 } from "@/data/csLearnSections";
 import type { CsCard } from "@/data/csBaza2024";
+import { getCsGeminiExplanation } from "@/data/csGeminiExplanations";
 import { COINS_CS_LEARN_CORRECT } from "@/lib/economy";
 import { useQuizStore } from "@/store/useQuizStore";
 import { Card } from "@/components/ui/Card";
@@ -44,6 +45,8 @@ export default function InformatykaLearnPage() {
   );
 
   const current = session?.queue[session.index];
+  const geminiExplanation =
+    current?.kind === "definition" ? getCsGeminiExplanation(current.id) : undefined;
 
   const startSection = (id: CsSectionId) => {
     const cards = getCsCardsForSection(id);
@@ -345,6 +348,17 @@ export default function InformatykaLearnPage() {
                 {getCsCardAnswer(current)}
               </p>
             </div>
+
+            {geminiExplanation && (
+              <div className="overflow-hidden rounded-xl border border-violet-500/30 bg-violet-500/5">
+                <div className="border-b border-violet-500/20 px-4 py-3 text-sm font-medium text-violet-300">
+                  Wytłumaczenie Gemini
+                </div>
+                <p className="whitespace-pre-wrap px-4 py-4 text-sm leading-relaxed text-slate-300">
+                  {geminiExplanation}
+                </p>
+              </div>
+            )}
 
             <p className="text-center text-sm text-slate-500">Czy znałeś odpowiedź?</p>
             <div className="grid grid-cols-2 gap-3">

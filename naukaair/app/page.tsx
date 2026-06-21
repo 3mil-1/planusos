@@ -202,6 +202,9 @@ export default function DashboardPage() {
               <span className="text-xs text-slate-500">Odświeżanie…</span>
             )}
           </div>
+          <p className="mb-4 text-sm text-slate-500">
+            Sortowanie po punktach — zdobywaj je w nauce (fizyka i informatyka) oraz na egzaminie.
+          </p>
           {globalUsers.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

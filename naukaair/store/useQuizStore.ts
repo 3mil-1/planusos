@@ -220,7 +220,7 @@ export const useQuizStore = create<QuizState>()(
       },
 
       recordAnswer: (questionId, isCorrect, mode = "nauka") => {
-        const username = get().activeUsername;
+        const username = resolveUsername(get().activeUsername);
         if (!username) return 0;
 
         const coinReward = isCorrect
@@ -229,33 +229,33 @@ export const useQuizStore = create<QuizState>()(
             : COINS_LEARN_CORRECT
           : 0;
 
-        set((state) => {
-          const prev = state.questionStats[questionId] ?? { attempts: 0, correct: 0 };
+        let reward = 0;
+        updateUser(get, set, (current) => {
+          const prev = current.questionStats[questionId] ?? { attempts: 0, correct: 0 };
           let next: UserQuizData = {
-            totalAnswered: state.totalAnswered + 1,
-            correctAnswers: state.correctAnswers + (isCorrect ? 1 : 0),
-            wrongAnswers: state.wrongAnswers + (isCorrect ? 0 : 1),
-            history: state.history,
+            totalAnswered: current.totalAnswered + 1,
+            correctAnswers: current.correctAnswers + (isCorrect ? 1 : 0),
+            wrongAnswers: current.wrongAnswers + (isCorrect ? 0 : 1),
+            history: current.history,
             questionStats: {
-              ...state.questionStats,
+              ...current.questionStats,
               [questionId]: {
                 attempts: prev.attempts + 1,
                 correct: prev.correct + (isCorrect ? 1 : 0),
               },
             },
-            economy: normalizeEconomy(state.economy),
+            economy: normalizeEconomy(current.economy),
           };
           if (coinReward > 0) next = addCoins(next, coinReward);
-          return {
-            ...next,
-            byUser: { ...state.byUser, [username]: next },
-            lastCoinToast: coinReward > 0 ? { amount: coinReward, at: Date.now() } : state.lastCoinToast,
-          };
+          reward = coinReward;
+          return next;
         });
 
-        const data = get().byUser[username];
-        if (data) void pushToServer(username, data);
-        return coinReward;
+        if (reward > 0) {
+          set({ lastCoinToast: { amount: reward, at: Date.now() } });
+        }
+
+        return reward;
       },
 
       saveSession: (score, totalQuestions, type) => {

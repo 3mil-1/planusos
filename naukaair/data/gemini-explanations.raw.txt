@@ -1,275 +1,272 @@
 1. Obiekt
-Wyobraź sobie klasę jako przepis na ciastko, a obiekt jako konkretne ciastko upieczone z tego przepisu. Obiekt to więc gotowa instancja klasy — ma własne dane (np. imię, wiek) i własne zachowanie (metody), które może wykonywać.
+Wyobraź sobie, że to konkretny, namacalny przedmiot, na przykład Twój prywatny samochód stojący na podjeździe. Zgodnie z definicją, obiekt to "instancja klasy", co oznacza, że powstał na podstawie jakiegoś ogólnego wzoru lub planu. Każdy obiekt ma swoje własne, unikalne dane (np. kolor karoserii, numer rejestracyjny) oraz potrafi coś robić, czyli ma swoje unikalne zachowanie (np. jazda, trąbienie).
 
 2. Klasa
-Klasa to jak formularz lub szablon, który opisuje, jakie dane i jakie akcje będą miały obiekty tego typu. Sam w sobie nie jest jeszcze konkretnym obiektem — to definicja, z której dopiero tworzysz instancje.
+Zostając przy motoryzacji – klasa to deska kreślarska, projekt inżynierów z fabryki lub inaczej: szablon. Jest to definicja, która z góry opisuje, jaką strukturę, właściwości i zachowania będą miały wszystkie samochody (obiekty) zbudowane na podstawie tego właśnie przepisu.
 
 3. Dziedziczenie
-Dziedziczenie pozwala stworzyć nową klasę na bazie istniejącej, przejmując jej cechy. To jak syn, który dziedziczy cechy rodzica, ale może też mieć własne — nie musisz pisać wszystkiego od zera.
+Działa to niemal dokładnie tak samo jak w zwykłej rodzinie. Mechanizm ten pozwala wziąć gotowy przepis (istniejącą klasę) i stworzyć na jego podstawie nową klasę. Ta nowa klasa dostaje "w spadku" wszystkie właściwości i zachowania po swoim rodzicu. Przykładowo: "Samochód_Wyścigowy" dziedziczy po ogólnym "Samochodzie" posiadanie 4 kół i kierownicy, ale dodaje od siebie sportowy silnik. Nie musisz wymyślać koła na nowo!
 
-4. Enkapsulacja
-Enkapsulacja to chowanie wewnętrznych szczegółów klasy i udostępnianie tylko tego, co naprawdę potrzebne na zewnątrz. Jak w bankomacie — widzisz panel z przyciskami, ale nie musisz wiedzieć, co dzieje się w środku.
+4. Enkapsulacja (Hermetyzacja)
+Kiedy oglądasz telewizję, używasz pilota, żeby zmienić kanał. Nie musisz rozkręcać telewizora i majstrować przy scalakach. Enkapsulacja to dokładnie to samo – polega na celowym ukrywaniu przed resztą programu wewnętrznych, skomplikowanych danych i implementacji danej klasy. Dostęp do nich zyskujemy tylko za pomocą prostych, bezpiecznych "przycisków", czyli publicznych interfejsów.
 
 5. Polimorfizm
-Polimorfizm oznacza, że ten sam interfejs (np. wywołanie metody) może działać inaczej w zależności od tego, jaki konkretnie obiekt go wykonuje. Jedna komenda — różne zachowania.
+Brzmi groźnie, ale w dosłownym tłumaczeniu to "wielopostaciowość". Wyobraź sobie, że mówisz "daj głos!" (to jest nasz jeden interfejs) do psa i do kota. Komenda jest ta sama, ale każde zwierzę zareaguje po swojemu (pies zaszczeka, kot zamiauczy). Polimorfizm pozwala wywołać różne zachowania (implementacje) na podstawie tego, z jakim rzeczywistym typem obiektu mamy w danej chwili do czynienia.
 
 6. Abstrakcja
-Abstrakcja to skupienie się na tym, co ważne z punktu widzenia użytkownika, a ukrycie technicznych detali. Jak jazda samochodem — interesuje Cię kierownica i pedały, nie silnik wewnątrz.
+To sztuka skupiania się na tym, co w danej chwili najważniejsze, i całkowitego ignorowania nieistotnych szczegółów. Jeśli tworzysz program do obsługi bankomatu, interesuje Cię, ile masz pieniędzy na koncie, a ignorujesz to, jakiego koloru są kable w serwerowni banku (czyli ignorujesz szczegóły implementacyjne).
 
 7. Dziedziczenie dynamiczne
-Chodzi o to, że program w czasie działania (a nie przy kompilacji) decyduje, która wersja metody zostanie wywołana — na podstawie rzeczywistego typu obiektu, a nie typu wskaźnika czy referencji.
+Czasem program pisze się tak elastycznie, że przed jego uruchomieniem nie wiadomo, jakiego dokładnie zachowania będzie trzeba użyć. Dziedziczenie dynamiczne to sytuacja, w której program dopiero w trakcie działania ("na żywo") dowiaduje się, jaki jest rzeczywisty typ obiektu i na tej podstawie wywołuje właściwą funkcję.
 
-8. Generyczność
-Generyczność (szablony w C++) pozwala napisać kod raz, a używać go z wieloma typami danych. Zamiast pisać osobną funkcję sortującą inty i stringi, piszesz jeden szablon działający na obu.
+8. Generyczność (szablony)
+Pomyśl o uniwersalnym kartonie przeprowadzkowym. Generyczność w programowaniu to możliwość stworzenia takich ogólnych funkcji (szablonów). Dzięki temu tworzysz kod tylko raz i zadziała on równie dobrze bez względu na to, czy "wrzucisz" do niego liczby, czy np. tekst – po prostu potrafi obsługiwać różne typy danych.
 
 9. Statyczna kontrola typów
-Kompilator sprawdza typy jeszcze przed uruchomieniem programu. Jeśli próbujesz przypisać tekst do liczby, dostaniesz błąd od razu przy kompilacji — nie dopiero w trakcie działania programu.
+To taki rygorystyczny nauczyciel, który sprawdza Twoją pracę jeszcze zanim ją oddasz. Statyczna kontrola sprawdza wszystkie typy danych (np. czy nie próbujesz pomnożyć napisu "pies" przez liczbę 5) już w trakcie kompilacji (tworzenia programu). Ogromnie pomaga to w wyłapaniu błędów, zanim program w ogóle zostanie uruchomiony.
 
 10. Specyfikatory dostępu
-To słowa kluczowe (public, private, protected), które decydują, kto może dotykać pól i metod klasy. public — każdy; private — tylko wewnątrz klasy; protected — klasa i klasy pochodne.
+Wyobraź sobie to jak strefy w klubie. To po prostu reguły kontrolujące dostęp do elementów wewnątrz klasy: public (strefa otwarta) – każdy ma dostęp, private (zaplecze dla personelu) – tylko dana klasa ma tam dostęp, protected (strefa VIP) – dostęp ma klasa i jej najbliższa rodzina (klasy dziedziczące).
 
 11. Konstruktor
-Konstruktor to specjalna metoda wywoływana automatycznie przy tworzeniu obiektu. Służy do ustawienia początkowego stanu — jak pierwsze uruchomienie telefonu, gdy wpisujesz język i konto.
+To taki "komitet powitalny" nowego obiektu. Kiedy tworzysz obiekt z klasy, ta specjalna metoda jest wywoływana z automatu jako pierwsza. Jej głównym zadaniem jest zainicjalizowanie obiektu, czyli ustawienie jego stanu początkowego i przygotowanie go do dalszej pracy.
 
 12. Destruktor
-Destruktor działa odwrotnie do konstruktora — wywoływany jest, gdy obiekt jest niszczony. Sprząta po sobie: zwalnia pamięć, zamyka pliki itp., żeby nie zostawiać bałaganu.
+Przeciwieństwo konstruktora, czyli nasza ekipa sprzątająca. To specjalna metoda, która odpala się na samym końcu, kiedy obiekt zostaje zniszczony (bo np. nie jest już potrzebny w programie). Jej celem jest posprzątanie po sobie: wyczyszczenie zajmowanej pamięci i zwolnienie zasobów.
 
 13. Przeciążenia funkcji
-Możesz mieć kilka funkcji o tej samej nazwie, o ile różnią się listą parametrów (typem lub liczbą). Kompilator sam wybierze właściwą wersję na podstawie tego, co przekażesz.
+Wyobraź sobie słowo "zamek" – może to być budowla, zamek w drzwiach lub suwak. W programowaniu możemy stworzyć wiele funkcji o dokładnie takiej samej nazwie. Aby program się nie pomylił, te funkcje muszą się czymś różnić, na przykład ilością przekazywanych parametrów lub ich typem. Program po prostu domyśli się, czego chcesz użyć, patrząc na to, jakie dane mu podałeś.
 
 14. Szablony funkcji
-Szablon funkcji to „formularz” funkcji z parametrem typu. Piszesz logikę raz, a kompilator generuje wersje dla int, double, string itd. w momencie użycia.
+To bardzo podobne pojęcie do generyczności (nr 8). Pozwala to programiście napisać jedną, mega uniwersalną funkcję (szablon), która jest w stanie przyjmować i działać na bardzo różnych typach danych.
 
 15. Referencje
-Referencja to alias — druga nazwa na ten sam obiekt. Musi być od razu zainicjalizowana i zawsze wskazuje na ten sam obiekt; nie możesz jej „przepiąć” na inny obiekt jak wskaźnika.
+Najprościej mówiąc: to ksywka! Referencja to specjalny alias (który musisz nadać od razu przy deklaracji), będący drugą, alternatywną nazwą dla istniejącego już obiektu. Jeśli zmienisz dane za pomocą "ksywki", zmienią się też dane w oryginale, bo to wciąż to samo miejsce w pamięci komputera.
 
 16. Stałe referencje
-const reference oznacza, że przez tę referencję nie możesz zmienić obiektu (choć sam obiekt może być mutowalny gdzie indziej). Przydatne, gdy chcesz tylko czytać dane bez ryzyka przypadkowej modyfikacji.
+Działa jak zwykła "ksywka" z punktu powyżej, ale z obostrzeniem: za pomocą tej konkretnej referencji możesz tylko podglądać dane. Z definicji, po jej zainicjalizowaniu, nie pozwala ona na żadną zmianę wartości podglądanego obiektu.
 
 17. Stałe metody
-Metoda oznaczona const obiecuje, że nie zmieni stanu obiektu. Możesz ją wywołać na obiekcie const — kompilator ma pewność, że nic nie popsujesz.
+To takie bezpieczne zachowania obiektów. Oznaczają metody (funkcje klasy), o których z góry wiemy, że na 100% nie modyfikują (nie psują, nie nadpisują) stanu całego obiektu. Można je wywoływać bez stresu, że zepsują nam jakieś wcześniejsze ustawienia.
 
 18. Przeciążenia const
-To dwie wersje tej samej metody — const i nie-const. Wersja const zwraca const reference, wersja zwykła pozwala modyfikować. Dzięki temu const obiekty też mają sensowny dostęp do danych.
+Czasem mamy dwie niemal identyczne metody i dodajemy do jednej z nich magiczne słowo "const". Oznacza to zastosowanie modyfikatora do metody. Mówi to po prostu innym programistom (i komputerowi): "Hej, użycie tej konkretnej wersji metody jest bezpieczne, bo na pewno nie zmienia ona stanu obiektu".
 
 19. Iteratory
-Iterator to obiekt, który „chodzi” po elementach kontenera (vector, list itd.) — jak palec wskazujący kolejne elementy. Używasz go w pętlach i algorytmach STL.
+Wyobraź sobie, że czytasz listę zakupów i zjeżdżasz palcem po kolei po każdej linijce w dół. W programowaniu taki "palec", który pozwala łatwo dobrać się do każdego kolejnego elementu jakiegoś zbioru (kontenera) w pętlach i algorytmach, to właśnie obiekt nazywany iteratorem.
 
 20. std::function
-std::function to uniwersalne „pudełko” na callable — może trzymać zwykłą funkcję, lambdę lub functor i wywołać ją później. Przydatne, gdy przekazujesz callbacki.
-
+Funkcje to zazwyczaj po prostu kod, który się wykonuje. Ale co jeśli chciałbyś wziąć czynność/funkcję, wsadzić ją w pudełko i użyć gdzie indziej? Klasa std::function to właśnie takie wirtualne pudełko, które potrafi przechowywać funkcje (a dokładniej wskaźniki na nie lub obiekty funkcyjne) i wywoływać je wtedy, kiedy nam się to podoba.
 21. Klasy
-Klasa łączy dane (pola) z funkcjami (metodami), które na tych danych operują. To podstawowy sposób grupowania powiązanej logiki w programowaniu obiektowym.
+W poprzedniej części wspominaliśmy o klasie jako o "szablonie". Mówiąc bardziej technicznie: to po prostu struktury danych, które grupują i przechowują razem dwie rzeczy: dane (np. szerokość, wysokość) oraz metody, czyli konkretne instrukcje i operacje, które potrafią na tych danych pracować.
 
 22. std::string
-std::string to wygodna klasa C++ na tekst — dynamicznie rośnie, ma metody jak size(), append(), porównania. Bezpieczniejsza i wygodniejsza niż surowe tablice charów.
+W informatyce tekst to nic innego jak długi wąż pojedynczych znaków (liter). std::string to gotowe, bardzo wygodne narzędzie (klasa z biblioteki standardowej C++), które służy po prostu do przechowywania takich ciągów znaków i pracy na nich.
 
 23. std::vector
-vector to dynamiczna tablica — sam powiększa się, gdy dodajesz elementy. Masz szybki dostęp przez indeks [i] i iterator po elementach. Najczęściej używany kontener sekwencyjny w C++.
+Zwykła tablica w programowaniu to taki "sztywny" rząd szufladek – z góry musisz powiedzieć, ile ich jest. Z kolei wektor (std::vector) to magiczna, gumowa tablica (zwana dynamicznym kontenerem sekwencyjnym). Sama automatycznie dostosowuje swój rozmiar – rośnie, kiedy dorzucasz do niej nowe dane, i kurczy się, gdy je usuwasz.
 
 24. std::array
-std::array to tablica o stałym rozmiarze znaną przy kompilacji. Żyje na stosie (zwykle), ma znany rozmiar w typie i nie rośnie — jak tablica C++, ale z metodami STL.
+W przeciwieństwie do powyższego wektora, to jest tradycyjna, sztywna tablica o z góry stałym rozmiarze. Jej plusem jest to, że przechowuje swoje elementy w szybkiej pamięci statycznej i pozwala bezpiecznie i od razu dobrać się do każdego elementu za pomocą jego numeru (operatora indeksowania).
 
 25. Kontenery asocjacyjne (std::map, std::set, std::list)
-map trzyma pary klucz→wartość posortowane po kluczu; set — unikalne elementy posortowane; list — lista dwukierunkowa z szybkim wstawianiem/usuwaniem w środku. Każdy ma inne mocne strony.
+To takie sprytne bazy danych, w których elementy nie leżą bezwładnie, ale są poukładane w konkretny sposób, by można było w nich błyskawicznie czegoś szukać. Autor pliku wrzucił tu do jednego worka: std::map – działa jak książka telefoniczna. Szukasz wartości, używając jakiegoś "klucza" (przechowuje pary klucz-wartość). std::set – to po prostu zbiór unikalnych rzeczy, gdzie nie może być dwóch identycznych elementów. std::list – to kontener w formie listy dwukierunkowej (można po niej biegać do przodu i do tyłu).
 
 26. std::stack i std::queue
-stack to stos LIFO (ostatni wchodzi, pierwszy wychodzi) — jak stos talii kart. queue to kolejka FIFO (pierwszy wchodzi, pierwszy wychodzi) — jak kolejka w sklepie.
+To tak zwane "adaptory", czyli narzędzia wymuszające określoną kolejność dostępu do danych: std::stack to stos. Działa jak stos talerzy: LIFO (ostatnie przyszło, pierwsze wyszło). Możesz wziąć tylko ten talerz, który położyłeś na samej górze. std::queue to kolejka. Działa jak kolejka w sklepie: FIFO (pierwsze przyszło, pierwsze wyszło). Kto pierwszy ustawił się w kolejce, ten pierwszy jest z niej zdejmowany.
 
 27. std::tuple
-tuple to „paczka” na kilka wartości różnych typów naraz — np. (int, string, bool). Dostęp przez std::get<0>(t) lub structured binding w nowszym C++.
+To tak zwana krotka. Wyobraź to sobie jako woreczek (kontener), do którego możesz wrzucić obok siebie zupełnie różne typy danych (np. wrzucasz na raz liczbę całkowitą, ułamek i słowo). Możesz się potem do nich dobrać za pomocą numeru indeksu albo tzw. wiązania.
 
 28. std::accumulate
-accumulate przechodzi po zakresie i sumuje elementy (albo stosuje inną operację dwuargumentową). Domyślnie robi sumę — jak pętla for z +=, tylko w jednej linii STL.
+Gotowa funkcja z biblioteki, która działa jak przycisk Autosumowania w arkuszu kalkulacyjnym. Po prostu podajesz jej jakiś zakres liczb, a ona wykonuje operację sumowania jego elementów.
 
 29. std::equal
-equal porównuje dwa zakresy element po elemencie. Zwraca true, tylko jeśli oba mają tę samą długość i każda para elementów jest równa.
+Funkcja - sędzia. Dajesz jej do porównania dwa zbiory danych (zakresy), a ona sprawdza wszystko element po elemencie. Jeśli są całkowicie równe, funkcja odkrzykuje "prawda" (true).
 
 30. std::find
-find szuka podanej wartości w zakresie i zwraca iterator do pierwszego trafienia — albo end(), jeśli nie znalazł. Podstawowe wyszukiwanie liniowe w STL.
+Gotowa funkcja wyszukująca z biblioteki. Każe jej znaleźć daną wartość w jakimś zbiorze. Zamiast jednak wyjąć tę wartość, funkcja zwraca "wskazujący palec" (iterator), który pokazuje dokładnie w którym miejscu znaleziony element aktualnie siedzi.
 
 31. Operacje wejścia i wyjścia w oparciu o strumienie (std::istream, std::ostream)
-Strumienie to abstrakcja przepływu danych. istream służy do czytania (np. z klawiatury lub pliku), ostream do pisania (np. na ekran). Operatory << i >> łączą się z nimi.
+W programowaniu wprowadzanie i wyprowadzanie informacji przypomina płynącą rzekę danych (strumień). std::istream (strumień wejściowy) służy do zasysania (odczytu) danych z zewnątrz, a std::ostream (strumień wyjściowy) służy do ich "wypluwania" (wypisywania).
 
 32. Operatory << i >>
-<< wypisuje do strumienia wyjściowego (cout << x), >> czyta ze strumienia wejściowego (cin >> x). Działają kaskadowo: cout << a << b << endl.
+To nasze zawory sterujące przepływem na wspomnianych wyżej rzekach. Te "dzióbki" to po prostu operatory strumieniowe, a ich kierunek wskazuje, czy wpychamy dane ze strumienia do obiektu (odczyt), czy z obiektu wypluwamy do strumienia (wypisywanie).
 
 33. std::cin i std::cout
-cin to standardowe wejście (zwykle klawiatura), cout to standardowe wyjście (zwykle terminal). To globalne obiekty strumieni gotowe do użycia od razu po #include <iostream>.
+Skoro mamy już strumienie wejścia i wyjścia, to musimy wiedzieć z czym są podłączone. std::cin to strumień "nasłuchujący" klawiatury – odczytuje dane wprowadzane z konsoli przez Ciebie. std::cout to z kolei strumień podpięty do monitora – używany do wypisywania danych na ekranie konsoli.
 
 34. std::ostringstream
-ostringstream to strumień wyjściowy zapisujący do stringa w pamięci. Budujesz tekst jak do cout, a potem bierzesz wynik metodą .str() — świetne do formatowania.
+Tym razem wypływające dane nie trafiają na ekran monitora. To specjalna klasa używana jako strumień wyjściowy do operacji na tekstach (łańcuchach znaków). Możesz do niej wpychać różne dane i w wygodny sposób formatować je wewnątrz programu.
 
 35. Range-based for loop
-Pętla for (auto x : kontener) przechodzi po wszystkich elementach bez ręcznego iteratora. Czytelniejsza składnia niż klasyczna pętla for z indeksem lub iteratorem.
+Ogromne ułatwienie życia programistom. To inteligentna pętla, która sama z siebie wie, ile jest elementów w danym pojemniku (kontenerze) i umożliwia iterację (wykonanie jakiejś akcji) po kolei dla wszystkich elementów tego zakresu – bez żmudnego, ręcznego liczenia, które to już okrążenie.
 
 36. Wyrażenie lambda
-Lambda to anonimowa funkcja „w miejscu” — [capture](params){ body }. Przydatna w algorytmach STL (sort z własnym comparatorem) i callbackach bez pisania osobnej funkcji.
+Pomyśl o tym jak o narzędziu "jednorazowego użytku". Często potrzebujesz kawałka logiki, którego nie chce ci się zapisać jako grubej, skomplikowanej funkcji w oddzielnym pliku. Wyrażenie lambda to bardzo krótka, zdefiniowana na poczekaniu ("w miejscu") anonimowa funkcja. Przydaje się niesamowicie do jednorazowych, szybkich operacji na jakichś danych.
 
 37. Kompozycja
-Kompozycja to budowanie klasy przez włożenie innych obiektów jako pól (has-a), zamiast dziedziczenia (is-a). Samochód ma silnik — nie jest silnikiem.
+Czasem nie ma sensu budować hierarchii (np. Samochód dziedziczy po Silniku). Lepiej jest budować z klocków. Kompozycja to metoda projektowania, gdzie tworzysz skomplikowane obiekty, wkładając do nich po prostu obiekty z innych klas jako części składowe (np. Samochód MA Silnik jako swoją część).
 
 38. Składowe chronione
-protected to pośredni poziom dostępu: widoczne w klasie i w klasach pochodnych, ale ukryte przed resztą programu. Jak rodzinna tajemnica — dzieci wiedzą, obcy nie.
+To taki kompromis w dostępie do danych klasy. Jak element jest chroniony (protected), oznacza to, że nie zrobisz z nim nic "z zewnątrz" klasy. Jednakże te elementy pozostają w pełni dostępne "w rodzinie" - czyli wewnątrz tej klasy i we wszystkich klasach, które po niej dziedziczą (klasach pochodnych).
 
 39. Konstruktory odziedziczone
-W C++11+ klasa pochodna może używać konstruktorów klasy bazowej dzięki using Base::Base — nie musisz pisać przekazujących wrapperów dla każdego wariantu.
+Gdy klasa potomek rodzi się ze swoimi nowymi zachowaniami, wciąż pamięta, jak rodził się rodzic. To po prostu możliwość użycia starych konstruktorów z klasy bazowej w nowej klasie dziedziczącej, żeby sprawnie zainicjalizować jej startowy stan.
 
 40. Metoda wirtualna
-Metoda virtual w klasie bazowej może być nadpisana (override) w klasie pochodnej. Wywołanie przez wskaźnik/referencję bazową trafia we właściwą wersję w runtime — serce polimorfizmu.
-
+Klucz do "Polimorfizmu" opisywanego na samym początku. Metoda wirtualna to taka funkcja klasy bazowej, która daje zielone światło swoim dzieciom, by te mogły ją napisać po swojemu (przesłonić ją swoimi własnymi metodami). To, czyja wersja zostanie na koniec odpalona (rodzica czy dziecka), zostaje zdecydowane "w locie" w czasie wykonywania programu, co nazywamy wiązaniem dynamicznym.
 41. Wiązanie dynamiczne
-Dynamiczne wiązanie (late binding) oznacza, że wybór metody następuje w czasie wykonania na podstawie rzeczywistego typu obiektu — wymaga virtual i wskaźnika/referencji do klasy bazowej.
+To proces podejmowania decyzji na ostatnią chwilę. Jeśli jakaś metoda (funkcja) jest oznaczona jako "wirtualna" (czyli taka, którą dzieci mogą zmienić po swojemu), to program w trakcie tworzenia nie wie jeszcze, której użyć. Dopiero "na żywo", podczas wykonywania programu, sprawdza, z jakim rzeczywiście obiektem ma do czynienia i dopiero wtedy wybiera odpowiednią dla niego metodę.
 
 42. Konwersja typu a dziedziczenie
-Jeśli klasa Derived dziedziczy po Base, wskaźnik Base* może wskazywać obiekt Derived (konwersja w górę hierarchii). To podstawa polimorfizmu i bezpiecznych w dół konwersji przez dynamic_cast.
+To zasada, która pozwala traktować obiekt dziecka z rodziny tak, jakby był rodzicem. Konkretniej: program traktuje obiekt jednego typu jako obiekt zupełnie innego typu, pod warunkiem, że obie te klasy są połączone w relację dziedziczenia (np. Kwadrat zawsze możemy po prostu traktować jako ogólną Figurę).
 
 43. Listy inicjalizacyjne
-Składnia Class obj{a, b, c} lub w konstruktorze : pole1(a), pole2(b) inicjalizuje pola przed wejściem do ciała konstruktora. Czytelniejsze i czasem wymagane dla const/reference pól.
+Zamiast tworzyć pusty obiekt i potem linijka po linijce, mozolnie wpisywać do niego wartości początkowe, w C++ można użyć specjalnej, skróconej składni (listy z elementami). To taki gotowy "pakiet startowy", z którego nowy obiekt zaciąga dane startowe z ogromną szybkością.
 
 44. Konstruktor domyślny
-Konstruktor domyślny można wywołać bez argumentów — tworzy obiekt w stanie początkowym zdefiniowanym przez klasę. Jeśli go nie napiszesz, kompilator może wygenerować (=default).
+Omawialiśmy już, że konstruktor to "komitet powitalny" budujący dany obiekt przy jego powołaniu do życia. Konstruktor w wersji domyślnej to taka funkcja budująca, do której nie musisz nic wrzucać (działa bez podawania jakichkolwiek argumentów). Pytasz o "nowe auto" i on po prostu wyrzuca podstawowy model bez ekstrasów.
 
 45. Syntezowany konstruktor domyślny
-Jeśli nie zadeklarujesz żadnego konstruktora, kompilator sam wygeneruje domyślny, który zeruje proste typy i wywołuje domyślne konstruktory pól. Znika, gdy dodasz własny konstruktor.
+Czasami jako programista jesteś leniwy i zapomnisz w ogóle napisać w swojej klasie jakiegokolwiek konstruktora. Na szczęście system to mądra bestia. Kompilator sam z siebie (automatycznie) wygeneruje dla Ciebie taki startowy, syntezowany konstruktor domyślny, żeby Twoje obiekty w ogóle dało się bez błędów powołać do życia.
 
 46. Konstruktory a argumenty domyślne
-Parametry konstruktora mogą mieć wartości domyślne — wtedy wywołujesz Konstruktor() bez podawania wszystkich argumentów. Uważaj na kolizję z konstruktorem domyślnym.
+To bardzo elastyczny konstruktor, który ma wstępnie wypełnione niektóre (lub wszystkie) rubryki ze swoimi parametrami, czyli tzw. wartości domyślne. Jak tworzysz postać w grze, system pyta o płeć i klasę, ale jak podasz tylko klasę, to płeć automatycznie i w ciemno przypisze Ci z puli domyślnej, dzięki czemu nie musisz wpisywać za każdym razem wszystkiego ręcznie.
 
 47. Konstruktory delegujące
-Konstruktor może wywołać inny konstruktor tej samej klasy przez : Konstruktor(args) — unikasz duplikacji kodu inicjalizacji między wariantami.
+To taki menedżer, który sam nie chce pracować. Zamiast krok po kroku budować i inicjalizować nowy obiekt od zera, od razu "dzwoni" i deleguje robotę do innego konstruktora w ramach tej samej klasy. Pozwala to uniknąć nudnego powtarzania tego samego kodu.
 
 48. Konstruktor kopiujący
-Tworzy nowy obiekt jako kopię istniejącego — kopiuje wartości pól. Ważny przy głębokiej kopii zasobów (np. dynamiczna pamięć), inaczej dwie kopie wskazują na ten sam bufor.
+Jak sama nazwa wskazuje, to nic innego jak kserokopiarka dla obiektów. To specjalny powoływacz życia, który tworzy zupełnie nowy, pusty obiekt tylko po to, by natychmiast precyzyjnie skopiować i przepisać do niego wszystkie wartości z innego, wybranego, gotowego już obiektu.
 
 49. Destruktory
-Destruktor (~Klasa) sprząta przy zniszczeniu obiektu — zwalnia pamięć, zamyka uchwyty. Wywoływany automatycznie, gdy obiekt wychodzi z zakresu lub delete.
+Autorzy dokumentu się tu powtarzają, bo mówiliśmy o tym w pkt. 12. To ekipa sprzątająca. Specjalna metoda przypisana do klasy, z której zadaniem jest po prostu posprzątać. Odpala się zawsze bez pytania i z automatu, w chwili gdy dany obiekt umiera (albo przestaje być w programie potrzebny).
 
 50. Destruktor syntezowany
-Gdy nie napiszesz destruktora, kompilator generuje domyślny, który niszczy pola w odwrotnej kolejności niż konstrukcja. Wystarczy, gdy klasa nie trzyma surowych zasobów wymagających ręcznego sprzątania.
+Kuzyn pojęcia z punktu 45. Jeśli sam nie napiszesz w swoim kodzie ekipy sprzątającej (destruktora), kompilator z automatu "syntetyzuje", czyli samodzielnie generuje domyślny mechanizm sprzątania, by zabezpieczyć Cię przed wysypaniem systemu z brudu (wycieków pamięci).
 
 51. Kopiujący operator przypisania
-operator= kopiuje zawartość jednego obiektu do istniejącego drugiego (nie tworzy nowego jak konstruktor kopiujący). Musi obsłużyć samoprzypisanie i zwolnić stare zasoby przed kopią.
+Mamy dwa już ISTNIEJĄCE, wyprodukowane i w pełni działające obiekty, a Ty chcesz sprawić, żeby drugi stał się klonem pierwszego pod kątem posiadanych danych. Używasz w tym celu ulepszonego znaku równości, czyli wspomnianego operatora, by bezboleśnie przekopiować wnętrzności i przypisać te same wartości do tego drugiego.
 
 52. =default
-Zapis = default mówi kompilatorowi: wygeneruj domyślną implementację tej funkcji specjalnej (konstruktor, destruktor, operator=). Jaśniejsze niż pusta definicja w ciele klasy.
+Często po prostu nie chce Ci się wymyślać koła na nowo. Jeśli jako twórca dopiszesz na końcu deklaracji jakiejś funkcji to urocze hasło, dajesz kompilatorowi cynk: "Zostaw mnie w spokoju, sam mi to zaprogramuj, daj mi Twoją standardową, domyślną i sprawdzoną formę wygenerowaną przez Ciebie".
 
 53. =delete
-= delete blokuje funkcję — nie można jej wywołać ani skopiować. Używasz np. delete copy constructor, żeby klasa była niekopiowalna (unique_ptr, mutex).
+A tu stawiamy wielki, cyfrowy szlaban z napisem "ZAKAZ WSTĘPU". Użycie tego rozszerzenia sprawia, że całkowicie zakazujesz korzystania z danej funkcji (czy konstruktora/metody) - jest ona w tym momencie oznaczona jako niedostępna i nikt nie może w całym programie jej wywołać. Używa się tego, np. by twardo zabronić jakiegoś dziwnego używania twojego obiektu.
 
-54. Wskaźnik `this
-this to wskaźnik na bieżący obiekt wewnątrz metody niestatycznej. Pozwala odwołać się do pól/metod tego obiektu, zwrócić *this do łańcuchowania wywołań lub przekazać siebie dalej.
+54. Wskaźnik 'this'
+Po polsku to po prostu "TEN". Wyobraź to sobie tak, jakby Twój obiekt krzyczał w ciemnym lesie i chciał pokazać coś swoim palcem W SWOJĄ WŁASNĄ klatkę piersiową. W kodzie słówko this to zaimkowy wskaźnik pokazujący bezpośrednio na "bieżący" obiekt. Służy głównie temu, aby dany obiekt mógł bezbłędnie zapytać sam o siebie i sięgnąć do swoich własnych składowych.
 
 55. Składowe statyczne
-static pole lub metoda należy do klasy, nie do pojedynczego obiektu — wspólne dla wszystkich instancji. Metodę statyczną wywołujesz bez obiektu: Klasa::metoda().
+Pamiętasz z poprzednich punktów, że obiekty (auta) powstają ze wzorów (klas). Zazwyczaj każdy konkretny obiekt ma swój własny bak paliwa. Zmienna statyczna jest INNA - to wielki zbiornik na stacji, którym współdzielą (i widzą) się solidarnie wszystkie obiekty wygenerowane z danej klasy. Z kolei metoda statyczna to z kolei działanie powiązane z ową klasą, i można jej użyć (nacisnąć jej przycisk) nawet zanim cokolwiek z tej klasy zbudujemy w ogóle.
 
 56. enum class
-enum class to silnie typowane enumy ze scope (Color::Red) — nie mieszają się z int jak stare enum. Bezpieczniejsze i czytelniejsze niż zwykłe enum.
+Tradycyjne grupy pojęć nazywane enumami (np. grupa "dni tygodnia") często wysypywały swoje nazwy do reszty programu i się psuły (jak mieliśmy zielone_jabłko i zielony_rower). To rozszerzenie sprawia, że pojęcia w enumie siedzą we własnej, zamkniętej i w mocno rygorystycznie pilnowanej przestrzeni. Pozwala na większą nad tym kontrolę i unikanie konfliktów.
 
 57. Niejawne konwersje typów dla klas
-Kompilator może automatycznie konwertować typy, jeśli istnieje jednoargumentowy konstruktor lub operator konwersji — czasem niechcący. explicit blokuje takie niejawne konwersje.
+Bardzo mądry mechanizm, który pod spodem ułatwia nam życie. Wyobraź sobie, że dajesz programowi marchewkę w postaci surowego ciągu znaków (słowo). Zamiast wywalić od razu błąd – wujek "kompilator" orientuje się, że istnieje prosta i tajna (niejawna) droga i automatycznie, "po cichu" bez wkurzania programisty zmienia to w pożądany przez Ciebie obiekt, jeśli odgórnie zadeklarowano zasady związania obu światów.
 
-58. Operator `static_cast` i `dynamic_cast
-static_cast robi konwersje znane w compile-time (liczby, w górę hierarchii bez sprawdzania). dynamic_cast bezpiecznie rzutuje w dół hierarchii w runtime — zwraca nullptr przy błędzie (dla wskaźników).
+58. Operator static_cast i dynamic_cast
+To metody siłowego zamieniania typów obiektów w inny typ: static_cast wykonuje konwersję w mgnieniu oka na poziomie projektowania (w czasie samej kompilacji) zakładając, że wiesz, co na co chcesz po chamsku zrzucić i zamienić (działa z tępą siłą i ufnością). dynamic_cast używany jest przy zaawansowanym dziedziczeniu. O wiele wolniejszy, bo dokonuje sprawdzania dopiero na "żywym organizmie" (w czasie wykonania). Najpierw podwójnie się upewnia, czy ten zając by przerobić go na ogólne 'Zwierzę' z rodziny, w ogóle zwierzakiem faktycznie jest.
 
 59. Referencje do r-wartości
-T&& (rvalue reference) wiąże się z tymczasowymi obiektami i umożliwia move semantics — przeniesienie zasobów zamiast kosztownej kopii. Podstawa std::move i move konstruktorów.
+W C++ obok zwykłych danych (tzw. l-wartości) mamy dane ulotne jak rosa (r-wartości), takie które powstają tylko na malutki, tysięczny ułamek sekundy (np. wyliczenie chwilowe ze wzoru matematycznego). Zwykle przepadają i tyle. Referencja do r-wartości to sprytna lina, którą można związać taką potężną, chwilowo utworzoną, bezcenną wartość ulotną na stałe, np. by uniknąć kopiowania masywnych danych od nowa przy skomplikowanym przepisywaniu ich przez program.
 
 60. Zawłaszczanie zasobów
-Resource acquisition — obiekt przejmuje własność zasobu (np. wskaźnika na pamięć) i odpowiada za jego zwolnienie. Idiom RAII: zasób żyje tak długo, jak obiekt, który go trzyma.
-
+Kojarzysz, jak "działa mafia"? Jeśli jakiś stary obiekt ma swoje piękne miejsce w pamięci pełne danych, ale właśnie szykuje się na emeryturę, to tworzący się "nowy" obiekt może wejść i – za sprawą specjalnych mechanizmów programistycznych i tzw. semantyki przenoszenia – po prostu zawłaszczyć te pliki w całości dla siebie bez pytania i zbędnego i mozolnego kopiowania wszystkiego od zera. Po prostu przejmuje od nich własność i odpowiedzialność nad całym terytorium.
 61. Przeniesienie praw własności
-Move semantics oddaje zasób ze źródła do celu — źródło zostaje w stanie „pustym”, cel przejmuje wskaźnik/pamięć. Realizowane przez move constructor i move assignment.
+To mechanizm przypominający przekazanie kluczyków do samochodu. Jeden obiekt całkowicie oddaje swoje zasoby (na przykład przydzieloną pamięć) we władanie drugiemu obiektowi. Realizuje się to najczęściej używając do tego konstruktora przenoszącego lub przenoszącego operatora przypisania.
 
 62. Konstruktor przenoszący
-Move constructor tworzy nowy obiekt przenosząc zasoby ze starego (std::move) zamiast je kopiować. Stary obiekt nadal ważny, ale „opróżniony” — np. wskaźnik = nullptr.
+Taki specjalny "twórca" nowego obiektu. Zamiast tworzyć powolne kopie danych (jak robi to konstruktor kopiujący), po prostu zabiera, czyli przenosi, gotowe zasoby z jednego istniejącego obiektu do nowo powołanego.
 
 63. Przenoszący operator przypisania
-Move assignment (operator= z &&) przenosi zasoby do już istniejącego obiektu, zwalniając jego stare zasoby. Część reguły pięciu (Rule of Five).
+To wariacja zwykłego znaku równości. Służy do przenoszenia zasobów (zamiast ich kopiowania) z jednego obiektu do drugiego w momencie przypisywania mu konkretnej wartości.
 
 64. Zarządzanie pamięcią z użyciem surowych wskaźników
-Surowe wskaźniki + new/delete dają pełną kontrolę, ale pełną odpowiedzialność: musisz sam alokować, zwalniać, unikać double delete i wycieków. Dlatego preferuje się smart pointery i RAII.
+Oznacza ręczne zarządzanie przydzielaniem pamięci w programie z C++, używając tylko podstawowych operatorów new i delete. Wymaga od programisty ogromnego skupienia, bo musi on samodzielnie śledzić cykl życia każdego obiektu i pamiętać, by ręcznie usunąć go z pamięci.
 
-65. new` i `delete
-new alokuje pamięć na stercie i konstruuje obiekt; delete niszczy obiekt i zwalnia pamięć. Dla tablic: new[] i delete[]. Zawsze paruj je poprawnie, inaczej wyciek lub UB.
+65. new i delete
+To Twoje ręczne komendy. Operator new dynamicznie rezerwuje ("kupuje") nową pamięć na żądanie. Z kolei delete służy do odkręcenia tego procesu, czyli zwalnia zaalokowaną pamięć i usuwa stworzone obiekty.
 
 66. Dynamiczna alokacja pamięci
-Pamięć na stercie (heap) alokujesz w runtime — rozmiar może zależeć od danych użytkownika. new zwraca wskaźnik; żyje, dopóki nie wywołasz delete lub nie użyjesz smart pointera.
+Wyobraź sobie rezerwowanie pokoi w hotelu dopiero w trakcie wycieczki, kiedy poznasz ostateczną liczbę osób. W C++ to przydzielanie miejsca w pamięci (np. za pomocą new) na utworzenie obiektów lub zmiennych tablic na bieżąco, w trakcie działania programu.
 
 67. Zwalnianie dynamicznie zaalokowanej pamięci
-Każde new musi mieć odpowiadające delete — inaczej wyciek pamięci. Smart pointery (unique_ptr) robią to automatycznie przy wyjściu ze scope.
+To z kolei wymeldowanie z hotelu. Polega na zwalnianiu pamięci, którą wcześniej sam zarezerwowałeś operatorem new. Robi się to koniecznie po to, by uchronić program przed groźnymi wyciekami pamięci.
 
 68. Wyciek zasobów
-Wyciek to sytuacja, gdy zaalokowana pamięć (lub plik, mutex) nigdy nie zostaje zwolniona. Program „zjada” RAM; przy długim działaniu może paść. RAII i smart pointery to lekarstwo.
+Koszmar wynikający z niedopatrzenia. Błąd ten występuje, gdy kończysz pracę z pamięcią lub zasobami, ale z roztargnienia zapominasz ich właściwie zwolnić. Prowadzi to do powolnego zapychania komputera i poważnych problemów z wydajnością.
 
 69. Wiszący wskaźnik
-Dangling pointer wskazuje na pamięć już zwolnioną. Użycie go to undefined behavior — losowe crashe. Unikaj: nie używaj surowego wskaźnika po delete; trzymaj obiekty w scope lub smart pointerach.
+Działa jak drogowskaz pokazujący w stronę już wyburzonego budynku. Taki wskaźnik cały czas celuje w obszar pamięci, który tak naprawdę dawno został już zwolniony i jest nieważny. Jeśli spróbujesz z niego naiwnie skorzystać, wywołasz awarię programu lub błędy.
 
-70. Naruszenie pamięci
-Memory violation — dostęp do pamięci, do której nie masz prawa (po delete, poza tablicą, zapis w readonly). Często kończy się segfaultem; debugery i sanitizery (ASan) pomagają to złapać.
+70. Naruszenie pamięci (memory violation)
+Sytuacja, w której Twój program łamie odgórne zasady i próbuje dostać się do obszaru pamięci bez formalnego pozwolenia. Przykładem jest próba wpisania nowych danych w miejsce określone wyłącznie do odczytu, albo sięganie po pamięć, która została już dawno zwolniona.
 
 71. Niejednoznaczność odnośnie typu wiązania obiektu
-Przy wielodziedziczeniu ten sam obiekt może występować w hierarchii na wiele sposobów — kompilator nie wie, którą ścieżką wiązać. Rozwiązuje to virtual inheritance.
+Komputer nigdy nie domyśla się intencji – jeśli natrafi na więcej niż jedną pasującą opcję dla wiązania danego obiektu (tzw. object binding ambiguity), powstaje konflikt. Skutkuje to zatrzymaniem kompilacji błędem lub nieprawidłowym zachowaniem włączonego programu.
 
 72. std::unique_ptr
-unique_ptr wyłącznie posiada zasób — nie da się skopiować, tylko przenieść (move). Przy zniszczeniu unique_ptr automatycznie delete. Zero overhead względem surowego wskaźnika, pełne RAII.
+To inteligentny wskaźnik C++ posiadający naturę wyłącznego właściciela. Dba o pamięć za Ciebie, ale jego kluczową zasadą jest gwarancja absolutnej wyjątkowości. W danym momencie tylko i wyłącznie jeden taki wskaźnik może zarządzać przydzielonym kawałkiem zasobu.
 
 73. std::shared_ptr
-shared_ptr współdzieli zasób z licznikiem referencji. Gdy ostatni shared_ptr zginie, zasób jest usuwany. Używaj, gdy wielu właścicieli — ale uważaj na cykle z weak_ptr.
+To z kolei wspólnota. Kilka różnych, połączonych wskaźników może dzielić się wspólnie zarządzanym zasobem pamięci. Mechanizm ten posiada wbudowany licznik odwiedzin – dopóki ktoś korzysta, licznik stoi wysoko, a zasób istnieje. Gdy liczba odwołań (współwłaścicieli) spadnie do zera, zasób jest automatycznie usuwany.
 
 74. std::weak_ptr
-weak_ptr obserwuje zasób trzymany przez shared_ptr bez zwiększania licznika. lock() daje shared_ptr lub pusty, jeśli zasób już nie żyje. Rozbija cykle shared_ptr ↔ shared_ptr.
+Pomocnik od spraw trudnych współpracujący ze wskazanym wyżej std::shared_ptr. Może on uzyskać wgląd do pamięci i obserwować obiekt, ale w ogóle nie podbija wyżej wspomnianego licznika i co za tym idzie – nie potrafi samemu zablokować usunięcia zasobu. Często wyciąga programistów z patologicznych sytuacji, gdzie obiekty z shared_ptr celowałyby się na okrągło we własne ogony (cyklicznie), powodując wycieki pamięci.
 
 75. Kompilacja (do języka assemblera)
-Pierwszy etap kompilacji: kompilator tłumaczy kod C++ na assembly (mnemoniki procesora) dla danej jednostki translacji (.cpp). Potem assembler robi z tego kod maszynowy.
+Pierwsza warstwa przejścia z języka zrozumiałego przez człowieka. Kompilator zaczyna robotę i tłumaczy Twój kod źródłowy na nieco brutalniejszy język assemblera.
 
 76. Kompilacja (do kodu maszynowego)
-Assembler zamienia pliki .s/.asm na pliki obiektowe (.o) — binarny kod maszynowy, ale jeszcze bez bibliotek i kodu startowego. Sam plik .o nie uruchomisz w OS.
+Druga warstwa. Assembler bierze te pliki i mieli je, tworząc tzw. pliki obiektowe. Ich bebechy są już w pełni zrozumiałe dla procesora. Choć procesor to rozumie, takich plików nadal nie da się odpalić w systemie jako programu, bo brakuje w nich bardzo ważnego tła systemowego, np. bibliotek i startowych poleceń.
 
 77. Konsolidacja (linkowanie)
-Linker łączy pliki .o z biblioteką standardową i Twoimi bibliotekami oraz dodaje kod startowy — powstaje jeden plik wykonywalny (.exe), który system może uruchomić.
+Ostatni etap budowy całej układanki. Konsolidator (z ang. linker) dosłownie "linkuje", czyli łączy te rozsypane kody obiektowe i dopina do nich kody gotowych funkcji z bibliotek oraz braki w postaci specjalnego kodu startowego. Ostatecznie wydaje z siebie scalony, pojedynczy kod stanowiący plik wykonywalny programu.
 
 78. Kompilator
-Kompilator tłumaczy cały kod źródłowy na kod maszynowy z wyprzedzeniem (przed uruchomieniem). Błędy składni i typów wychwytuje wcześnie; wynik to szybki natywny program.
+Narzędzie potrafiące chwycić całość kodu źródłowego i dokonać jego natychmiastowej translacji (przetłumaczenia) bezpośrednio na docelowy kod obiektowy (kod maszynowy procesora).
 
 79. Interpreter
-Interpreter tłumaczy i wykonuje kod linia po linii w trakcie działania — bez wcześniejszego pełnego pliku wykonywalnego. Python działa tak; start wolniejszy, ale elastyczniejszy development.
+Bliźniak z zupełnie innym trybem pracy. Zamiast trawić wszystko naraz, interpreter dokonuje tłumaczenia z kodu źródłowego na raty – tłumaczy kod obiektowy i ułamki sekundy później od razu go wykonuje, i to instrukcja po instrukcji.
 
 80. Konstrukcja try-catch
-try { kod } catch (Typ e) { obsługa } — kod w try, który rzuci wyjątek, skacze do pasującej catch. Pozwala oddzielić normalną logikę od obsługi błędów bez ifów wszędzie.
+Omawiana wcześniej na przykładzie. To cyfrowa poduszka ratunkowa. Wrzucasz do bloku try taki kawałek kodu, co do którego masz podejrzenie, że z niewyjaśnionych dotąd przyczyn padnie. Gdy tak się dzieje, wyrzucony błąd trafia nie na beton, lecz do klauzuli catch, w której ustalasz łagodne rozwiązanie problemu.
 
 81. Klasy wyjątków
-Wyjątki to zwykle obiekty klas dziedziczących po std::exception. Niosą komunikat (what()) i typ — od logic_error po runtime_error — żeby handler wiedział, co poszło nie tak.
+Są posłańcami dostarczającymi wiedzę o wypadkach. Ich celem jest transportowanie informacji o wszystkich szczegółach awarii bezpośrednio od zepsutego elementu (zgłoszenia błędu) do łapacza, który ma ten pożar skutecznie ugasić (obsługi błędu).
 
 82. std::logic_error
-logic_error sygnalizuje błąd w logice programu lub złych danych wejściowych — coś, co teoretycznie można wykryć przed uruchomieniem (np. indeks poza zakresem w debug). Dziedziczy m.in. invalid_argument.
+Obiekty używane, gdy aplikacja dławi się najczęściej z powodów błędów merytorycznych. Rzuca się je zazwyczaj by zasygnalizować głupie błędy programisty – jak na przykład wpisanie bez sensu kompletnie złego formatu danych lub łamanie warunków wstępnych w funkcji. Powinno się to wyłapać przed uruchomieniem.
 
 83. std::runtime_error
-runtime_error to błędy w trakcie działania — sieć padła, brak pliku, dzielenie przez zero w runtime. Nie zawsze da się przewidzieć przy kompilacji.
+Ten typ wyjątków obsługuje wypadki przy pracy z natury nieszablonowe. Rzucasz nimi aby raportować o problemach, których mimo najlepszych chęci nie dało się przewidzieć, a ich obecność ujawniła się wyłącznie podczas działania gotowego programu (klasycznie: zerwanie złącza lub zablokowanie nawiązania komunikacji z chmurą).
 
 84. args
-*args w Pythonie zbiera dowolną liczbę argumentów pozycyjnych w krotkę. Funkcja def f(*args) może dostać f(1, 2, 3) — args == (1, 2, 3). Przydatne przy wrapperach i funkcjach o zmiennej liczbie argumentów.
+Termin pochodzący głównie ze świata środowiska Python. Pomaga, gdy piszesz prostą funkcję i nie potrafisz z głowy przewidzieć, ile docelowo będzie posiadała argumentów do wpisania. Zezwala po prostu przekazać do niej całkowicie dowolną liczbę argumentów, po czym samoistnie wrzuca i przechowuje je do pojedynczej krotki.
 
 85. kwargs
-**kwargs zbiera nazwane argumenty w słownik. def g(**kwargs) — g(a=1, b=2) daje kwargs == {'a':1,'b':2}. Łączysz z *args dla pełnej elastyczności sygnatury.
+Bliźniacze z powyższym args ułatwienie pracy w Pythonie. Skupia się tym razem na przesyłaniu dowolnej, elastycznej zmiennej liczby parametrów wywoływanych jako wartości połączone wraz ze stałymi słowami kluczowymi. Funkcja połyka je i organizuje sobie do pracy w formie czystego słownika.
 
 86. parametr self
-self to konwencja nazwy pierwszego parametru metody instancji w Pythonie — wskazuje obiekt, na którym wywołano metodę. Dzięki niemu metoda widzi atrybuty tej instancji (self.x).
+Klucz i wizytówka programowania obiektowego w Pythonie, tożsamy w swej logice za wskaźnikiem this w języku C++. Zawsze stanowi on nadrzędny, początkowy argument we wszystkich standardowych instancjach funkcji wewnątrz klasy, umożliwiając danej metodzie bezpośredni dostęp by mogła manipulować swoimi własnymi parametrami i "ciałem" całego obiektu.
 
 87. __init__
-__init__ to konstruktor instancji w Pythonie — wywoływany po utworzeniu obiektu, ustawia self.atrybuty. Odpowiednik listy inicjalizacyjnej + ciała konstruktora w C++.
+W kodzie ustrukturyzowany z podwójnymi podkreślnikami __init__. To pythonowy konstruktor służący inicjalizacji nowo budowanego "zera", stanowiący połączenie zasad C++ dla zaciągania danych z list uściślających oraz ogólnie budującego wszystko ciała.
 
 88. Mix-in
-Mix-in to mała klasa dodająca jedną funkcjonalność przez wielodziedziczenie — sama nie jest używana, tylko „doklejana” do innej klasy. Np. mixin Serializable dodaje metodę to_json().
+Element uzupełniający środowisko, potocznie klasy tego miana nazywa się ulepszaczami. Z definicji to nigdy nie bywa element tworzony by pełnić rolę centralnego, osobnego narzędzia. Jako domieszkę wrzuca się go po drodze do innej bazy by pod maską dopalał ją od nowości poboczną cechą w oparciu o naturalne dziedziczenie.
 
 89. Dekorator
-Dekorator @wraps otacza funkcję inną funkcją — dodaje logowanie, cache, sprawdzanie uprawnień bez zmiany kodu oryginału. @decorator nad def to skrót od func = decorator(func).
+Bardzo praktyczne rozwiązanie językowe na etapie pracy z Pythonem. Rozwiązywane po stronie funkcyjnej opakowanie potrafiące ingerować z boku i na zawsze poszerzyć możliwości oraz zachowanie cudzych instrukcji i to bez jakiejkolwiek zmiany fizycznego wnętrza modyfikowanej definicji bazowej.
 
 90. Obiekt mutowalny
-Mutowalny obiekt możesz zmienić „w środku”, a to nadal ten sam obiekt (ta sama tożsamość/id). list i dict — możesz append bez tworzenia nowej listy.
+Otwarta torba na dane. Obiekt taki w każdej chwili potrafi przyjąć, wydalić czy zrekompensować całkowicie swoją zawartość przy czym przez komputer nadal oficjalnie określany jest niezmienioną starą, jednolitą tożsamością (listy czy słowniki).
 
 91. Obiekt niemutowalny
-Niemutowalny — nie zmieniasz zawartości w miejscu; „zmiana” tworzy nowy obiekt. int, str, tuple w Pythonie: x = 5; x += 1 tworzy nowy int, nie modyfikuje piątki.
+Odlewane raz obiekty spajane z fundamentem własnej, jednej identyfikacji jakimi cechuje się typ zmiennej str albo typ float. Każdą, chociażby minimalną chęć wywrócenia do góry nogami obecnego tam stanu oprogramowuje się przez system fizycznym, głębokim przepisaniem tożsamości całościowej.
 
 92. std::move
-std::move nie przenosi sam — tylko rzutuje na rvalue reference, żeby kompilator wybrał overload move zamiast copy. Właściwe przeniesienie robi move constructor/assignment, który „okradnie” zasób ze źródła.
+Utylitarna dyrektywa z bazowych bibliotek C++ stanowiąca kopalnię wiedzy dla silnika jak interpretować podaną jednostkę w trakcie analizy zapisu kodu. Rzutuje zasób w klasyfikację tzw. "r-wartości" zmuszając kompilator by wyrwał go i zutylizował (przeniósł) bez procesu tworzenia duplikatów ze sprawą odcięcia od oryginalnego punktu powiązania.
