@@ -1,0 +1,275 @@
+1. Obiekt
+Wyobraź sobie klasę jako przepis na ciastko, a obiekt jako konkretne ciastko upieczone z tego przepisu. Obiekt to więc gotowa instancja klasy — ma własne dane (np. imię, wiek) i własne zachowanie (metody), które może wykonywać.
+
+2. Klasa
+Klasa to jak formularz lub szablon, który opisuje, jakie dane i jakie akcje będą miały obiekty tego typu. Sam w sobie nie jest jeszcze konkretnym obiektem — to definicja, z której dopiero tworzysz instancje.
+
+3. Dziedziczenie
+Dziedziczenie pozwala stworzyć nową klasę na bazie istniejącej, przejmując jej cechy. To jak syn, który dziedziczy cechy rodzica, ale może też mieć własne — nie musisz pisać wszystkiego od zera.
+
+4. Enkapsulacja
+Enkapsulacja to chowanie wewnętrznych szczegółów klasy i udostępnianie tylko tego, co naprawdę potrzebne na zewnątrz. Jak w bankomacie — widzisz panel z przyciskami, ale nie musisz wiedzieć, co dzieje się w środku.
+
+5. Polimorfizm
+Polimorfizm oznacza, że ten sam interfejs (np. wywołanie metody) może działać inaczej w zależności od tego, jaki konkretnie obiekt go wykonuje. Jedna komenda — różne zachowania.
+
+6. Abstrakcja
+Abstrakcja to skupienie się na tym, co ważne z punktu widzenia użytkownika, a ukrycie technicznych detali. Jak jazda samochodem — interesuje Cię kierownica i pedały, nie silnik wewnątrz.
+
+7. Dziedziczenie dynamiczne
+Chodzi o to, że program w czasie działania (a nie przy kompilacji) decyduje, która wersja metody zostanie wywołana — na podstawie rzeczywistego typu obiektu, a nie typu wskaźnika czy referencji.
+
+8. Generyczność
+Generyczność (szablony w C++) pozwala napisać kod raz, a używać go z wieloma typami danych. Zamiast pisać osobną funkcję sortującą inty i stringi, piszesz jeden szablon działający na obu.
+
+9. Statyczna kontrola typów
+Kompilator sprawdza typy jeszcze przed uruchomieniem programu. Jeśli próbujesz przypisać tekst do liczby, dostaniesz błąd od razu przy kompilacji — nie dopiero w trakcie działania programu.
+
+10. Specyfikatory dostępu
+To słowa kluczowe (public, private, protected), które decydują, kto może dotykać pól i metod klasy. public — każdy; private — tylko wewnątrz klasy; protected — klasa i klasy pochodne.
+
+11. Konstruktor
+Konstruktor to specjalna metoda wywoływana automatycznie przy tworzeniu obiektu. Służy do ustawienia początkowego stanu — jak pierwsze uruchomienie telefonu, gdy wpisujesz język i konto.
+
+12. Destruktor
+Destruktor działa odwrotnie do konstruktora — wywoływany jest, gdy obiekt jest niszczony. Sprząta po sobie: zwalnia pamięć, zamyka pliki itp., żeby nie zostawiać bałaganu.
+
+13. Przeciążenia funkcji
+Możesz mieć kilka funkcji o tej samej nazwie, o ile różnią się listą parametrów (typem lub liczbą). Kompilator sam wybierze właściwą wersję na podstawie tego, co przekażesz.
+
+14. Szablony funkcji
+Szablon funkcji to „formularz” funkcji z parametrem typu. Piszesz logikę raz, a kompilator generuje wersje dla int, double, string itd. w momencie użycia.
+
+15. Referencje
+Referencja to alias — druga nazwa na ten sam obiekt. Musi być od razu zainicjalizowana i zawsze wskazuje na ten sam obiekt; nie możesz jej „przepiąć” na inny obiekt jak wskaźnika.
+
+16. Stałe referencje
+const reference oznacza, że przez tę referencję nie możesz zmienić obiektu (choć sam obiekt może być mutowalny gdzie indziej). Przydatne, gdy chcesz tylko czytać dane bez ryzyka przypadkowej modyfikacji.
+
+17. Stałe metody
+Metoda oznaczona const obiecuje, że nie zmieni stanu obiektu. Możesz ją wywołać na obiekcie const — kompilator ma pewność, że nic nie popsujesz.
+
+18. Przeciążenia const
+To dwie wersje tej samej metody — const i nie-const. Wersja const zwraca const reference, wersja zwykła pozwala modyfikować. Dzięki temu const obiekty też mają sensowny dostęp do danych.
+
+19. Iteratory
+Iterator to obiekt, który „chodzi” po elementach kontenera (vector, list itd.) — jak palec wskazujący kolejne elementy. Używasz go w pętlach i algorytmach STL.
+
+20. std::function
+std::function to uniwersalne „pudełko” na callable — może trzymać zwykłą funkcję, lambdę lub functor i wywołać ją później. Przydatne, gdy przekazujesz callbacki.
+
+21. Klasy
+Klasa łączy dane (pola) z funkcjami (metodami), które na tych danych operują. To podstawowy sposób grupowania powiązanej logiki w programowaniu obiektowym.
+
+22. std::string
+std::string to wygodna klasa C++ na tekst — dynamicznie rośnie, ma metody jak size(), append(), porównania. Bezpieczniejsza i wygodniejsza niż surowe tablice charów.
+
+23. std::vector
+vector to dynamiczna tablica — sam powiększa się, gdy dodajesz elementy. Masz szybki dostęp przez indeks [i] i iterator po elementach. Najczęściej używany kontener sekwencyjny w C++.
+
+24. std::array
+std::array to tablica o stałym rozmiarze znaną przy kompilacji. Żyje na stosie (zwykle), ma znany rozmiar w typie i nie rośnie — jak tablica C++, ale z metodami STL.
+
+25. Kontenery asocjacyjne (std::map, std::set, std::list)
+map trzyma pary klucz→wartość posortowane po kluczu; set — unikalne elementy posortowane; list — lista dwukierunkowa z szybkim wstawianiem/usuwaniem w środku. Każdy ma inne mocne strony.
+
+26. std::stack i std::queue
+stack to stos LIFO (ostatni wchodzi, pierwszy wychodzi) — jak stos talii kart. queue to kolejka FIFO (pierwszy wchodzi, pierwszy wychodzi) — jak kolejka w sklepie.
+
+27. std::tuple
+tuple to „paczka” na kilka wartości różnych typów naraz — np. (int, string, bool). Dostęp przez std::get<0>(t) lub structured binding w nowszym C++.
+
+28. std::accumulate
+accumulate przechodzi po zakresie i sumuje elementy (albo stosuje inną operację dwuargumentową). Domyślnie robi sumę — jak pętla for z +=, tylko w jednej linii STL.
+
+29. std::equal
+equal porównuje dwa zakresy element po elemencie. Zwraca true, tylko jeśli oba mają tę samą długość i każda para elementów jest równa.
+
+30. std::find
+find szuka podanej wartości w zakresie i zwraca iterator do pierwszego trafienia — albo end(), jeśli nie znalazł. Podstawowe wyszukiwanie liniowe w STL.
+
+31. Operacje wejścia i wyjścia w oparciu o strumienie (std::istream, std::ostream)
+Strumienie to abstrakcja przepływu danych. istream służy do czytania (np. z klawiatury lub pliku), ostream do pisania (np. na ekran). Operatory << i >> łączą się z nimi.
+
+32. Operatory << i >>
+<< wypisuje do strumienia wyjściowego (cout << x), >> czyta ze strumienia wejściowego (cin >> x). Działają kaskadowo: cout << a << b << endl.
+
+33. std::cin i std::cout
+cin to standardowe wejście (zwykle klawiatura), cout to standardowe wyjście (zwykle terminal). To globalne obiekty strumieni gotowe do użycia od razu po #include <iostream>.
+
+34. std::ostringstream
+ostringstream to strumień wyjściowy zapisujący do stringa w pamięci. Budujesz tekst jak do cout, a potem bierzesz wynik metodą .str() — świetne do formatowania.
+
+35. Range-based for loop
+Pętla for (auto x : kontener) przechodzi po wszystkich elementach bez ręcznego iteratora. Czytelniejsza składnia niż klasyczna pętla for z indeksem lub iteratorem.
+
+36. Wyrażenie lambda
+Lambda to anonimowa funkcja „w miejscu” — [capture](params){ body }. Przydatna w algorytmach STL (sort z własnym comparatorem) i callbackach bez pisania osobnej funkcji.
+
+37. Kompozycja
+Kompozycja to budowanie klasy przez włożenie innych obiektów jako pól (has-a), zamiast dziedziczenia (is-a). Samochód ma silnik — nie jest silnikiem.
+
+38. Składowe chronione
+protected to pośredni poziom dostępu: widoczne w klasie i w klasach pochodnych, ale ukryte przed resztą programu. Jak rodzinna tajemnica — dzieci wiedzą, obcy nie.
+
+39. Konstruktory odziedziczone
+W C++11+ klasa pochodna może używać konstruktorów klasy bazowej dzięki using Base::Base — nie musisz pisać przekazujących wrapperów dla każdego wariantu.
+
+40. Metoda wirtualna
+Metoda virtual w klasie bazowej może być nadpisana (override) w klasie pochodnej. Wywołanie przez wskaźnik/referencję bazową trafia we właściwą wersję w runtime — serce polimorfizmu.
+
+41. Wiązanie dynamiczne
+Dynamiczne wiązanie (late binding) oznacza, że wybór metody następuje w czasie wykonania na podstawie rzeczywistego typu obiektu — wymaga virtual i wskaźnika/referencji do klasy bazowej.
+
+42. Konwersja typu a dziedziczenie
+Jeśli klasa Derived dziedziczy po Base, wskaźnik Base* może wskazywać obiekt Derived (konwersja w górę hierarchii). To podstawa polimorfizmu i bezpiecznych w dół konwersji przez dynamic_cast.
+
+43. Listy inicjalizacyjne
+Składnia Class obj{a, b, c} lub w konstruktorze : pole1(a), pole2(b) inicjalizuje pola przed wejściem do ciała konstruktora. Czytelniejsze i czasem wymagane dla const/reference pól.
+
+44. Konstruktor domyślny
+Konstruktor domyślny można wywołać bez argumentów — tworzy obiekt w stanie początkowym zdefiniowanym przez klasę. Jeśli go nie napiszesz, kompilator może wygenerować (=default).
+
+45. Syntezowany konstruktor domyślny
+Jeśli nie zadeklarujesz żadnego konstruktora, kompilator sam wygeneruje domyślny, który zeruje proste typy i wywołuje domyślne konstruktory pól. Znika, gdy dodasz własny konstruktor.
+
+46. Konstruktory a argumenty domyślne
+Parametry konstruktora mogą mieć wartości domyślne — wtedy wywołujesz Konstruktor() bez podawania wszystkich argumentów. Uważaj na kolizję z konstruktorem domyślnym.
+
+47. Konstruktory delegujące
+Konstruktor może wywołać inny konstruktor tej samej klasy przez : Konstruktor(args) — unikasz duplikacji kodu inicjalizacji między wariantami.
+
+48. Konstruktor kopiujący
+Tworzy nowy obiekt jako kopię istniejącego — kopiuje wartości pól. Ważny przy głębokiej kopii zasobów (np. dynamiczna pamięć), inaczej dwie kopie wskazują na ten sam bufor.
+
+49. Destruktory
+Destruktor (~Klasa) sprząta przy zniszczeniu obiektu — zwalnia pamięć, zamyka uchwyty. Wywoływany automatycznie, gdy obiekt wychodzi z zakresu lub delete.
+
+50. Destruktor syntezowany
+Gdy nie napiszesz destruktora, kompilator generuje domyślny, który niszczy pola w odwrotnej kolejności niż konstrukcja. Wystarczy, gdy klasa nie trzyma surowych zasobów wymagających ręcznego sprzątania.
+
+51. Kopiujący operator przypisania
+operator= kopiuje zawartość jednego obiektu do istniejącego drugiego (nie tworzy nowego jak konstruktor kopiujący). Musi obsłużyć samoprzypisanie i zwolnić stare zasoby przed kopią.
+
+52. =default
+Zapis = default mówi kompilatorowi: wygeneruj domyślną implementację tej funkcji specjalnej (konstruktor, destruktor, operator=). Jaśniejsze niż pusta definicja w ciele klasy.
+
+53. =delete
+= delete blokuje funkcję — nie można jej wywołać ani skopiować. Używasz np. delete copy constructor, żeby klasa była niekopiowalna (unique_ptr, mutex).
+
+54. Wskaźnik `this
+this to wskaźnik na bieżący obiekt wewnątrz metody niestatycznej. Pozwala odwołać się do pól/metod tego obiektu, zwrócić *this do łańcuchowania wywołań lub przekazać siebie dalej.
+
+55. Składowe statyczne
+static pole lub metoda należy do klasy, nie do pojedynczego obiektu — wspólne dla wszystkich instancji. Metodę statyczną wywołujesz bez obiektu: Klasa::metoda().
+
+56. enum class
+enum class to silnie typowane enumy ze scope (Color::Red) — nie mieszają się z int jak stare enum. Bezpieczniejsze i czytelniejsze niż zwykłe enum.
+
+57. Niejawne konwersje typów dla klas
+Kompilator może automatycznie konwertować typy, jeśli istnieje jednoargumentowy konstruktor lub operator konwersji — czasem niechcący. explicit blokuje takie niejawne konwersje.
+
+58. Operator `static_cast` i `dynamic_cast
+static_cast robi konwersje znane w compile-time (liczby, w górę hierarchii bez sprawdzania). dynamic_cast bezpiecznie rzutuje w dół hierarchii w runtime — zwraca nullptr przy błędzie (dla wskaźników).
+
+59. Referencje do r-wartości
+T&& (rvalue reference) wiąże się z tymczasowymi obiektami i umożliwia move semantics — przeniesienie zasobów zamiast kosztownej kopii. Podstawa std::move i move konstruktorów.
+
+60. Zawłaszczanie zasobów
+Resource acquisition — obiekt przejmuje własność zasobu (np. wskaźnika na pamięć) i odpowiada za jego zwolnienie. Idiom RAII: zasób żyje tak długo, jak obiekt, który go trzyma.
+
+61. Przeniesienie praw własności
+Move semantics oddaje zasób ze źródła do celu — źródło zostaje w stanie „pustym”, cel przejmuje wskaźnik/pamięć. Realizowane przez move constructor i move assignment.
+
+62. Konstruktor przenoszący
+Move constructor tworzy nowy obiekt przenosząc zasoby ze starego (std::move) zamiast je kopiować. Stary obiekt nadal ważny, ale „opróżniony” — np. wskaźnik = nullptr.
+
+63. Przenoszący operator przypisania
+Move assignment (operator= z &&) przenosi zasoby do już istniejącego obiektu, zwalniając jego stare zasoby. Część reguły pięciu (Rule of Five).
+
+64. Zarządzanie pamięcią z użyciem surowych wskaźników
+Surowe wskaźniki + new/delete dają pełną kontrolę, ale pełną odpowiedzialność: musisz sam alokować, zwalniać, unikać double delete i wycieków. Dlatego preferuje się smart pointery i RAII.
+
+65. new` i `delete
+new alokuje pamięć na stercie i konstruuje obiekt; delete niszczy obiekt i zwalnia pamięć. Dla tablic: new[] i delete[]. Zawsze paruj je poprawnie, inaczej wyciek lub UB.
+
+66. Dynamiczna alokacja pamięci
+Pamięć na stercie (heap) alokujesz w runtime — rozmiar może zależeć od danych użytkownika. new zwraca wskaźnik; żyje, dopóki nie wywołasz delete lub nie użyjesz smart pointera.
+
+67. Zwalnianie dynamicznie zaalokowanej pamięci
+Każde new musi mieć odpowiadające delete — inaczej wyciek pamięci. Smart pointery (unique_ptr) robią to automatycznie przy wyjściu ze scope.
+
+68. Wyciek zasobów
+Wyciek to sytuacja, gdy zaalokowana pamięć (lub plik, mutex) nigdy nie zostaje zwolniona. Program „zjada” RAM; przy długim działaniu może paść. RAII i smart pointery to lekarstwo.
+
+69. Wiszący wskaźnik
+Dangling pointer wskazuje na pamięć już zwolnioną. Użycie go to undefined behavior — losowe crashe. Unikaj: nie używaj surowego wskaźnika po delete; trzymaj obiekty w scope lub smart pointerach.
+
+70. Naruszenie pamięci
+Memory violation — dostęp do pamięci, do której nie masz prawa (po delete, poza tablicą, zapis w readonly). Często kończy się segfaultem; debugery i sanitizery (ASan) pomagają to złapać.
+
+71. Niejednoznaczność odnośnie typu wiązania obiektu
+Przy wielodziedziczeniu ten sam obiekt może występować w hierarchii na wiele sposobów — kompilator nie wie, którą ścieżką wiązać. Rozwiązuje to virtual inheritance.
+
+72. std::unique_ptr
+unique_ptr wyłącznie posiada zasób — nie da się skopiować, tylko przenieść (move). Przy zniszczeniu unique_ptr automatycznie delete. Zero overhead względem surowego wskaźnika, pełne RAII.
+
+73. std::shared_ptr
+shared_ptr współdzieli zasób z licznikiem referencji. Gdy ostatni shared_ptr zginie, zasób jest usuwany. Używaj, gdy wielu właścicieli — ale uważaj na cykle z weak_ptr.
+
+74. std::weak_ptr
+weak_ptr obserwuje zasób trzymany przez shared_ptr bez zwiększania licznika. lock() daje shared_ptr lub pusty, jeśli zasób już nie żyje. Rozbija cykle shared_ptr ↔ shared_ptr.
+
+75. Kompilacja (do języka assemblera)
+Pierwszy etap kompilacji: kompilator tłumaczy kod C++ na assembly (mnemoniki procesora) dla danej jednostki translacji (.cpp). Potem assembler robi z tego kod maszynowy.
+
+76. Kompilacja (do kodu maszynowego)
+Assembler zamienia pliki .s/.asm na pliki obiektowe (.o) — binarny kod maszynowy, ale jeszcze bez bibliotek i kodu startowego. Sam plik .o nie uruchomisz w OS.
+
+77. Konsolidacja (linkowanie)
+Linker łączy pliki .o z biblioteką standardową i Twoimi bibliotekami oraz dodaje kod startowy — powstaje jeden plik wykonywalny (.exe), który system może uruchomić.
+
+78. Kompilator
+Kompilator tłumaczy cały kod źródłowy na kod maszynowy z wyprzedzeniem (przed uruchomieniem). Błędy składni i typów wychwytuje wcześnie; wynik to szybki natywny program.
+
+79. Interpreter
+Interpreter tłumaczy i wykonuje kod linia po linii w trakcie działania — bez wcześniejszego pełnego pliku wykonywalnego. Python działa tak; start wolniejszy, ale elastyczniejszy development.
+
+80. Konstrukcja try-catch
+try { kod } catch (Typ e) { obsługa } — kod w try, który rzuci wyjątek, skacze do pasującej catch. Pozwala oddzielić normalną logikę od obsługi błędów bez ifów wszędzie.
+
+81. Klasy wyjątków
+Wyjątki to zwykle obiekty klas dziedziczących po std::exception. Niosą komunikat (what()) i typ — od logic_error po runtime_error — żeby handler wiedział, co poszło nie tak.
+
+82. std::logic_error
+logic_error sygnalizuje błąd w logice programu lub złych danych wejściowych — coś, co teoretycznie można wykryć przed uruchomieniem (np. indeks poza zakresem w debug). Dziedziczy m.in. invalid_argument.
+
+83. std::runtime_error
+runtime_error to błędy w trakcie działania — sieć padła, brak pliku, dzielenie przez zero w runtime. Nie zawsze da się przewidzieć przy kompilacji.
+
+84. args
+*args w Pythonie zbiera dowolną liczbę argumentów pozycyjnych w krotkę. Funkcja def f(*args) może dostać f(1, 2, 3) — args == (1, 2, 3). Przydatne przy wrapperach i funkcjach o zmiennej liczbie argumentów.
+
+85. kwargs
+**kwargs zbiera nazwane argumenty w słownik. def g(**kwargs) — g(a=1, b=2) daje kwargs == {'a':1,'b':2}. Łączysz z *args dla pełnej elastyczności sygnatury.
+
+86. parametr self
+self to konwencja nazwy pierwszego parametru metody instancji w Pythonie — wskazuje obiekt, na którym wywołano metodę. Dzięki niemu metoda widzi atrybuty tej instancji (self.x).
+
+87. __init__
+__init__ to konstruktor instancji w Pythonie — wywoływany po utworzeniu obiektu, ustawia self.atrybuty. Odpowiednik listy inicjalizacyjnej + ciała konstruktora w C++.
+
+88. Mix-in
+Mix-in to mała klasa dodająca jedną funkcjonalność przez wielodziedziczenie — sama nie jest używana, tylko „doklejana” do innej klasy. Np. mixin Serializable dodaje metodę to_json().
+
+89. Dekorator
+Dekorator @wraps otacza funkcję inną funkcją — dodaje logowanie, cache, sprawdzanie uprawnień bez zmiany kodu oryginału. @decorator nad def to skrót od func = decorator(func).
+
+90. Obiekt mutowalny
+Mutowalny obiekt możesz zmienić „w środku”, a to nadal ten sam obiekt (ta sama tożsamość/id). list i dict — możesz append bez tworzenia nowej listy.
+
+91. Obiekt niemutowalny
+Niemutowalny — nie zmieniasz zawartości w miejscu; „zmiana” tworzy nowy obiekt. int, str, tuple w Pythonie: x = 5; x += 1 tworzy nowy int, nie modyfikuje piątki.
+
+92. std::move
+std::move nie przenosi sam — tylko rzutuje na rvalue reference, żeby kompilator wybrał overload move zamiast copy. Właściwe przeniesienie robi move constructor/assignment, który „okradnie” zasób ze źródła.
