@@ -25,11 +25,14 @@ def is_blue(rgb) -> bool:
 
 def ocr_words(img_path: Path) -> list[dict]:
     base = tempfile.mktemp()
-    subprocess.run(
-        ["tesseract", str(img_path), base, "-l", "pol+eng", "tsv"],
-        capture_output=True,
-        check=False,
-    )
+    try:
+        subprocess.run(
+            ["tesseract", str(img_path), base, "-l", "pol+eng", "tsv"],
+            capture_output=True,
+            check=False,
+        )
+    except FileNotFoundError:
+        return []
     tsv = Path(base + ".tsv")
     if not tsv.exists():
         return []
@@ -207,6 +210,7 @@ RECIPES: dict[str, dict[int, tuple[str, int] | str]] = {
         12: "stem_diagram",
         13: "stem_diagram",
         15: "diagram_options",
+        16: "diagram_options",
         17: "diagram_options",
         18: "stem_diagram",
         20: "stem_diagram",
@@ -232,9 +236,9 @@ QUESTION_CROPS: dict[str, tuple[str, int, str | None]] = {
     "q-ex-i04": ("fizyka_2020_-_egzamin", 6, "diagram_options"),
     "q-ex-i05": ("fizyka_2020_-_egzamin", 7, "diagram_options"),
     "q-ex-i06": ("fizyka_2020_-_egzamin", 15, "diagram_options"),
-    "q-ex-i07": ("fizyka_2020_-_egzamin", 17, "diagram_options"),
+    "q-ex-i07": ("fizyka_2020_-_egzamin", 16, "diagram_options"),
     "q-ex-i08": ("fizyka_2020_-_egzamin", 13, "stem_diagram"),
-    "q-ex-i09": ("fizyka_2020_-_egzamin", 12, "stem_diagram"),
+    # q-ex-i09: tekstowe — na skanie brak rysunku (tylko komentarz studenta)
     # q-ex-i10: sam tekst na białym tle z pogrubioną odpowiedzią — bez obrazka
     "q-ex-i11": ("fizyka_2020_-_egzamin", 30, "diagram_options"),
     "q-ex-i12": ("fizyka_2020_-_egzamin", 28, "stem_diagram"),

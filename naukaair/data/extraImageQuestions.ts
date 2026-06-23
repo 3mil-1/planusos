@@ -65,10 +65,10 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     topic: "Siła reakcji na krzywym drucie",
     question:
       "Koralik porusza się po wygiętym drucie bez tarcia; |v| = const. Wskaż rysunek z poprawnie narysowaną siłą reakcji drutu na koralik (patrz ilustracja).",
-    options: ["Rysunek A", "Rysunek B", "Rysunek C", "Rysunek D"],
-    correctAnswerIndex: 1,
+    options: ["Rysunek A", "Rysunek B", "Rysunek C"],
+    correctAnswerIndex: 2,
     explanation:
-      "Siła reakcji jest prostopadła do toru (do drutu) i skierowana od powierzchni — zgodnie z rysunkiem B na egzaminie 2020.",
+      "Siła reakcji jest prostopadła do toru (do drutu) i skierowana do środka krzywizny — rysunek C na skanie egzaminu 2020.",
     figureSrc: CROP("q-ex-i04"),
     figureAlt: "Koralik na wygiętym drucie — warianty siły reakcji",
   },
@@ -90,7 +90,7 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     basePointId: 135,
     topic: "Siły między przewodnikami",
     question:
-      "Dwa nieskończone równoległe przewodniki: prądy I i 2I w przeciwnych kierunkach. Wskaż rysunek poprawnie pokazujący siły na jednostkę długości (patrz ilustracja).",
+      "Dwa nieskończone równoległe przewodniki: prądy I i 2I w przeciwnych kierunkach. Wskaż rysunek poprawnie pokazujący siły na jednostkę długości (na skanie widać tylko wariant a — wybierz odpowiednią literę).",
     options: ["Rysunek A", "Rysunek B", "Rysunek C", "Rysunek D"],
     correctAnswerIndex: 0,
     explanation:
@@ -105,9 +105,9 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     question:
       "Klocek zjeżdża po klinie (bez tarcia klocek–klin i klin–podłoże). Wskaż rysunek z poprawnymi prędkościami klocka i klina względem podłoża (patrz ilustracja).",
     options: ["Rysunek A", "Rysunek B", "Rysunek C", "Rysunek D"],
-    correctAnswerIndex: 1,
+    correctAnswerIndex: 2,
     explanation:
-      "Z z.z. pędu: klin odpływa w przeciwną stronę niż składowa ruchu klocka — wariant B zgodny z typowym rozwiązaniem egzaminacyjnym.",
+      "Klocek zjeżdża w dół, klin odpływa w przeciwną stronę — poprawny rysunek C na egzaminie 2020 (zaznaczony na skanie).",
     figureSrc: CROP("q-ex-i07"),
     figureAlt: "Klocek na klinie — wektory prędkości",
   },
@@ -134,18 +134,16 @@ export const EXTRA_IMAGE_RAW: ImageQuestionRaw[] = [
     basePointId: 138,
     topic: "Moment pędu względem CM",
     question:
-      "Krążek zbliża się prostopadle do leżącego pręta, prosto nad środkiem masy pręta (przed zderzeniem). Moment pędu krążka względem środka masy pręta (patrz ilustracja):",
+      "Na lodowisku leży pręt. Krążek zbliża się prostopadle do pręta, prosto nad jego środkiem masy (przed zderzeniem). Moment pędu krążka względem środka masy pręta:",
     options: [
-      "nie istnieje (jest zerowy)",
-      "ma stałą wartość niezerową",
-      "zmienia się przy zbliżaniu",
-      "byłby niezerowy tylko przy ruchu przez środek masy pręta",
+      "nie posiada momentu pędu (jest zerowy)",
+      "posiada stały moment pędu niezerowy",
+      "zmienia swój moment pędu w miarę zbliżania się",
+      "posiadałby moment pędu, gdyby poruszał się wzdłuż prostej przez środek masy pręta",
     ],
     correctAnswerIndex: 0,
     explanation:
-      "L = r × p względem CM pręta — przy ruchu prostopadłym do pręta promień wektorowy i pęd dają L = 0.",
-    figureSrc: CROP("q-ex-i09"),
-    figureAlt: "Krążek zbliżający się do pręta",
+      "L = r × p względem CM pręta — wektor r (do krążka) i p są równoległe, więc iloczyn wektorowy jest zerowy.",
   },
   {
     id: "q-ex-i10",
