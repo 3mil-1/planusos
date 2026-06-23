@@ -736,8 +736,9 @@ const RAW_QUESTIONS: RawQuestion[] = [
     topic: "Trójkąt równoboczny — ładunki",
     question: "W trójkącie równobocznym w dwóch wierzchołkach +q. Trzeci ładunek w trzecim wierzchołku, aby E=0 w środku:",
     options: ["−q", "+q", "−2q", "0"],
-    correctAnswerIndex: 0,
-    explanation: "Symetria: +q, +q, −q daje E=0 w środku trójkąta równobocznego.",
+    correctAnswerIndex: 1,
+    explanation:
+      "W środku trójkąta równobocznego wektory do wierzchołków sumują się do zera: r̂₁+r̂₂+r̂₃=0. Pole E ∝ q₁r̂₁+q₂r̂₂+q₃r̂₃ — przy dwóch +q potrzeba trzeciego +q, żeby suma się skompensowała.",
     isSynthetic: false,
   },
   {
