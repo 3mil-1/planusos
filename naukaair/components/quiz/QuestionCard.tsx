@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import type { Question } from "@/data/questions";
 import { QuestionFigures } from "@/components/quiz/QuestionFigures";
+import { MathText } from "@/components/ui/MathText";
 const LABELS = ["A", "B", "C", "D"];
 
 interface QuestionCardProps {
@@ -30,7 +31,7 @@ export function QuestionCard({
           <span className="text-sm text-sky-400">{question.topic}</span>
         </div>
         <h2 className="text-lg font-medium leading-relaxed text-white md:text-xl">
-          {question.question}
+          <MathText text={question.question} />
         </h2>
         {question.figures && question.figures.length > 0 && (
           <QuestionFigures figures={question.figures} />
@@ -72,7 +73,9 @@ export function QuestionCard({
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900/80 text-sm font-semibold">
                 {LABELS[index]}
               </span>
-              <span className="pt-0.5 text-sm leading-relaxed md:text-base">{option}</span>
+              <span className="pt-0.5 text-sm leading-relaxed md:text-base">
+                <MathText text={option} />
+              </span>
             </button>
           );
         })}

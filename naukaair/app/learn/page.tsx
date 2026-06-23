@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/Card";
 import { QuestionCard } from "@/components/quiz/QuestionCard";
 import { SourceBadge } from "@/components/quiz/SourceBadge";
 import { ProgressBar } from "@/components/quiz/ProgressBar";
+import { MathText } from "@/components/ui/MathText";
 
 export default function LearnPage() {
   const recordAnswer = useQuizStore((s) => s.recordAnswer);
@@ -197,9 +198,9 @@ export default function LearnPage() {
             <div className="border-b border-slate-700 px-4 py-3 text-sm font-medium text-sky-400">
               Wyjaśnienie:
             </div>
-            <p className="px-4 py-4 text-sm leading-relaxed text-slate-300">
-              {current.explanation}
-            </p>
+            <div className="px-4 py-4 text-sm leading-relaxed text-slate-300">
+              <MathText text={current.explanation} />
+            </div>
           </div>
         )}
 

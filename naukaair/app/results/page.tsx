@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, Home, RotateCcw } from "lucide-react";
 import { NavAnchor } from "@/components/ui/NavAnchor";
-import type { ExamResultPayload } from "@/app/exam/page";
 import { Card } from "@/components/ui/Card";
+import type { ExamResultPayload } from "@/app/exam/page";
+import { MathText } from "@/components/ui/MathText";
 import { ScoreRing } from "@/components/quiz/ScoreRing";
 import { SourceBadge } from "@/components/quiz/SourceBadge";
 import { getQuestionById } from "@/data/questions";
@@ -71,7 +72,9 @@ export default function ResultsPage() {
                   return <SourceBadge source={q.source} isSynthetic={q.isSynthetic} />;
                 })()}
               </div>
-              <p className="font-medium text-white">{item.question}</p>
+              <p className="font-medium text-white">
+                <MathText text={item.question} />
+              </p>
               <div className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
                 <div className="rounded-lg bg-red-500/10 px-3 py-2 text-red-300">
                   Twoja odpowiedź: <strong>{item.selectedLabel}</strong>
@@ -82,7 +85,9 @@ export default function ResultsPage() {
               </div>
               <div className="mt-4 rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3">
                 <p className="text-xs font-medium text-sky-400">Wyjaśnienie</p>
-                <p className="mt-1 text-sm text-slate-300">{item.explanation}</p>
+                <div className="mt-1 text-sm text-slate-300">
+                  <MathText text={item.explanation} />
+                </div>
               </div>
             </Card>
           ))}

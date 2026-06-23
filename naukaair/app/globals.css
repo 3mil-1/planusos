@@ -396,3 +396,25 @@ body {
     filter: hue-rotate(360deg);
   }
 }
+
+/* KaTeX — ciemny motyw, spójny z treścią pytań */
+.math-text .katex {
+  color: inherit;
+  font-size: 1.05em;
+}
+
+.math-text .katex-display {
+  margin: 0.6em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.math-text .katex .mord,
+.math-text .katex .mop,
+.math-text .katex .mbin,
+.math-text .katex .mrel,
+.math-text .katex .mopen,
+.math-text .katex .mclose,
+.math-text .katex .mpunct {
+  color: inherit;
+}
