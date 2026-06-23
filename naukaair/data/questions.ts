@@ -567,7 +567,8 @@ const RAW_QUESTIONS: RawQuestion[] = [
     question: "Ładunek dodatni porusza się w polu B skierowanym do góry (z). Wektor v do prawo (x). Siła Lorentza skierowana jest:",
     options: ["do tyłu strony (−y) — reguła prawej dłoni", "w górę", "w prawo", "w kierunku v"],
     correctAnswerIndex: 0,
-    explanation: "F = q(v×B); v×B dla v∥x, B∥z daje −y dla q>0.",
+    explanation:
+      "$F = q(\\vec{v} \\times \\vec{B})$; $\\vec{v} \\times \\vec{B}$ dla $\\vec{v} \\parallel \\hat{x}$, $\\vec{B} \\parallel \\hat{z}$ daje $-\\hat{y}$ przy $q>0$.",
     isSynthetic: true,
   },
   {
@@ -577,7 +578,7 @@ const RAW_QUESTIONS: RawQuestion[] = [
     question: "Kształt toru naładowanej cząstki w jednorodnym polu B (przy pomijalnym E między przyspieszeniami) to:",
     options: ["okrąg/helisa — siła Lorentza jako dośrodkowa", "parabola", "linia prosta", "cykloida"],
     correctAnswerIndex: 0,
-    explanation: "q(v×B) = mv²/r → ruch po okręgu w B ⊥ v.",
+    explanation: "$q(\\vec{v} \\times \\vec{B}) = \\frac{mv^2}{r}$ — ruch po okręgu przy $\\vec{B} \\perp \\vec{v}$.",
     isSynthetic: false,
   },
   {

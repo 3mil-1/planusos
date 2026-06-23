@@ -18,11 +18,15 @@ function renderSegmentHtml(
   }
 
   try {
-    return katex.renderToString(segment.value, {
+    const html = katex.renderToString(segment.value, {
       throwOnError: false,
       displayMode: segment.type === "block",
       strict: "ignore",
     });
+    if (html.includes('class="katex-error"')) {
+      return escapeHtml(segment.value);
+    }
+    return html;
   } catch {
     return escapeHtml(segment.value);
   }
